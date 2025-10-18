@@ -3,6 +3,8 @@ from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone # Importar timezone para as datas de validade
+from .pedido import Pedido  
+from produtos.models import Produto, Variacao
 
 from produtos.models import Produto, Variacao
 
@@ -59,19 +61,14 @@ class Pedido(models.Model):
 
 
 class ItemPedido(models.Model):
-    # Use a string completa 'pedidos.Pedido'
-    pedido = models.ForeignKey(
-        'pedidos.Pedido', 
-        on_delete=models.CASCADE, 
-        related_name='itens'
-    )
-    produto = models.ForeignKey(Produto, on_delete=models.SET_NULL, null=True, related_name='itens_pedido')
-    variacao = models.ForeignKey(Variacao, on_delete=models.SET_NULL, null=True, blank=True)
+    pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name="itens")
+    produto = models.ForeignKey(Produto, on_delete=models.CASCADE)
+    variacao = models.ForeignKey(Variacao, on_delete=models.CASCADE)
     preco_unitario = models.DecimalField(max_digits=10, decimal_places=2)
-    quantidade = models.PositiveIntegerField(default=1)
+    quantidade = models.PositiveIntegerField()
 
-    def get_subtotal(self):
-        return self.preco_unitario * self.quantidade
+    def __str__(self):
+        return f'{self.quantidade}x {self.produto.nome} ({self.variacao})'
 
     def __str__(self):
         # Proteção contra Server Error (500) por Produto/Variação deletados
