@@ -9,8 +9,9 @@ from produtos.models import Produto, Variacao
 
 
 class OpcaoFrete(models.Model):
-    nome = models.CharField(max_length=100, unique=True) # "Retirada Local"
-    custo = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) # 0.00
+    # 🚨 FORÇAR MUDANÇA: Adicionar 'blank=True' 🚨
+    nome = models.CharField(max_length=100, unique=True, blank=True) 
+    custo = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     ativo = models.BooleanField(default=True)
 
     def __str__(self):
