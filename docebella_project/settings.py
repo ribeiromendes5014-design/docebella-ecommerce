@@ -201,22 +201,30 @@ if not DEBUG:
     AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default=None)
     AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default=None)
     
-    # Use sua região correta, ex: 'sa-east-1' para São Paulo
-    # Como você usou us-east-2, certifique-se de que essa variável está correta no Render
-    AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', default='us-east-2') 
+    # Use sua região correta, que é 'us-east-2'
+    AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', default='us-east-2')
     
     
     # 🚨 NOVO BLOCO DE VERIFICAÇÃO CRÍTICA 🚨
     if AWS_STORAGE_BUCKET_NAME:
+        
         # Garante que os arquivos sejam públicos
         AWS_DEFAULT_ACL = 'public-read'
         
         # Define o S3 como o backend padrão para todos os arquivos de MÍDIA
         DEFAULT_FILE_STORAGE = 'storages.backends.s3.S3Storage'
         
-        # Define o domínio customizado para a URL de Mídia
-        AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+        # 🚨 CORREÇÃO PRINCIPAL AQUI: Define o endpoint e simplifica a MEDIA_URL 🚨
+        
+        # 1. Define o Endereço de Serviço para a Região (mais confiável)
+        AWS_S3_ENDPOINT_URL = f'https://s3.{AWS_S3_REGION_NAME}.amazonaws.com'
+        
+        # 2. Define o DOMÍNIO CUSTOMIZADO que inclui a região (necessário para us-east-2)
+        AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com'
+        
+        # 3. Define a URL base para o seu bucket
         MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
+
 
         # Sobrescreve o bloco STORAGES para usar o S3
         STORAGES = {
