@@ -4,8 +4,8 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        # O último arquivo de migração do app 'pedidos' que o Django usou
-        ('pedidos', '0002_initial'), 
+        # Certifique-se de que este é o NÚMERO CORRETO da sua migração anterior de pedidos
+        ('pedidos', '0003_alter_itempedido_produto_alter_itempedido_quantidade_and_more'), 
     ]
 
     operations = [
@@ -18,3 +18,4 @@ class Migration(migrations.Migration):
                 ('ativo', models.BooleanField(default=True)),
             ],
         ),
+    ]
