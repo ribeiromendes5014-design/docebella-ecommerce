@@ -44,7 +44,7 @@ class CustomUserManager(BaseUserManager):
 # -----------------------------------------------------
 
 
-# --- SEU MODELO Cliente (Otimizado) ---
+# --- SEU MODELO Cliente (Otimizado e CORRIGIDO) ---
 class Cliente(AbstractBaseUser, PermissionsMixin):
     # Ao herdar de AbstractBaseUser + PermissionsMixin, 
     # não precisamos do campo 'username' ou dos campos ManyToMany repetidos.
@@ -74,7 +74,9 @@ class Cliente(AbstractBaseUser, PermissionsMixin):
         verbose_name_plural = _('Clientes')
 
     def __str__(self):
-        return self.email
+        # CORREÇÃO: Usar um campo sem caracteres especiais (@, .) no lugar do email,
+        # para evitar o erro Server Error (500) em reversão de URLs (como no Admin).
+        return self.nome_completo
 
     def get_full_name(self):
         """Retorna o nome completo."""
