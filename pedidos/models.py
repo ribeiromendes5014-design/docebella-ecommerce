@@ -1,4 +1,4 @@
-# pedidos/models.py
+# pedidos/models.py - CORRIGIDO
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -41,13 +41,13 @@ class Pedido(models.Model):
     
     # Endereço e Cupom
     endereco = models.OneToOneField(EnderecoEntrega, on_delete=models.CASCADE, null=True)
-    cupom = models.ForeignKey('Cupom', on_delete=models.SET_NULL, null=True, blank=True) # Novo FK para o Cupom
+    cupom = models.ForeignKey('Cupom', on_delete=models.SET_NULL, null=True, blank=True)
     
     # Informações financeiras
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Aguardando Pagamento')
     valor_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     valor_frete = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    valor_desconto = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) # Novo campo para registrar o desconto
+    valor_desconto = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     
     # Rastreamento
     codigo_rastreio = models.CharField(max_length=100, blank=True, null=True)
@@ -59,14 +59,28 @@ class Pedido(models.Model):
 
 
 class ItemPedido(models.Model):
-    # ... (restante dos campos)
+    # 🚨 CORREÇÃO CRÍTICA DO ERRO E202: Campos estavam faltando 🚨
+    pedido = models.ForeignKey(
+        'Pedido', 
+        on_delete=models.CASCADE, 
+        related_name='itens'
+    )
+    produto = models.ForeignKey(Produto, on_delete=models.SET_NULL, null=True, related_name='itens_pedido')
+    variacao = models.ForeignKey(Variacao, on_delete=models.SET_NULL, null=True, blank=True)
+    preco_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+    quantidade = models.PositiveIntegerField(default=1)
+
+    def get_subtotal(self):
+        return self.preco_unitario * self.quantidade
 
     def __str__(self):
-        # 🚨 CORREÇÃO CRÍTICA: Protege contra Produto/Variação deletados 🚨
+        # Proteção contra Server Error (500) por Produto/Variação deletados
         
         # 1. Tenta obter o nome do produto ou variação
         if self.variacao and self.variacao.valor:
-            nome_display = f"{self.produto.nome} ({self.variacao.valor})"
+            # Garante que o produto também existe para evitar erro
+            nome_produto = self.produto.nome if self.produto else "Deletado"
+            nome_display = f"{nome_produto} ({self.variacao.valor})"
         elif self.produto:
             nome_display = self.produto.nome
         else:
