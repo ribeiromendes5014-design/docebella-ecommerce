@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # A SECRET_KEY será definida no bloco CONFIGURAÇÕES DE PRODUÇÃO abaixo.
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [] # Será sobrescrito no bloco CONFIGURAÇÕES DE PRODUÇÃO
 
@@ -49,6 +49,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # ADICIONE ESTA LINHA:
+    'whitenoise.middleware.WhiteNoiseMiddleware', 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -56,6 +58,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 ROOT_URLCONF = 'docebella_project.urls'
 
@@ -161,11 +165,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-#3-c$i&#$#wx^n6^#0v4wvzo^1#^os5sd1ou)n%%0*j&0f0g1(') 
 
 # Hosts Permitidos em Produção
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.render.com'] 
+ALLOWED_HOSTS = [
+    '127.0.0.1', 
+    'localhost', 
+    'catalagoloja-zn2u.onrender.com',  # <-- SEU DOMÍNIO EXATO
+    '.onrender.com'                    # <-- O curinga correto para o Render
+] 
 
 # Configuração para arquivos estáticos em produção
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# 2. Diretório onde o Render/Django irá COLETAR todos os arquivos estáticos
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # ----------------------------------------------------
 # CONFIGURAÇÕES JAZZMIN (Admin Moderno)
