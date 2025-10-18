@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # A SECRET_KEY será definida no bloco CONFIGURAÇÕES DE PRODUÇÃO abaixo.
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = true
+DEBUG = false
 
 ALLOWED_HOSTS = [] # Será sobrescrito no bloco CONFIGURAÇÕES DE PRODUÇÃO
 
