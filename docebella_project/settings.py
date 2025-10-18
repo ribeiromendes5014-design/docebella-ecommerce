@@ -282,4 +282,4 @@ JAZZMIN_SETTINGS = {
     },
     "footer_text": "Desenvolvido com Django e 💖"
 }
-  .
+  
