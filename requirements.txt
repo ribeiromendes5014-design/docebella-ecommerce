@@ -13,7 +13,6 @@ click==8.3.0
 clr_loader==0.2.7.post0
 colorama==0.4.6
 Django==5.2.7
-django-storages==1.14.6
 gitdb==4.0.12
 GitPython==3.1.45
 google-auth==2.41.1
@@ -80,5 +79,6 @@ whitenoise
 gunicorn
 django-storages[boto3]==1.14.2
 boto3
+
 
 
