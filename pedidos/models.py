@@ -59,8 +59,9 @@ class Pedido(models.Model):
 
 
 class ItemPedido(models.Model):
+    # Use a string completa 'pedidos.Pedido'
     pedido = models.ForeignKey(
-        'pedidos.Pedido', # Use a string completa
+        'pedidos.Pedido', 
         on_delete=models.CASCADE, 
         related_name='itens'
     )
