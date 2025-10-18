@@ -7,8 +7,9 @@ class ItemCarrinho(models.Model):
     session_key = models.CharField(max_length=40, db_index=True)
     
     # O produto base e a variação exata (se houver)
-    produto = models.ForeignKey(Produto, on_delete=models.CASCADE)
-    variacao = models.ForeignKey(Variacao, on_delete=models.CASCADE, null=True, blank=True) 
+    # 🚨 CORREÇÃO: Adicionado null=True e blank=True para resolver IntegrityError durante a criação de Produto 🚨
+    produto = models.ForeignKey(Produto, on_delete=models.CASCADE, null=True, blank=True)
+    variacao = models.ForeignKey(Variacao, on_delete=models.CASCADE, null=True, blank=True)
     
     # Quantidade
     quantidade = models.PositiveIntegerField(default=1)
@@ -18,17 +19,29 @@ class ItemCarrinho(models.Model):
     class Meta:
         verbose_name = "Item de Carrinho"
         verbose_name_plural = "Itens de Carrinho"
-        unique_together = ('produto', 'variacao', 'session_key') 
+        unique_together = ('produto', 'variacao', 'session_key')
 
     def __str__(self):
         if self.variacao:
-            return f'{self.produto.nome} ({self.variacao.valor}) - Qtd: {self.quantidade}'
-        return f'{self.produto.nome} - Qtd: {self.quantidade}'
+            # Note: Proteção extra contra produto ser None após a mudança
+            if self.produto:
+                 return f'{self.produto.nome} ({self.variacao.valor}) - Qtd: {self.quantidade}'
+            return f'(Produto Nulo) ({self.variacao.valor}) - Qtd: {self.quantidade}'
         
+        if self.produto:
+             return f'{self.produto.nome} - Qtd: {self.quantidade}'
+        
+        return f'Item de Carrinho Nulo - Qtd: {self.quantidade}'
+
     def get_preco_unitario(self):
-        if self.variacao:
+        if self.variacao and self.variacao.produto:
             return self.variacao.get_preco_final()
-        return self.produto.preco
         
+        if self.produto:
+            return self.produto.preco
+        
+        # Retorna 0.00 se o produto for nulo (após a correção)
+        return 0.00
+
     def get_subtotal(self):
         return self.get_preco_unitario() * self.quantidade
