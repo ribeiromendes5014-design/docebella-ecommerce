@@ -8,8 +8,9 @@ from .models import EnderecoEntrega, Pedido, ItemPedido, Cupom
 class ItemPedidoInline(admin.TabularInline):
     model = ItemPedido
     extra = 0
-    fields = ('produto', 'variacao', 'preco_unitario', 'quantidade')
     can_delete = False
+    readonly_fields = ('produto', 'variacao', 'preco_unitario', 'quantidade')
+    fields = ('produto', 'variacao', 'preco_unitario', 'quantidade')
 
 
 # ------------------------------------
