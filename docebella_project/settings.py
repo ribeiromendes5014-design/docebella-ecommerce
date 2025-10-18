@@ -97,7 +97,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'docebella_project.wsgi.application'
 
 
-POSTGRES_URL = 'postgresql://docebella_db_user:HR8JcP5n7mkTSJDKw9kNwRkpYEYJwVMe@dpg-d3ptfver433s73amql70-a/docebella_db'
+POSTGRES_URL = 'postgresql://docebella_db_user:HR8JcP5n7mkTSJDKw9kNwRkpYEYJwVMe@dpg-d3ptfver433s73amql70-a.oregon-postgres.render.com/docebella_db'
 
 
 DATABASES = {
