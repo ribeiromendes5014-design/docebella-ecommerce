@@ -79,6 +79,9 @@ whitenoise
 gunicorn
 django-storages[boto3]==1.14.2
 boto3
+dj-database-url
+psycopg2-binary
+
 
 
 
