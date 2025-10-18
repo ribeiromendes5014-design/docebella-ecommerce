@@ -212,7 +212,7 @@ if not DEBUG:
         AWS_DEFAULT_ACL = 'public-read'
         
         # Define o S3 como o backend padrão para todos os arquivos de MÍDIA
-        DEFAULT_FILE_STORAGE = 'storages.backends.s3.S3Storage'
+        DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
         
         # 🚨 CORREÇÃO PRINCIPAL AQUI: Define o endpoint e simplifica a MEDIA_URL 🚨
         
@@ -229,7 +229,7 @@ if not DEBUG:
         # Sobrescreve o bloco STORAGES para usar o S3
         STORAGES = {
             "default": {
-                "BACKEND": "storages.backends.s3.S3Storage",
+                "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
             },
             "staticfiles": {
                 "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
