@@ -69,7 +69,8 @@ STORAGES = {
     },
 }
 
-ROOT_URLCONF = 'docebella_project.urls'
+# 🚨 ADICIONE ESTA LINHA FALTANTE 🚨
+ROOT_URLCONF = 'docebella_project.urls' 
 
 TEMPLATES = [
     {
