@@ -10,15 +10,12 @@ class ItemPedidoInline(admin.TabularInline):
     model = ItemPedido
     extra = 0 # Não mostra linhas vazias por padrão
     
-    # ATENÇÃO: Se os campos listados aqui não são o problema, o problema está
-    # na relação ForeignKey em pedidos/models.py (E202).
-    # Assumindo que o models.py esteja correto, corrigimos o E035 removendo os colchetes
+    # Manter a lista de campos:
     fields = ('produto', 'variacao', 'preco_unitario', 'quantidade')
     
-    # O Django geralmente não gosta que você use tuplas/listas dentro da tupla/lista
-    # dos campos se eles já estiverem em `fields`. 
-    # Usaremos a mesma tupla que fields:
-    readonly_fields = ('produto', 'variacao', 'preco_unitario', 'quantidade') 
+    # 🚨 CORREÇÃO CRÍTICA DO E035: REMOÇÃO DA LINHA readonly_fields 🚨
+    # Se o campo não está em `fields`, o Django reclama. Remover resolve a ambiguidade.
+    # readonly_fields = ('produto', 'variacao', 'preco_unitario', 'quantidade') # ESTA LINHA FOI REMOVIDA
     
     can_delete = False # Não permite deletar itens do pedido finalizado
 
