@@ -78,4 +78,7 @@ django-jazzmin
 django-widget-tweaks
 whitenoise
 gunicorn
+django-storages[boto3]==1.14.2
+boto3
+
 
