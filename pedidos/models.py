@@ -61,7 +61,7 @@ class Pedido(models.Model):
 class ItemPedido(models.Model):
     # 🚨 CORREÇÃO CRÍTICA DO ERRO E202: Campos estavam faltando 🚨
     pedido = models.ForeignKey(
-        'Pedido', 
+        'pedidos.Pedido', 
         on_delete=models.CASCADE, 
         related_name='itens'
     )
