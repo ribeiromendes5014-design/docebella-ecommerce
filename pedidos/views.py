@@ -35,7 +35,7 @@ def checkout(request):
     if not itens_carrinho.exists():
         messages.warning(request, "Seu carrinho está vazio.")
         # Corrigido para a URL correta do carrinho (assumindo 'carrinho:ver_carrinho')
-        return redirect('ver_carrinho') 
+        return redirect('carrinho:ver_carrinho') 
         
     subtotal_carrinho = sum(item.get_subtotal() for item in itens_carrinho)
     peso_total = calcular_peso_carrinho(itens_carrinho)
@@ -112,7 +112,7 @@ def checkout(request):
                     # Captura o erro (incluindo o novo erro de estoque) e exibe mensagem amigável
                     messages.error(request, f"Ocorreu um erro ao finalizar o pedido. Motivo: {e}")
                     # Redireciona para o carrinho, permitindo que o usuário ajuste
-                    return redirect('ver_carrinho') 
+                    return redirect('carrinho:ver_carrinho') 
         
     else:
         # GET Request: Inicializa o form com dados do usuário logado
