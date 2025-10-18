@@ -14,6 +14,7 @@ class Categoria(models.Model):
 
 class Produto(models.Model):
     # Relação com Categoria
+    # 🚨 TROCAR POR models.CASCADE 🚨
     categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
     
     # Informações básicas
