@@ -5,7 +5,6 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone # Importar timezone para as datas de validade
 from .pedido import Pedido  
 from produtos.models import Produto, Variacao
-from .pedido import ItemPedido
 
 from produtos.models import Produto, Variacao
 
