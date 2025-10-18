@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone # Importar timezone para as datas de validade
 
-from produtos.models import Produto, Variacao 
+from produtos.models import Produto, Variacao
 
 
 class EnderecoEntrega(models.Model):
@@ -69,6 +69,7 @@ class ItemPedido(models.Model):
         return self.preco_unitario * self.quantidade
 
     def __str__(self):
+        # AQUI, o .produto.nome e .pedido.id devem existir para não dar erro.
         return f'{self.quantidade}x {self.produto.nome} (Pedido {self.pedido.id})'
 
 
