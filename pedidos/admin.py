@@ -10,11 +10,9 @@ class ItemPedidoInline(admin.TabularInline):
     extra = 0
     fields = ('produto', 'variacao', 'preco_unitario', 'quantidade')
     
-    # 🚨 SOLUÇÃO FINAL DO E035: GARANTA QUE ESTA LINHA NÃO EXISTA NO SEU ARQUIVO SALVO!
-    # A linha que causa o erro E035:
-    # readonly_fields = ('produto', 'variacao', 'preco_unitario', 'quantidade') 
+    # 🚨 GARANTA QUE O ESPAÇO ESTEJA VAZIO AQUI! 🚨
     
-    can_delete = False 
+    can_delete = False
 
 
 # ------------------------------------
