@@ -59,18 +59,20 @@ class Pedido(models.Model):
 
 
 class ItemPedido(models.Model):
-    pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name='itens')
-    produto = models.ForeignKey(Produto, on_delete=models.SET_NULL, null=True, related_name='itens_pedido')
-    variacao = models.ForeignKey(Variacao, on_delete=models.SET_NULL, null=True, blank=True)
-    preco_unitario = models.DecimalField(max_digits=10, decimal_places=2)
-    quantidade = models.PositiveIntegerField(default=1)
-
-    def get_subtotal(self):
-        return self.preco_unitario * self.quantidade
+    # ... (restante dos campos)
 
     def __str__(self):
-        # AQUI, o .produto.nome e .pedido.id devem existir para não dar erro.
-        return f'{self.quantidade}x {self.produto.nome} (Pedido {self.pedido.id})'
+        # 🚨 CORREÇÃO CRÍTICA: Protege contra Produto/Variação deletados 🚨
+        
+        # 1. Tenta obter o nome do produto ou variação
+        if self.variacao and self.variacao.valor:
+            nome_display = f"{self.produto.nome} ({self.variacao.valor})"
+        elif self.produto:
+            nome_display = self.produto.nome
+        else:
+            nome_display = "Produto Deletado/Inválido"
+            
+        return f'{self.quantidade}x {nome_display} (Pedido {self.pedido.id})'
 
 
 # >> NOVO MODELO: CUPOM DE DESCONTO <<
