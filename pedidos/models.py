@@ -69,22 +69,17 @@ class ItemPedido(models.Model):
     quantidade = models.PositiveIntegerField()
 
     def __str__(self):
-        return f'{self.quantidade}x {self.produto.nome} ({self.variacao})'
-
-    def __str__(self):
-        # Proteção contra Server Error (500) por Produto/Variação deletados
-        
-        # 1. Tenta obter o nome do produto ou variação
+        # Proteção contra erro se produto/variação forem deletados
         if self.variacao and self.variacao.valor:
-            # Garante que o produto também existe para evitar erro
             nome_produto = self.produto.nome if self.produto else "Deletado"
             nome_display = f"{nome_produto} ({self.variacao.valor})"
         elif self.produto:
             nome_display = self.produto.nome
         else:
             nome_display = "Produto Deletado/Inválido"
-            
+
         return f'{self.quantidade}x {nome_display} (Pedido {self.pedido.id})'
+
 
 
 # >> NOVO MODELO: CUPOM DE DESCONTO <<
