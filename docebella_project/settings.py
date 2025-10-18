@@ -196,33 +196,37 @@ if not DEBUG:
     # Configurações para o AWS S3 (ou similar via django-storages)
     
     # Busca chaves do ambiente (Render)
-    AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
-    AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
-    AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
+    # Adicione default=None para evitar o erro UndefinedValueError se a variável faltar
+    AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default=None)
+    AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default=None)
+    AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default=None)
+    
     # Use sua região correta, ex: 'sa-east-1' para São Paulo
-    AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', default='us-east-1')
+    # Como você usou us-east-2, certifique-se de que essa variável está correta no Render
+    AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', default='us-east-2') 
     
-    # Garante que os arquivos sejam públicos
-    AWS_DEFAULT_ACL = 'public-read'
     
-    # Define o S3 como o backend padrão para todos os arquivos de MÍDIA
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3.S3Storage'
-    
-    # Define o domínio customizado para a URL de Mídia
-    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
-    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
+    # 🚨 NOVO BLOCO DE VERIFICAÇÃO CRÍTICA 🚨
+    if AWS_STORAGE_BUCKET_NAME:
+        # Garante que os arquivos sejam públicos
+        AWS_DEFAULT_ACL = 'public-read'
+        
+        # Define o S3 como o backend padrão para todos os arquivos de MÍDIA
+        DEFAULT_FILE_STORAGE = 'storages.backends.s3.S3Storage'
+        
+        # Define o domínio customizado para a URL de Mídia
+        AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+        MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
 
-    # Sobrescreve o bloco STORAGES original para refletir o uso do S3 para "default" (uploads)
-    STORAGES = {
-        "default": {
-            # 🚨 MUDANÇA AQUI 🚨: Usa o S3 para arquivos de mídia
-            "BACKEND": "storages.backends.s3.S3Storage",
-        },
-        "staticfiles": {
-            # WhiteNoise continua servindo arquivos estáticos
-            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-        },
-    }
+        # Sobrescreve o bloco STORAGES para usar o S3
+        STORAGES = {
+            "default": {
+                "BACKEND": "storages.backends.s3.S3Storage",
+            },
+            "staticfiles": {
+                "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+            },
+        }
 
 # ----------------------------------------------------
 # CONFIGURAÇÕES JAZZMIN (Admin Moderno)
