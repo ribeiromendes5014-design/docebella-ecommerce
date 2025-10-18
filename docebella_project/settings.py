@@ -1,9 +1,9 @@
 # docebella_project/settings.py
 
 from pathlib import Path
-from decouple import config 
-import os 
- 
+from decouple import config
+import os
+
 """
 Django settings for docebella_project project.
 
@@ -36,6 +36,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     
+    # 🚨 ADICIONADO: Necessário para o S3/Cloud Storage 🚨
+    'storages',
+    
     # ⬇️ ADIÇÃO CORRETIVA: Widget Tweaks para estilizar formulários ⬇️
     'widget_tweaks',
     # ⬆️ FIM DA ADIÇÃO ⬆️
@@ -60,6 +63,7 @@ MIDDLEWARE = [
 ]
 
 # NOVO: Formato correto para Django 4.2+ e WhiteNoise
+# ESTE BLOCO SERÁ SOBRESCRITO PELA LÓGICA DE PRODUÇÃO ABAIXO
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
@@ -153,17 +157,23 @@ LOGIN_URL = '/conta/login/'
 # URL para onde o usuário será redirecionado após o login (se não houver um ?next=)
 LOGIN_REDIRECT_URL = '/' # Você pode mudar para '/conta/painel/' se preferir
 
-# Static files (CSS, JavaScript, Images)
+
+# Default primary key field type
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ----------------------------------------------------
+# CONFIGURAÇÕES DE ARQUIVOS (Estáticos e Mídia)
+# ----------------------------------------------------
+
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
-MEDIA_URL = 'media/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Configurações de Mídia em Desenvolvimento (Serão sobrescritas em produção)
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-
-
-# Default primary key field type
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # ----------------------------------------------------
@@ -178,12 +188,41 @@ ALLOWED_HOSTS = [
     '127.0.0.1', 
     'localhost', 
     'catalagoloja-zn2u.onrender.com',  # <-- SEU DOMÍNIO EXATO
-    '.onrender.com'                    # <-- O curinga correto para o Render
+    '.onrender.com'                      # <-- O curinga correto para o Render
 ] 
 
-# Configuração para arquivos estáticos em produção
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+# 🚨 LÓGICA DE MÍDIA (S3/Cloud) PARA PRODUÇÃO 🚨
+if not DEBUG:
+    # Configurações para o AWS S3 (ou similar via django-storages)
+    
+    # Busca chaves do ambiente (Render)
+    AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
+    # Use sua região correta, ex: 'sa-east-1' para São Paulo
+    AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', default='us-east-1')
+    
+    # Garante que os arquivos sejam públicos
+    AWS_DEFAULT_ACL = 'public-read'
+    
+    # Define o S3 como o backend padrão para todos os arquivos de MÍDIA
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3.S3Storage'
+    
+    # Define o domínio customizado para a URL de Mídia
+    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
 
+    # Sobrescreve o bloco STORAGES original para refletir o uso do S3 para "default" (uploads)
+    STORAGES = {
+        "default": {
+            # 🚨 MUDANÇA AQUI 🚨: Usa o S3 para arquivos de mídia
+            "BACKEND": "storages.backends.s3.S3Storage",
+        },
+        "staticfiles": {
+            # WhiteNoise continua servindo arquivos estáticos
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
 
 # ----------------------------------------------------
 # CONFIGURAÇÕES JAZZMIN (Admin Moderno)
