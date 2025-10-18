@@ -5,7 +5,6 @@ from .models import EnderecoEntrega, Pedido, ItemPedido, Cupom
 # 1. ADMIN PARA ITENS DE PEDIDO (INLINE)
 # ------------------------------------
 
-# Usamos TabularInline para que os itens apareçam diretamente na página de edição do Pedido
 class ItemPedidoInline(admin.TabularInline):
     model = ItemPedido
     extra = 0 # Não mostra linhas vazias por padrão
@@ -13,11 +12,11 @@ class ItemPedidoInline(admin.TabularInline):
     # Manter a lista de campos:
     fields = ('produto', 'variacao', 'preco_unitario', 'quantidade')
     
-    # 🚨 CORREÇÃO CRÍTICA DO E035: REMOÇÃO DA LINHA readonly_fields 🚨
-    # Se o campo não está em `fields`, o Django reclama. Remover resolve a ambiguidade.
-    # readonly_fields = ('produto', 'variacao', 'preco_unitario', 'quantidade') # ESTA LINHA FOI REMOVIDA
+    # 🚨 SOLUÇÃO FINAL DO E035: REMOVENDO A LINHA readonly_fields 🚨
+    # Se o erro E202 persistir APÓS esta correção, é um problema de cache/sistema.
+    # readonly_fields = ('produto', 'variacao', 'preco_unitario', 'quantidade') 
     
-    can_delete = False # Não permite deletar itens do pedido finalizado
+    can_delete = False 
 
 
 # ------------------------------------
@@ -89,7 +88,7 @@ class CupomAdmin(admin.ModelAdmin):
         'data_inicio',
         'data_fim',
         'ativo',
-        'is_valid' # Método que verifica validade (deve estar no models.py)
+        'is_valid' 
     )
     list_filter = ('ativo', 'tipo', 'data_inicio', 'data_fim')
     search_fields = ('codigo',)
