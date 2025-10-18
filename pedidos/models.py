@@ -59,9 +59,8 @@ class Pedido(models.Model):
 
 
 class ItemPedido(models.Model):
-    # 🚨 CORREÇÃO E202: Usando a string completa para resolver o SystemCheckError 🚨
     pedido = models.ForeignKey(
-        'pedidos.Pedido', # Corrigido para incluir o nome do app.
+        'pedidos.Pedido', # Use a string completa
         on_delete=models.CASCADE, 
         related_name='itens'
     )
