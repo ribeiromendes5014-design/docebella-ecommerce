@@ -97,12 +97,15 @@ TEMPLATES = [
 WSGI_APPLICATION = 'docebella_project.wsgi.application'
 
 
-# Database
+POSTGRES_URL = 'postgresql://docebella_db_user:HR8JcP5n7mkTSJDKw9kNwRkpYEYJwVMe@dpg-d3ptfver433s73amql70-a/docebella_db'
+
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.parse(
+        # Tenta ler a variável de ambiente (padrão do Render), senão usa a URL fixa
+        os.environ.get('DATABASE_URL', POSTGRES_URL),
+        conn_max_age=600  # Mantém a conexão ativa
+    )
 }
 
 
