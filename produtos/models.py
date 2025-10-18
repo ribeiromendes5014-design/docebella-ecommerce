@@ -1,4 +1,4 @@
-# produtos/models.py
+# produtos/models.py (CORRIGIDO)
 from django.db import models
 from django.utils.text import slugify # Importar para slugs (útil no admin)
 
@@ -41,7 +41,9 @@ class Produto(models.Model):
         return self.nome
         
     def get_display_price(self):
-        return f"R$ {self.preco:.2f}".replace('.', ',')
+        # Proteção contra preco ser None, embora seja improvável no seu setup
+        preco = self.preco if self.preco is not None else 0.00
+        return f"R$ {preco:.2f}".replace('.', ',')
         
     def get_estoque_total(self):
         # Se usar variações, soma o estoque de todas as variações
@@ -66,6 +68,7 @@ class Variacao(models.Model):
         ('Outro', 'Outro'),
     )
     
+    # OBS: on_delete=models.CASCADE significa que ao deletar o Produto, a Variação será deletada.
     produto = models.ForeignKey(Produto, on_delete=models.CASCADE, related_name='variacoes')
     tipo = models.CharField(max_length=50, choices=TIPO_VARIACOES, default='Tamanho')
     valor = models.CharField(max_length=100)
@@ -79,10 +82,14 @@ class Variacao(models.Model):
         unique_together = (('produto', 'tipo', 'valor')) 
 
     def __str__(self):
-        return f'{self.produto.nome} - {self.tipo}: {self.valor}'
+        # CORREÇÃO CRÍTICA: Protege contra self.produto ser None, usando .id se o nome falhar.
+        nome_produto = self.produto.nome if self.produto else f"ID {self.id} (Produto Deletado)"
+        return f'{nome_produto} - {self.tipo}: {self.valor}'
         
     def get_preco_final(self):
-        return self.produto.preco + self.preco_adicional
+        # Se o produto for None, o preço base será 0 para evitar um erro
+        preco_base = self.produto.preco if self.produto else 0.00
+        return preco_base + self.preco_adicional
 
     def get_display_preco_final(self):
         return f"R$ {self.get_preco_final():.2f}".replace('.', ',')
