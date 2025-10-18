@@ -7,13 +7,11 @@ from .models import EnderecoEntrega, Pedido, ItemPedido, Cupom
 
 class ItemPedidoInline(admin.TabularInline):
     model = ItemPedido
-    extra = 0 # Não mostra linhas vazias por padrão
-    
-    # Manter a lista de campos:
+    extra = 0
     fields = ('produto', 'variacao', 'preco_unitario', 'quantidade')
     
-    # 🚨 SOLUÇÃO FINAL DO E035: REMOVENDO A LINHA readonly_fields 🚨
-    # Se o erro E202 persistir APÓS esta correção, é um problema de cache/sistema.
+    # 🚨 SOLUÇÃO FINAL DO E035: GARANTA QUE ESTA LINHA NÃO EXISTA NO SEU ARQUIVO SALVO!
+    # A linha que causa o erro E035:
     # readonly_fields = ('produto', 'variacao', 'preco_unitario', 'quantidade') 
     
     can_delete = False 
