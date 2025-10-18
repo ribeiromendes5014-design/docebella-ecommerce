@@ -59,9 +59,9 @@ class Pedido(models.Model):
 
 
 class ItemPedido(models.Model):
-    # 🚨 CORREÇÃO CRÍTICA DO ERRO E202: Campos estavam faltando 🚨
+    # Use a string do aplicativo e da classe
     pedido = models.ForeignKey(
-        'pedidos.Pedido', 
+        'pedidos.Pedido', # Corrija para incluir o nome do app, se ainda não o fez.
         on_delete=models.CASCADE, 
         related_name='itens'
     )
