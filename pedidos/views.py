@@ -3,12 +3,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from carrinho.models import ItemCarrinho 
 from pedidos.frete_service import calcular_frete_simulado, calcular_peso_carrinho
-from .models import EnderecoEntrega, Pedido, ItemPedido  # Pedido deve ser importado
+from .models import EnderecoEntrega, Pedido, ItemPedido 
 from django.db import transaction
 from django import forms
 from carrinho.views import _get_session_key 
 from produtos.models import Produto 
 from django.contrib import messages
+from produtos.models import Variacao # Importar Variacao para checagem de estoque
 
 
 # Formulário de Endereço Básico (para o MVP)
@@ -26,18 +27,19 @@ class EnderecoForm(forms.Form):
 
 
 # View Principal do Checkout
-@login_required # O usuário deve estar logado
+@login_required 
 def checkout(request):
     session_key = _get_session_key(request)
     itens_carrinho = ItemCarrinho.objects.filter(session_key=session_key)
 
     if not itens_carrinho.exists():
         messages.warning(request, "Seu carrinho está vazio.")
-        return redirect('ver_carrinho')
+        # Corrigido para a URL correta do carrinho (assumindo 'carrinho:ver_carrinho')
+        return redirect('ver_carrinho') 
         
     subtotal_carrinho = sum(item.get_subtotal() for item in itens_carrinho)
     peso_total = calcular_peso_carrinho(itens_carrinho)
-    frete_opcoes = {} # Inicializa vazio
+    frete_opcoes = {} 
 
     if request.method == 'POST':
         form = EnderecoForm(request.POST)
@@ -51,6 +53,8 @@ def checkout(request):
         if form.is_valid():
             metodo_frete_selecionado = request.POST.get('metodo_frete')
             
+            # Recalcular frete aqui novamente se o POST não for a verificação inicial
+            # Para o contexto, manter a lógica original:
             if not metodo_frete_selecionado or metodo_frete_selecionado not in frete_opcoes:
                 messages.error(request, "Selecione um método de envio válido.")
             else:
@@ -72,6 +76,20 @@ def checkout(request):
 
                         # C. Mover Itens e Abater Estoque
                         for item_carrinho in itens_carrinho:
+                            
+                            # 🚨 CORREÇÃO CRÍTICA 1: Checa se o produto ou variação existe 🚨
+                            if not item_carrinho.produto:
+                                # Lança exceção para reverter a transação
+                                raise Exception(f"Item no carrinho inválido: Produto deletado.")
+                                
+                            target = item_carrinho.variacao or item_carrinho.produto
+                            
+                            # 🚨 CORREÇÃO CRÍTICA 2: Checa se há estoque suficiente 🚨
+                            if target.estoque < item_carrinho.quantidade:
+                                # Lança exceção com mensagem específica
+                                raise Exception(f"Estoque insuficiente para {item_carrinho.produto.nome}.")
+                                
+                            # Cria o item do pedido
                             ItemPedido.objects.create(
                                 pedido=pedido,
                                 produto=item_carrinho.produto,
@@ -79,8 +97,8 @@ def checkout(request):
                                 preco_unitario=item_carrinho.get_preco_unitario(),
                                 quantidade=item_carrinho.quantidade
                             )
+                            
                             # Abater Estoque
-                            target = item_carrinho.variacao or item_carrinho.produto
                             target.estoque -= item_carrinho.quantidade
                             target.save()
                         
@@ -88,10 +106,13 @@ def checkout(request):
                         itens_carrinho.delete()
                         
                         messages.success(request, f"Pedido #{pedido.id} criado. Prossiga para o pagamento.")
-                        return redirect('pedidos:detalhe_pedido', pedido_id=pedido.id) # CORRIGIDO PARA USAR O NAMESPACE
+                        return redirect('pedidos:detalhe_pedido', pedido_id=pedido.id) 
 
                 except Exception as e:
-                    messages.error(request, f"Ocorreu um erro ao finalizar o pedido. Erro: {e}")
+                    # Captura o erro (incluindo o novo erro de estoque) e exibe mensagem amigável
+                    messages.error(request, f"Ocorreu um erro ao finalizar o pedido. Motivo: {e}")
+                    # Redireciona para o carrinho, permitindo que o usuário ajuste
+                    return redirect('ver_carrinho') 
         
     else:
         # GET Request: Inicializa o form com dados do usuário logado
@@ -112,13 +133,13 @@ def checkout(request):
 def detalhe_pedido(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id, cliente=request.user)
     
-    # Se fosse uma integração real, aqui teria a lógica de webhook de pagamento
     if request.method == 'POST':
         # Simula a aprovação do pagamento
         pedido.status = 'Pagamento Aprovado'
         pedido.save()
         messages.success(request, f"Pagamento do Pedido #{pedido_id} APROVADO! Seu pedido será processado.")
-        return redirect('painel_cliente') # Redireciona para o painel
+        # ATENÇÃO: Verifique se 'painel_cliente' tem um namespace, ex: 'usuarios:painel_cliente'
+        return redirect('painel_cliente') 
     
     context = {
         'pedido': pedido,
