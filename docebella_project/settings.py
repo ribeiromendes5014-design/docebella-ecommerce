@@ -182,8 +182,6 @@ ALLOWED_HOSTS = [
 # Configuração para arquivos estáticos em produção
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# 2. Diretório onde o Render/Django irá COLETAR todos os arquivos estáticos
-STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # ----------------------------------------------------
 # CONFIGURAÇÕES JAZZMIN (Admin Moderno)
