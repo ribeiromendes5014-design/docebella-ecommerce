@@ -5,14 +5,12 @@ from .models import EnderecoEntrega, Pedido, ItemPedido, Cupom
 # 1. ADMIN PARA ITENS DE PEDIDO (INLINE)
 # ------------------------------------
 
+# SOLUÇÃO FINAL PARA O ERRO E035: NENHUMA LINHA DE readonly_fields
 class ItemPedidoInline(admin.TabularInline):
     model = ItemPedido
-    extra = 0
+    extra = 0 # Não mostra linhas vazias por padrão
     fields = ('produto', 'variacao', 'preco_unitario', 'quantidade')
-    
-    # 🚨 GARANTA QUE O ESPAÇO ESTEJA VAZIO AQUI! 🚨
-    
-    can_delete = False
+    can_delete = False # Não permite deletar itens do pedido finalizado
 
 
 # ------------------------------------
@@ -33,7 +31,7 @@ class PedidoAdmin(admin.ModelAdmin):
     )
     list_filter = ('status', 'data_criacao')
     
-    # CORREÇÃO CRÍTICA MANTIDA: Usa 'cliente__email' em vez de 'cliente__username'
+    # 🚨 CORREÇÃO FINAL: Altera 'cliente__username' (que não existe) para 'cliente__email' 🚨
     search_fields = ('cliente__email', 'endereco__cep', 'id')
     
     # Detalhes que aparecem na página de edição
