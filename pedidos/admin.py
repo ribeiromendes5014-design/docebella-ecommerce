@@ -9,7 +9,6 @@ class ItemPedidoInline(admin.TabularInline):
     model = ItemPedido
     extra = 0
     fields = ('produto', 'variacao', 'preco_unitario', 'quantidade')
-    # APAGUE TOTALMENTE A LINHA readonly_fields
     can_delete = False
 
 
