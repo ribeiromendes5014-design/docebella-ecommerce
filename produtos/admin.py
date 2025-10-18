@@ -17,23 +17,22 @@ class CategoriaAdmin(admin.ModelAdmin):
 
 @admin.register(Produto)
 class ProdutoAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'categoria', 'preco', 'estoque', 'disponivel', 'usa_variacoes') # Adicionado usa_variacoes
+    list_display = ('nome', 'categoria', 'preco', 'estoque', 'disponivel', 'usa_variacoes') 
     list_filter = ('disponivel', 'categoria', 'usa_variacoes')
     search_fields = ('nome', 'descricao')
     prepopulated_fields = {'slug': ('nome',)}
     list_editable = ('preco', 'estoque', 'disponivel')
     
-    # 🚨 CORREÇÃO CRÍTICA: Adicionar o inline de Variação 🚨
-    inlines = [VariacaoInline] 
+    # 🚨 ESTA PROPRIEDADE DEVE SER COMENTADA OU REMOVIDA 🚨
+    # inlines = [VariacaoInline]  
     
-    # Campos que só podem ser alterados na página de edição
+    # Adicionando o fieldsets de volta (que é onde o inlines estava)
     fieldsets = (
         (None, {
             'fields': ('categoria', 'nome', 'slug', 'descricao', 'preco', 'imagem'),
         }),
         ('Controle de Estoque/Variação', {
             'fields': ('usa_variacoes', 'estoque', 'disponivel'),
-            # Se usa_variacoes for True, o estoque principal deve ser ignorado.
             'description': 'O campo Estoque só é relevante se "usa variações" estiver DESMARCADO.',
         }),
     )
