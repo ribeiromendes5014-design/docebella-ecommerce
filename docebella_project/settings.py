@@ -191,6 +191,13 @@ ALLOWED_HOSTS = [
     '.onrender.com'                      # <-- O curinga correto para o Render
 ] 
 
+# >>> CORREÇÃO CRÍTICA DO ERRO 403 (CSRF) <<<
+# Adicione a URL base do seu servidor HTTPS para que o Django confie na requisição POST
+CSRF_TRUSTED_ORIGINS = [
+    'https://catalagoloja-zn2u.onrender.com', 
+    'https://*.onrender.com'
+]
+
 # 🚨 LÓGICA DE MÍDIA (S3/Cloud) PARA PRODUÇÃO 🚨
 if not DEBUG:
     # Configurações para o AWS S3 (ou similar via django-storages)
