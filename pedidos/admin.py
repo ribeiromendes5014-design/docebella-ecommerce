@@ -5,6 +5,12 @@ from .models import EnderecoEntrega, Pedido, ItemPedido, Cupom
 # 1. ADMIN PARA ITENS DE PEDIDO (INLINE)
 # ------------------------------------
 
+from .models import OpcaoFrete
+@admin.register(OpcaoFrete)
+class OpcaoFreteAdmin(admin.ModelAdmin):
+    list_display = ('nome', 'custo', 'ativo')
+
+
 class ItemPedidoInline(admin.TabularInline):
     model = ItemPedido
     extra = 0
