@@ -116,7 +116,7 @@ def checkout(request):
         
     else:
         # GET Request: Inicializa o form com dados do usuário logado
-        form = EnderecoForm(initial={'nome': request.user.first_name, 'email': request.user.email})
+        form = EnderecoForm(initial={'nome': request.user.nome_completo, 'email': request.user.email})
 
     context = {
         'form': form,
