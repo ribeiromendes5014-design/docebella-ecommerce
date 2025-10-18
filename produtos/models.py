@@ -14,7 +14,7 @@ class Categoria(models.Model):
 
 class Produto(models.Model):
     # Relação com Categoria
-    categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True)
+    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
     
     # Informações básicas
     nome = models.CharField(max_length=200)
