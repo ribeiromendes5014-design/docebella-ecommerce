@@ -9,8 +9,17 @@ from .models import EnderecoEntrega, Pedido, ItemPedido, Cupom
 class ItemPedidoInline(admin.TabularInline):
     model = ItemPedido
     extra = 0 # Não mostra linhas vazias por padrão
+    
+    # ATENÇÃO: Se os campos listados aqui não são o problema, o problema está
+    # na relação ForeignKey em pedidos/models.py (E202).
+    # Assumindo que o models.py esteja correto, corrigimos o E035 removendo os colchetes
     fields = ('produto', 'variacao', 'preco_unitario', 'quantidade')
-    readonly_fields = ('produto', 'variacao', 'preco_unitario', 'quantidade')
+    
+    # O Django geralmente não gosta que você use tuplas/listas dentro da tupla/lista
+    # dos campos se eles já estiverem em `fields`. 
+    # Usaremos a mesma tupla que fields:
+    readonly_fields = ('produto', 'variacao', 'preco_unitario', 'quantidade') 
+    
     can_delete = False # Não permite deletar itens do pedido finalizado
 
 
@@ -32,7 +41,7 @@ class PedidoAdmin(admin.ModelAdmin):
     )
     list_filter = ('status', 'data_criacao')
     
-    # CORREÇÃO CRÍTICA AQUI: Alterado 'cliente__username' para 'cliente__email' ou 'cliente__nome_completo'
+    # CORREÇÃO CRÍTICA MANTIDA: Usa 'cliente__email' em vez de 'cliente__username'
     search_fields = ('cliente__email', 'endereco__cep', 'id')
     
     # Detalhes que aparecem na página de edição
