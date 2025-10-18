@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* Estilos específicos para a página de detalhe */
+    .produto-detalhe-container {
+        display: flex;
+        gap: 40px;
+        flex-wrap: wrap; 
+        margin-top: 20px;
+        background-color: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: var(--sombra-card);
+    }
+    
+    /* Coluna Esquerda: Imagem/Galeria */
+    .produto-galeria {
+        flex: 1;
+        min-width: 300px;
+    }
+    .produto-galeria img {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+    }
+
+    /* Coluna Direita: Informações e Ações */
+    .produto-info {
+        flex: 1;
+        min-width: 400px;
+    }
+    
+    .preco-principal {
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--cor-principal);
+        margin: 10px 0 20px;
+    }
+    
+    /* Seletores de Variação */
+    .variacao-selector {
+        margin-bottom: 25px;
+        border-top: 1px solid #eee;
+        padding-top: 15px;
+    }
+    .variacao-selector h4 {
+        font-size: 1rem;
+        margin-bottom: 10px;
+        font-weight: 500;
+        color: var(--cor-secundaria);
+    }
+    .variacao-selector button {
+        background-color: #f1f1f1;
+        border: 1px solid #ddd;
+        padding: 8px 12px;
+        margin-right: 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .variacao-selector button:hover {
+        background-color: #e0e0e0;
+    }
+    .variacao-selector button.selecionado {
+        background-color: var(--cor-principal);
+        color: white;
+        border-color: var(--cor-principal);
+    }
+    
+    /* Quantidade e Botão Comprar */
+    .acoes-compra {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        margin-top: 20px;
+    }
+
+    .acoes-compra input[type="number"] {
+        padding: 10px;
+        width: 80px;
+        text-align: center;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    
+    .btn-comprar {
+        font-size: 1.1rem;
+        padding: 12px 30px;
+        background-color: #28a745; /* Verde para Comprar */
+    }
+    .btn-comprar:hover {
+        background-color: #1e7e34;
+    }
+    
+    .descricao-completa {
+        margin-top: 30px;
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<p style="margin-bottom: 15px; font-size: 0.9rem;">
+    <a href="{% url 'home' %}">Início</a> > 
+    <a href="#">{{ produto.categoria.nome }}</a> > 
+    {{ produto.nome }}
+</p>
+
+
+<div class="produto-detalhe-container">
+    
+    <div class="produto-galeria">
+        {% if produto.imagem %}
+            <img src="{{ produto.imagem.url }}" alt="Imagem principal do produto {{ produto.nome }}">
+        {% else %}
+            <img src="{% static 'img/placeholder.png' %}" alt="Sem Imagem">
+        {% endif %}
+    </div>
+    
+    <div class="produto-info">
+        
+        <h1 style="font-size: 1.8rem; color: var(--cor-secundaria);">{{ produto.nome }}</h1>
+        
+        <p class="preco-principal">{{ produto.get_display_price }}</p>
+        
+        <p style="font-size: 1rem; color: #6c757d;">
+            ou 3x de R$ {{ produto.preco|floatformat:2 }} (Valor a ser corrigido) sem juros
+        </p>
+
+        <p style="font-size: 1rem; font-weight: bold; margin-top: 15px; color: {% if produto.get_estoque_total == 0 %}red{% else %}green{% endif %};">
+            {{ produto.get_status_estoque }}
+        </p>
+
+        <form id="form-adicionar-carrinho" action="{% url 'carrinho:adicionar_ao_carrinho' produto.slug %}" method="POST">
+            {% csrf_token %}
+            
+            {% if produto.usa_variacoes %}
+                {% for tipo, variacoes in variacoes_por_tipo.items %}
+                    <div class="variacao-selector" data-tipo="{{ tipo }}">
+                        <h4>Selecione o {{ tipo }}:</h4>
+                        {% for variacao in variacoes %}
+                            <button type="button" 
+                                data-id="{{ variacao.id }}" 
+                                data-estoque="{{ variacao.estoque }}"
+                                class="btn-variacao" 
+                                {% if variacao.estoque == 0 %}disabled{% endif %}>
+                                {{ variacao.valor }}
+                            </button>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+                
+                <input type="hidden" name="variacao_id" id="variacao-input" value="">
+            {% endif %}
+
+            <div class="acoes-compra">
+                <input type="number" name="quantidade" id="quantidade" value="1" min="1" max="99">
+                
+                {% if produto.get_estoque_total > 0 %}
+                    <button type="submit" class="btn-principal btn-comprar">
+                        Comprar
+                    </button>
+                {% else %}
+                    <button class="btn-principal btn-comprar" disabled style="opacity: 0.5;">
+                        Esgotado
+                    </button>
+                {% endif %}
+            </div>
+            
+        </form>
+
+        <div class="descricao-completa">
+            <h3>Descrição do Produto</h3>
+            <p>{{ produto.descricao|linebreaksbr }}</p>
+        </div>
+        
+    </div>
+    
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('form-adicionar-carrinho');
+        const variacaoInput = document.getElementById('variacao-input');
+        const botoesVariacao = document.querySelectorAll('.btn-variacao');
+        const produtoUsaVariacoes = {{ produto.usa_variacoes|yesno:"true,false" }};
+        const estoqueTotal = {{ produto.get_estoque_total }};
+
+        if (produtoUsaVariacoes) {
+            botoesVariacao.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove 'selecionado' de todos os botões do mesmo TIPO
+                    const tipo = this.closest('.variacao-selector').dataset.tipo;
+                    document.querySelectorAll(`.variacao-selector[data-tipo="${tipo}"] .btn-variacao`).forEach(btn => {
+                        btn.classList.remove('selecionado');
+                    });
+
+                    // Adiciona 'selecionado' ao botão clicado
+                    this.classList.add('selecionado');
+                    
+                    // Atualiza o campo oculto
+                    const variacaoId = this.dataset.id;
+                    variacaoInput.value = variacaoId;
+                });
+            });
+
+            // Validação simples: exige variação selecionada se o produto usa variação
+            form.addEventListener('submit', function(e) {
+                if (produtoUsaVariacoes && !variacaoInput.value) {
+                    e.preventDefault();
+                    alert("Por favor, selecione uma opção antes de adicionar ao carrinho.");
+                }
+            });
+        }
+        
+        // Se o produto não usa variação e o estoque é zero, desabilita o botão Comprar
+        if (!produtoUsaVariacoes && estoqueTotal <= 0) {
+            document.querySelector('.btn-comprar').disabled = true;
+        }
+
+    });
+</script>
+{% endblock %}
+
+
+{% endblock %}

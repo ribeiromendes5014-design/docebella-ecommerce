@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="form-wrapper">
+    <div class="breadcrumb">Início . Minha Conta . Detalhes</div>
+    <h2 class="form-title-custom">{{ titulo }}</h2>
+    
+    <p>Aqui você pode ver ou editar suas informações pessoais.</p>
+    
+    <p>Usuário: {{ request.user.username }}</p>
+    <p>E-mail: {{ request.user.email }}</p>
+
+    <p><a href="{% url 'usuarios:painel_cliente' %}">Voltar para o Painel</a></p>
+</div>
+{% endblock %}
