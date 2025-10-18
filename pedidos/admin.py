@@ -31,7 +31,9 @@ class PedidoAdmin(admin.ModelAdmin):
         'codigo_rastreio',
     )
     list_filter = ('status', 'data_criacao')
-    search_fields = ('cliente__username', 'endereco__cep', 'id')
+    
+    # CORREÇÃO CRÍTICA AQUI: Alterado 'cliente__username' para 'cliente__email' ou 'cliente__nome_completo'
+    search_fields = ('cliente__email', 'endereco__cep', 'id')
     
     # Detalhes que aparecem na página de edição
     fieldsets = (
