@@ -69,6 +69,7 @@ STORAGES = {
     },
 }
 
+ROOT_URLCONF = 'docebella_project.urls'
 
 TEMPLATES = [
     {
