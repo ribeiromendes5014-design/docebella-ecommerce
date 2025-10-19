@@ -14,25 +14,23 @@ from django.contrib import messages
 class CheckoutFormSimplificado(forms.Form):
     nome = forms.CharField(max_length=255, label='Nome Completo')
     email = forms.EmailField(label='E-mail')
-    telefone = forms.CharField(max_length=20, label='Telefone (WhatsApp)', 
-                                help_text="Para entrarmos em contato sobre seu pedido.")
+    
+    # 🛑 MUDANÇA AQUI: Defina o widget explicitamente como habilitado
+    telefone = forms.CharField(
+        max_length=20, 
+        label='Telefone (WhatsApp)', 
+        # FORÇA O CAMPO A ESTAR ATIVO
+        widget=forms.TextInput(attrs={'disabled': False, 'readonly': False}), 
+        help_text="Para entrarmos em contato sobre seu pedido."
+    )
 
     # Sobrescreve o __init__ para preencher os dados do usuário logado
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None) # Pega o usuário que passamos da view
+        user = kwargs.pop('user', None)
         super(CheckoutFormSimplificado, self).__init__(*args, **kwargs)
         
-        # 🛑 NOVA LINHA DE CORREÇÃO: Força o campo a ser editável
-        self.fields['telefone'].disabled = False 
-        
-        if user and user.is_authenticated:
-            # Tenta preencher os campos com dados do usuário
-            nome_completo = user.get_full_name()
-            if not nome_completo and hasattr(user, 'nome_completo'):
-                 nome_completo = user.nome_completo
-            
-            self.fields['nome'].initial = nome_completo or user.username
-            self.fields['email'].initial = user.email
+        # MANTENHA A LINHA, mas ela deve ser redundante agora:
+        self.fields['telefone'].disabled = False
             
             # Se você tiver um campo 'telefone' no seu User, preencha aqui
             # 💡 DESCOMENTE e ajuste esta parte se quiser o preenchimento automático
