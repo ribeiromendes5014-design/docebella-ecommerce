@@ -70,7 +70,7 @@ def checkout(request):
                     # 1. Crie o Endereço Falso (Dummy)
                     endereco_retirada = EnderecoEntrega.objects.create(
                         nome=cleaned_data['nome'],
-                        sobrenome="(Retirada na Loja)",
+                        sobrenome="",
                         email=cleaned_data['email'],
                         cep="00000-000",
                         rua="Retirada na Loja",
