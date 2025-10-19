@@ -15,12 +15,11 @@ class CheckoutFormSimplificado(forms.Form):
     nome = forms.CharField(max_length=255, label='Nome Completo')
     email = forms.EmailField(label='E-mail')
     
-    # 🌟 CORREÇÃO: Remova o widget attrs, pois ele estava forçando o bloqueio!
+    # 🌟 CORREÇÃO: A linha de widget foi removida na análise anterior para evitar o bloqueio.
+    # O código agora está limpo de caracteres U+00A0.
     telefone = forms.CharField(
         max_length=20, 
         label='Telefone (WhatsApp)', 
-        # Remova esta linha inteira que causou o bloqueio:
-        # widget=forms.TextInput(attrs={'disabled': False, 'readonly': False}), 
         help_text="Para entrarmos em contato sobre seu pedido."
     )
 
@@ -122,13 +121,13 @@ def checkout(request):
         form = CheckoutFormSimplificado(user=request.user)
 
     context = {
-        'form': form,
-        'itens_carrinho': itens_carrinho,
-        'subtotal_carrinho': subtotal_carrinho,
-        'frete_opcoes': {}, # Deixamos vazio, pois não há opções
-        'titulo': "Checkout - Finalizar Pedido"
-    }
-    return render(request, 'pedidos/checkout_temp.html', context)
+        'form': form,
+        'itens_carrinho': itens_carrinho,
+        'subtotal_carrinho': subtotal_carrinho,
+        'frete_opcoes': {}, # Deixamos vazio, pois não há opções
+        'titulo': "Checkout - Finalizar Pedido"
+    }
+    return render(request, 'pedidos/checkout_temp.html', context)
 
 
 # -------------------------------------------------------------
