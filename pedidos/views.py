@@ -15,12 +15,12 @@ class CheckoutFormSimplificado(forms.Form):
     nome = forms.CharField(max_length=255, label='Nome Completo')
     email = forms.EmailField(label='E-mail')
     
-    # 🛑 MUDANÇA AQUI: Defina o widget explicitamente como habilitado
+    # 🌟 CORREÇÃO: Remova o widget attrs, pois ele estava forçando o bloqueio!
     telefone = forms.CharField(
         max_length=20, 
         label='Telefone (WhatsApp)', 
-        # FORÇA O CAMPO A ESTAR ATIVO
-        widget=forms.TextInput(attrs={'disabled': False, 'readonly': False}), 
+        # Remova esta linha inteira que causou o bloqueio:
+        # widget=forms.TextInput(attrs={'disabled': False, 'readonly': False}), 
         help_text="Para entrarmos em contato sobre seu pedido."
     )
 
@@ -29,13 +29,8 @@ class CheckoutFormSimplificado(forms.Form):
         user = kwargs.pop('user', None)
         super(CheckoutFormSimplificado, self).__init__(*args, **kwargs)
         
-        # MANTENHA A LINHA, mas ela deve ser redundante agora:
+        # Mantenha esta linha como um bom hábito, mas o erro principal foi o atributo 'attrs' acima.
         self.fields['telefone'].disabled = False
-            
-            # Se você tiver um campo 'telefone' no seu User, preencha aqui
-            # 💡 DESCOMENTE e ajuste esta parte se quiser o preenchimento automático
-            # if hasattr(user, 'telefone'):
-            #     self.fields['telefone'].initial = user.telefone
 
 
 # View Principal do Checkout (MODIFICADA)
