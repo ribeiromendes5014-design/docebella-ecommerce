@@ -12,11 +12,13 @@ from django.contrib import messages
 
 # NOVO FORMULÁRIO SIMPLIFICADO PARA RETIRADA
 class CheckoutFormSimplificado(forms.Form):
-    nome = forms.CharField(max_length=255, label='Nome Completo')
-    email = forms.EmailField(label='E-mail')
     
-    # 🌟 CORREÇÃO: A linha de widget foi removida na análise anterior para evitar o bloqueio.
-    # O código agora está limpo de caracteres U+00A0.
+    # CAMPO 1: NOME (Obrigatório)
+    nome = forms.CharField(max_length=255, label='Nome Completo')
+    
+    # O CAMPO E-MAIL FOI REMOVIDO CONFORME SUA SOLICITAÇÃO.
+    
+    # CAMPO 2: TELEFONE (Para contato)
     telefone = forms.CharField(
         max_length=20, 
         label='Telefone (WhatsApp)', 
@@ -28,8 +30,9 @@ class CheckoutFormSimplificado(forms.Form):
         user = kwargs.pop('user', None)
         super(CheckoutFormSimplificado, self).__init__(*args, **kwargs)
         
-        # Mantenha esta linha como um bom hábito, mas o erro principal foi o atributo 'attrs' acima.
-        self.fields['telefone'].disabled = False
+        # Pré-preenche o campo 'nome' com o nome do usuário logado
+        if user and user.is_authenticated:
+            self.fields['nome'].initial = user.nome_completo
 
 
 # View Principal do Checkout (MODIFICADA)
