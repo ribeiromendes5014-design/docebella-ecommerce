@@ -5,7 +5,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone # Importar timezone para as datas de validade
 from produtos.models import Produto, Variacao
 
-from produtos.models import Produto, Variacao
+from produtos.models import Produto, Variacao 
 
 
 class OpcaoFrete(models.Model):
