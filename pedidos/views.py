@@ -22,6 +22,9 @@ class CheckoutFormSimplificado(forms.Form):
         user = kwargs.pop('user', None) # Pega o usuário que passamos da view
         super(CheckoutFormSimplificado, self).__init__(*args, **kwargs)
         
+        # 🛑 NOVA LINHA DE CORREÇÃO: Força o campo a ser editável
+        self.fields['telefone'].disabled = False 
+        
         if user and user.is_authenticated:
             # Tenta preencher os campos com dados do usuário
             nome_completo = user.get_full_name()
@@ -30,9 +33,11 @@ class CheckoutFormSimplificado(forms.Form):
             
             self.fields['nome'].initial = nome_completo or user.username
             self.fields['email'].initial = user.email
-            # Se você tiver um campo 'telefone' no seu User, pode preencher aqui
-            # if hasattr(user.profile, 'telefone'):
-            #    self.fields['telefone'].initial = user.profile.telefone
+            
+            # Se você tiver um campo 'telefone' no seu User, preencha aqui
+            # 💡 DESCOMENTE e ajuste esta parte se quiser o preenchimento automático
+            # if hasattr(user, 'telefone'):
+            #     self.fields['telefone'].initial = user.telefone
 
 
 # View Principal do Checkout (MODIFICADA)
