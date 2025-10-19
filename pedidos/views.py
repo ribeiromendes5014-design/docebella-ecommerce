@@ -1,15 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from carrinho.models import ItemCarrinho
-# Mantenha o frete_service, mas garantimos que ele retorne a Retirada na Loja
 from pedidos.frete_service import calcular_frete_simulado, calcular_peso_carrinho
 from .models import EnderecoEntrega, Pedido, ItemPedido
 from django.db import transaction
 from django import forms
 from carrinho.views import _get_session_key
-from produtos.models import Produto
+from produtos.models import Produto, Variacao 
 from django.contrib import messages
-from produtos.models import Variacao # Importar Variacao para checagem de estoque
 
 
 # Formulário de Endereço Básico (para o MVP)
@@ -38,78 +36,60 @@ def checkout(request):
         
     subtotal_carrinho = sum(item.get_subtotal() for item in itens_carrinho)
     peso_total = calcular_peso_carrinho(itens_carrinho)
-    frete_opcoes = {}  # Inicia vazio no GET
+    frete_opcoes = {} 
 
     form = EnderecoForm(request.POST or None)
 
     if request.method == 'POST':
         
-        # Ação padrão é 'finalizar_pedido' se o botão não tiver 'name="acao"'
         acao = request.POST.get('acao', 'finalizar_pedido')
 
         if form.is_valid():
             cep_destino = form.cleaned_data.get('cep')
-            # Sempre recalculamos o frete se o formulário for válido, 
-            # independentemente da ação, para ter as opções no contexto.
             frete_opcoes = calcular_frete_simulado(cep_destino, peso_total, subtotal_carrinho)
 
-        # 1. TRATAMENTO PARA CÁLCULO DE FRETE (Botão 1)
         if acao == 'calcular_frete':
             if form.is_valid():
                 messages.success(request, "Frete calculado! Selecione a opção e finalize o pedido.")
             else:
                 messages.error(request, "Corrija os erros do endereço antes de calcular o frete.")
-            # O código continua para o return render final.
 
-        # 2. TRATAMENTO PARA FINALIZAR O PEDIDO (Botão 2)
         elif acao == 'finalizar_pedido':
             
             if form.is_valid():
                 metodo_frete_selecionado = request.POST.get('metodo_frete')
                 
-                # Tenta autoselecionar se só houver 1 opção
                 if not metodo_frete_selecionado and len(frete_opcoes) == 1:
                     metodo_frete_selecionado = list(frete_opcoes.keys())[0]
 
-                # Validação de Frete
                 if not metodo_frete_selecionado or metodo_frete_selecionado not in frete_opcoes:
-                    # Adiciona a mensagem e renderiza novamente com as opções calculadas
                     messages.error(request, "Selecione um método de envio válido para finalizar.")
                 else:
-                    # TUDO OK, CRIA O PEDIDO!
                     valor_frete = frete_opcoes[metodo_frete_selecionado]['valor']
                     valor_total_final = subtotal_carrinho + valor_frete
 
                     try:
                         with transaction.atomic():
-                            # Cria o endereço
                             endereco = EnderecoEntrega.objects.create(**form.cleaned_data)
                             
-                            # Cria o pedido
                             pedido = Pedido.objects.create(
                                 cliente=request.user,
                                 endereco=endereco,
                                 valor_total=valor_total_final,
                                 valor_frete=valor_frete,
-                                # ... (outros campos do pedido)
+                                metodo_envio=metodo_frete_selecionado # Adicionado: Salvar o método de envio
                             )
                             
-                            # Mover itens e abater estoque
                             for item_carrinho in itens_carrinho:
                                 
-                                # 🚨 CORREÇÃO DE SEGURANÇA AQUI 🚨
-                                # Garante que 'target' seja um objeto de modelo válido
                                 target = item_carrinho.variacao or item_carrinho.produto
                                 
-                                # Verifica se o target realmente existe antes de acessar o estoque
                                 if not target:
-                                    raise Exception(f"Item do carrinho inválido: Produto ou Variação não encontrados para o item de ID {item_carrinho.id}.")
+                                    raise Exception(f"Item do carrinho inválido: Produto ou Variação não encontrados.")
                                     
-                                # Verificação de Estoque
                                 if target.estoque < item_carrinho.quantidade:
                                     raise Exception(f"Estoque insuficiente para {item_carrinho.produto.nome}.")
                                     
-                                # Cria o item do pedido
                                 ItemPedido.objects.create(
                                     pedido=pedido,
                                     produto=item_carrinho.produto,
@@ -117,52 +97,77 @@ def checkout(request):
                                     preco_unitario=item_carrinho.get_preco_unitario(),
                                     quantidade=item_carrinho.quantidade
                                 )
-                                # Abate Estoque
                                 target.estoque -= item_carrinho.quantidade
                                 target.save()
                                 
                             itens_carrinho.delete()
                             messages.success(request, f"Pedido #{pedido.id} criado. Prossiga para o pagamento.")
-                            return redirect('pedidos:detalhe_pedido', pedido_id=pedido.id) # SUCESSO!
+                            return redirect('pedidos:detalhe_pedido', pedido_id=pedido.id)
                             
                     except Exception as e:
-                        # Este bloco captura erros de transação ou de lógica de estoque (como estoque insuficiente)
                         messages.error(request, f"Ocorreu um erro ao finalizar o pedido. Motivo: {e}")
-                        # Após um erro grave, é mais seguro redirecionar para uma tela neutra
                         return redirect('carrinho:ver_carrinho')
             
-            # Se o form não for válido no finalizar_pedido
             elif not form.is_valid():
                 messages.error(request, "Corrija os erros do endereço para finalizar o pedido.")
-            # --- FIM: LÓGICA DE CRIAÇÃO DO PEDIDO ---
         
-    # --- RENDERIZAÇÃO FINAL ---
     else:
-        # GET Request: Inicializa o form com dados do usuário logado
-        form = EnderecoForm(initial={'nome': request.user.nome_completo, 'email': request.user.email})
-        
-        # 🚨 Removido: A lógica de frete para o GET inicial foi removida
-        # para evitar cálculos desnecessários e dependências iniciais.
-        # As opções de frete só aparecerão após o primeiro POST (calcular_frete).
+        # GET Request: Inicializa o form com dados do usuário logado (assumindo que você tem 'nome_completo')
+        initial_data = {}
+        if hasattr(request.user, 'nome_completo'):
+            initial_data['nome'] = request.user.nome_completo.split(' ')[0] if request.user.nome_completo else ''
+            initial_data['sobrenome'] = ' '.join(request.user.nome_completo.split(' ')[1:]) if request.user.nome_completo and len(request.user.nome_completo.split(' ')) > 1 else ''
+        if hasattr(request.user, 'email'):
+            initial_data['email'] = request.user.email
+            
+        form = EnderecoForm(initial=initial_data)
 
 
     context = {
         'form': form,
         'itens_carrinho': itens_carrinho,
         'subtotal_carrinho': subtotal_carrinho,
-        'frete_opcoes': frete_opcoes, # Isso estará vazio no GET e preenchido após o POST
+        'frete_opcoes': frete_opcoes,
         'titulo': "Checkout - Endereço e Frete"
     }
     return render(request, 'pedidos/checkout.html', context)
 
 
-# ADICIONADA: View de Lista de Pedidos
+# -------------------------------------------------------------
+## NOVO: Detalhe do Pedido (Adicionado para corrigir o Erro 500)
+# -------------------------------------------------------------
+
+@login_required 
+def detalhe_pedido(request, pedido_id):
+    """
+    Exibe os detalhes de um pedido específico.
+    """
+    # Tenta buscar o pedido. Se não existir (404) ou se não pertencer ao usuário logado, retorna 404.
+    pedido = get_object_or_404(
+        Pedido, 
+        id=pedido_id, 
+        cliente=request.user
+    )
+    
+    # Os itens do pedido serão acessados via relação reversa: pedido.itens.all()
+    
+    context = {
+        'titulo': f'Detalhes do Pedido #{pedido.id}',
+        'pedido': pedido,
+    }
+    
+    return render(request, 'pedidos/detalhe_pedido.html', context)
+
+
+# -------------------------------------------------------------
+## Lista de Pedidos
+# -------------------------------------------------------------
+
 @login_required 
 def lista_pedidos(request):
     """
     Exibe uma lista de todos os pedidos feitos pelo usuário logado.
     """
-    # 1. Busca os pedidos do cliente logado, ordenados do mais recente para o mais antigo.
     pedidos = Pedido.objects.filter(cliente=request.user).order_by('-data_criacao')
     
     context = {
@@ -170,5 +175,4 @@ def lista_pedidos(request):
         'pedidos': pedidos,
     }
     
-    # 2. Renderiza o template 
     return render(request, 'pedidos/lista_pedidos.html', context)
