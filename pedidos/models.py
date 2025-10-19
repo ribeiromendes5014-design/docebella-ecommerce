@@ -33,7 +33,7 @@ class EnderecoEntrega(models.Model):
 
     def __str__(self):
         return f'{self.rua}, {self.numero} - {self.cidade}/{self.estado}'
-
+ 
     class Meta:
         verbose_name_plural = "Endereços de Entrega"
 
