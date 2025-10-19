@@ -1,1 +1,1 @@
-web: gunicorn docebella_project.wsgi
+web: gunicorn docebella_project.wsgi:application
