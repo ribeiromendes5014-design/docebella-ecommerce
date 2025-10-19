@@ -18,16 +18,19 @@ class OpcaoFrete(models.Model):
         return self.nome
         
 class EnderecoEntrega(models.Model):
+    # Manter obrigatório:
     nome = models.CharField(max_length=255)
     sobrenome = models.CharField(max_length=255)
     email = models.EmailField()
-    cep = models.CharField(max_length=9)
-    rua = models.CharField(max_length=255)
-    numero = models.CharField(max_length=10)
+    
+    # Tornar OPCIONAL:
+    cep = models.CharField(max_length=9, blank=True, null=True) # <<< NOVO
+    rua = models.CharField(max_length=255, blank=True, null=True) # <<< NOVO
+    numero = models.CharField(max_length=10, blank=True, null=True) # <<< NOVO
     complemento = models.CharField(max_length=255, blank=True)
-    bairro = models.CharField(max_length=100)
-    cidade = models.CharField(max_length=100)
-    estado = models.CharField(max_length=2)
+    bairro = models.CharField(max_length=100, blank=True, null=True) # <<< NOVO
+    cidade = models.CharField(max_length=100, blank=True, null=True) # <<< NOVO
+    estado = models.CharField(max_length=2, blank=True, null=True) # <<< NOVO
 
     def __str__(self):
         return f'{self.rua}, {self.numero} - {self.cidade}/{self.estado}'
