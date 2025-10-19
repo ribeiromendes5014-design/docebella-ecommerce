@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
+    # 🚨 CORREÇÃO DE LOCALIZAÇÃO 🚨: Adicionar humanize para formatação pt-br
     'django.contrib.humanize',
     
     # 🚨 ADICIONADO: Necessário para o S3/Cloud Storage 🚨
@@ -134,7 +136,8 @@ TIME_ZONE = 'America/Sao_Paulo'
 
 USE_I18N = True
 
-USE_L10N = True 
+# 🚨 CORREÇÃO DE LOCALIZAÇÃO 🚨: Ativar Localização
+USE_L10N = True
 
 USE_TZ = True
 
@@ -195,7 +198,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1', 
     'localhost', 
     'catalagoloja-zn2u.onrender.com',  # <-- SEU DOMÍNIO EXATO
-    '.onrender.com'                      # <-- O curinga correto para o Render
+    '.onrender.com'                   # <-- O curinga correto para o Render
 ] 
 
 # >>> CORREÇÃO CRÍTICA DO ERRO 403 (CSRF) <<<
@@ -285,4 +288,3 @@ JAZZMIN_SETTINGS = {
     },
     "footer_text": "Desenvolvido com Django e 💖"
 }
-  
