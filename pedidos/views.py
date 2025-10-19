@@ -128,7 +128,7 @@ def checkout(request):
         'frete_opcoes': {}, # Deixamos vazio, pois não há opções
         'titulo': "Checkout - Finalizar Pedido"
     }
-    return render(request, 'pedidos/checkout.html', context)
+    eturn render(request, 'pedidos/checkout_temp.html', context)
 
 
 # -------------------------------------------------------------
