@@ -68,7 +68,11 @@ class PedidoAdmin(admin.ModelAdmin):
 class EnderecoEntregaAdmin(admin.ModelAdmin):
     list_display = ('nome', 'sobrenome', 'cep', 'cidade', 'estado')
     search_fields = ('nome', 'sobrenome', 'cep')
-    readonly_fields = ('nome', 'sobrenome', 'email', 'cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'estado')
+    readonly_fields = (
+        'nome', 'sobrenome', 'email',
+        'cep', 'rua',
+        'complemento', 'bairro', 'cidade', 'estado'
+    )  # 👈 'numero' foi removido
     list_per_page = 25
 
 
