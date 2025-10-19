@@ -147,7 +147,7 @@ def detalhe_pedido(request, pedido_id):
         'pedido': pedido,
     }
     
-    return render(request, 'pedidos/templates/pedidos/checkout_temp.html', context)
+    return render(request, 'pedidos/checkout_temp.html', context)
 
 
 # -------------------------------------------------------------
