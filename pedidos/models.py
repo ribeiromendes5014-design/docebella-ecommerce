@@ -18,9 +18,8 @@ class OpcaoFrete(models.Model):
         return self.nome
         
 class EnderecoEntrega(models.Model):
-    # Manter obrigatório:
     nome = models.CharField(max_length=255)
-    sobrenome = models.CharField(max_length=255)
+    sobrenome = models.CharField(max_length=255, blank=True, null=True) # <<< ADICIONE ISSO
     email = models.EmailField()
     
     # Tornar OPCIONAL:
