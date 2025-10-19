@@ -88,7 +88,7 @@
 
 {% block content %}
 <h1 style="color: red; background: yellow; padding: 20px;">
-    TESTE DEPLOY 123 - ESTE ARQUIVO É NOVO
+    TESTE DEPLOY 123 - ESTE ARQUIVO É NOVO
 </h1>
 
 <h1 class="page-title">Finalizar Pedido</h1>
@@ -139,7 +139,7 @@
         <div class="checkout-summary">
         <h2>Resumo do Pedido</h2>
         
-                {% for item in itens_carrinho %}
+        {% for item in itens_carrinho %}
         <div class="summary-item">
             <span>{{ item.produto.nome }} (x{{ item.quantidade }})</span>
             <strong>R$ {{ item.get_subtotal|floatformat:2 }}</strong>
@@ -148,7 +148,7 @@
         
         <hr style="margin: 20px 0;">
         
-                <div class="summary-item" style="font-weight: bold; color: #333; font-size: 1.1rem;">
+        <div class="summary-item" style="font-weight: bold; color: #333; font-size: 1.1rem;">
             <span>Subtotal</span>
             <strong>R$ {{ subtotal_carrinho|floatformat:2 }}</strong>
         </div>
@@ -156,9 +156,9 @@
         <div class="summary-item" style="color: #666;">
             <span>Frete (Retirada)</span>
             <strong>R$ 0,00</strong>
-        </div>
+a       </div>
         
-                <div class="total-line-checkout">
+        <div class="total-line-checkout">
             Total: <strong>R$ {{ subtotal_carrinho|floatformat:2 }}</strong>
         </div>
     </div>
