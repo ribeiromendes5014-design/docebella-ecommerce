@@ -19,7 +19,8 @@
             
             <p><strong>Status:</strong> {{ pedido.get_status_display }}</p>
             <p><strong>Método de Envio:</strong> {{ pedido.metodo_envio }}</p>
-            <p><strong>Total (Produtos + Frete):</strong> R$ {{ pedido.valor_total|floatformat:2|replace:".","," }}</p>
+            
+            <p><strong>Total (Produtos + Frete):</strong> R$ {{ pedido.valor_total|floatformat:2 }}</p>
         </div>
 
         <h4 style="margin-top: 30px;">Itens Comprados:</h4>
@@ -28,7 +29,8 @@
                 <li style="border-bottom: 1px dashed #eee; padding: 10px 0;">
                     {{ item.quantidade }}x {{ item.produto.nome }} 
                     {% if item.variacao %}({{ item.variacao.valor }}){% endif %} 
-                    <span style="float: right; font-weight: bold;">R$ {{ item.get_subtotal|floatformat:2|replace:".","," }}</span>
+                    
+                    <span style="float: right; font-weight: bold;">R$ {{ item.get_subtotal|floatformat:2 }}</span>
                 </li>
             {% endfor %}
         </ul>
@@ -37,7 +39,7 @@
             <a href="{% url 'pedidos:lista_pedidos' %}" class="btn-principal" style="text-decoration: none; padding: 10px 20px;">
                 Ver Todos os Meus Pedidos
             </a>
-            </div>
+        </div>
         
     {% else %}
         <p class="text-danger">Não foi possível carregar os detalhes do pedido.</p>
