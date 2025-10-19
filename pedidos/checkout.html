@@ -3,49 +3,50 @@
 
 {% block extra_css %}
 <style>
-    .checkout-container {
-        display: flex;
-        gap: 30px;
-        margin-top: 30px;
-        flex-wrap: wrap;
-    }
-    .col-endereco, .col-resumo {
-        background-color: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: var(--sombra-card);
-    }
-    .col-endereco {
-        flex: 2; /* Ocupa mais espaço */
-        min-width: 400px;
-    }
-    .col-resumo {
-        flex: 1; /* Ocupa menos espaço */
-        min-width: 300px;
-        height: fit-content;
-    }
-    .form-field {
-        margin-bottom: 15px;
-    }
-    .form-field input, .form-field select {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        box-sizing: border-box;
-    }
-    .resumo-item {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 5px;
-    }
-    .resumo-total {
-        border-top: 1px solid #ddd;
-        padding-top: 10px;
-        font-size: 1.2rem;
-        font-weight: bold;
-        margin-top: 10px;
-    }
+    /* Seu CSS (está ótimo, não mudei nada) */
+    .checkout-container {
+        display: flex;
+        gap: 30px;
+        margin-top: 30px;
+        flex-wrap: wrap;
+    }
+    .col-endereco, .col-resumo {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: var(--sombra-card);
+    }
+    .col-endereco {
+        flex: 2; /* Ocupa mais espaço */
+        min-width: 400px;
+    }
+    .col-resumo {
+        flex: 1; /* Ocupa menos espaço */
+        min-width: 300px;
+        height: fit-content;
+    }
+    .form-field {
+        margin-bottom: 15px;
+    }
+    .form-field input, .form-field select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+    .resumo-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+    }
+    .resumo-total {
+        border-top: 1px solid #ddd;
+        padding-top: 10px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-top: 10px;
+    }
 </style>
 {% endblock %}
 
@@ -54,113 +55,76 @@
 <h2>Finalizar Compra</h2>
 <hr>
 
-<form method="POST" action="{% url 'checkout' %}">
-    {% csrf_token %}
-    <div class="checkout-container">
+<form method="POST" action="{% url 'pedidos:checkout' %}">     {% csrf_token %}
+    <div class="checkout-container">
+        
+        <div class="col-endereco">
         
-        <div class="col-endereco">
-            <h3>1. Endereço de Entrega</h3>
-            
-            {% for field in form %}
-                <div class="form-field">
-                    <label for="{{ field.id_for_label }}">{{ field.label }}:</label>
-                    {{ field }}
-                    {% if field.errors %}
-                        <small style="color: red;">{{ field.errors.as_text }}</small>
+                        <h3>1. Seus Dados (para Retirada)</h3>
+            
+                        {% for field in form %}
+                <div class="form-field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}:</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small style="color: #6c757d;">{{ field.help_text }}</small>
                     {% endif %}
-                </div>
-            {% endfor %}
-            
-            <button type="submit" class="btn-principal" style="width: 100%; margin-top: 10px; background-color: #f1c40f;">
-                Calcular Frete / Verificar Endereço
-            </button>
-            
-            <h3 style="margin-top: 30px;">2. Opções de Envio</h3>
-            {% if frete_opcoes %}
-                {% for key, opcao in frete_opcoes.items %}
-                    <div style="margin-bottom: 15px; border: 1px solid #eee; padding: 10px; border-radius: 4px;">
-                        <input type="radio" id="frete_{{ key }}" name="metodo_frete" value="{{ key }}" required>
-                        <label for="frete_{{ key }}" style="font-weight: bold;">
-                            {{ opcao.nome }} - R$ {{ opcao.valor|floatformat:2|replace:".","," }}
-                        </label>
-                        <p style="font-size: 0.9rem; margin-left: 25px; color: #6c757d;">Prazo: {{ opcao.prazo }}</p>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p>Preencha e verifique o endereço para calcular as opções de frete.</p>
-            {% endif %}
-            
-            <h3 style="margin-top: 30px;">3. Pagamento (Próxima Etapa)</h3>
-            <p>O método de pagamento será definido na próxima tela, após a confirmação do frete e pedido.</p>
-
-        </div>
-        
-        <div class="col-resumo">
-            <h3>Resumo do Pedido</h3>
-            
-            {% for item in itens_carrinho %}
-                <div class="resumo-item" style="font-size: 0.9rem;">
-                    <span>{{ item.quantidade }}x {{ item.produto.nome }} 
-                        {% if item.variacao %}({{ item.variacao.valor }}){% endif %}
-                    </span>
-                    <span>R$ {{ item.get_subtotal|floatformat:2|replace:".","," }}</span>
-                </div>
-            {% endfor %}
-            
-            <div class="resumo-item" style="margin-top: 15px;">
-                <span>Subtotal Produtos:</span>
-                <span>R$ {{ subtotal_carrinho|floatformat:2|replace:".","," }}</span>
+                    {% if field.errors %}
+                        <small style="color: red;">{{ field.errors.as_text }}</small>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            
+                        
+                        <h3 style="margin-top: 30px;">2. Método de Envio</h3>
+            <div style="margin-bottom: 15px; border: 1px solid #eee; padding: 10px; border-radius: 4px; background-color: #f9f9f9;">
+                <p style="font-weight: bold; margin: 0;">Retirada na Loja</p>
+                <p style="font-size: 0.9rem; margin: 5px 0 0 0; color: #6c757d;">
+                    O seu pedido será separado para retirada na loja.
+                </p>
             </div>
-            
-            {% if frete_opcoes %}
-                {% with valor_frete=request.POST.metodo_frete|default:0.00 %}
-                    <div class="resumo-item">
-                        <span>Frete (Envio):</span>
-                        <span>R$ 
-                            {% if request.POST.metodo_frete and frete_opcoes %}
-                                {% with frete_selecionado=frete_opcoes|get_item:request.POST.metodo_frete %}
-                                    {{ frete_selecionado.valor|floatformat:2|replace:".","," }}
-                                    {% with total=subtotal_carrinho|add:frete_selecionado.valor %}
-                                        <input type="hidden" id="final_total" value="{{ total }}">
-                                    {% endwith %}
-                                {% endwith %}
-                            {% else %}
-                                0,00
-                            {% endif %}
-                        </span>
-                    </div>
-                {% endwith %}
-            {% else %}
-                <div class="resumo-item">
-                    <span>Frete (Envio):</span>
-                    <span>R$ 0,00</span>
-                </div>
-            {% endif %}
+            
+            <h3 style="margin-top: 30px;">3. Pagamento (Próxima Etapa)</h3>
+            <p>O método de pagamento será definido na próxima tela.</p>
 
-            <div class="resumo-total">
-                <div class="resumo-item">
-                    <span>Total a Pagar:</span>
-                    <span>R$ 
-                        {% if request.POST.metodo_frete %}
-                            {% with frete_selecionado=frete_opcoes|get_item:request.POST.metodo_frete %}
-                                {% with total=subtotal_carrinho|add:frete_selecionado.valor %}
-                                    {{ total|floatformat:2|replace:".","," }}
-                                {% endwith %}
-                            {% endwith %}
-                        {% else %}
-                            {{ subtotal_carrinho|floatformat:2|replace:".","," }}
-                        {% endif %}
-                    </span>
-                </div>
+        </div>
+        
+        <div class="col-resumo">
+            <h3>Resumo do Pedido</h3>
+            
+                        {% for item in itens_carrinho %}
+                <div class="resumo-item" style="font-size: 0.9rem;">
+                    <span>{{ item.quantidade }}x {{ item.produto.nome }} 
+                        {% if item.variacao %}({{ item.variacao.valor }}){% endif %}
+                    </span>
+                    <span>R$ {{ item.get_subtotal|floatformat:2|replace:".","," }}</span>
+                </div>
+            {% endfor %}
+            
+                        <div class="resumo-item" style="margin-top: 15px;">
+                <span>Subtotal Produtos:</span>
+                <span>R$ {{ subtotal_carrinho|floatformat:2|replace:".","," }}</span>
+            </div>
+            
+            <div class="resumo-item">
+                <span>Frete (Retirada):</span>
+                <span>R$ 0,00</span>
             </div>
-            
-            <button type="submit" class="btn-principal" style="width: 100%; margin-top: 20px; font-size: 1.1rem; padding: 12px;">
-                Confirmar e Ir para o Pagamento
-            </button>
-            <p style="text-align: center; font-size: 0.8rem; margin-top: 10px;">(O estoque será abatido após esta etapa)</p>
 
-        </div>
-    </div>
+            <div class="resumo-total">
+                <div class="resumo-item">
+                    <span>Total a Pagar:</span>
+                                        <span>R$ {{ subtotal_carrinho|floatformat:2|replace:".","," }}</span>
+                </div>
+            </div>
+            
+                        <button type="submit" class="btn-principal" style="width: 100%; margin-top: 20px; font-size: 1.1rem; padding: 12px;">
+                Finalizar e Ir para o Pagamento
+            </button>
+            <p style="text-align: center; font-size: 0.8rem; margin-top: 10px;">(O estoque será abatido após esta etapa)</p>
+
+        </div>
+    </div>
 </form>
 
 {% endblock %}
