@@ -122,13 +122,13 @@ def checkout(request):
         form = CheckoutFormSimplificado(user=request.user)
 
     context = {
-        'form': form,
-        'itens_carrinho': itens_carrinho,
-        'subtotal_carrinho': subtotal_carrinho,
-        'frete_opcoes': {}, # Deixamos vazio, pois não há opções
-        'titulo': "Checkout - Finalizar Pedido"
-    }
-    eturn render(request, 'pedidos/checkout_temp.html', context)
+        'form': form,
+        'itens_carrinho': itens_carrinho,
+        'subtotal_carrinho': subtotal_carrinho,
+        'frete_opcoes': {}, # Deixamos vazio, pois não há opções
+        'titulo': "Checkout - Finalizar Pedido"
+    }
+    return render(request, 'pedidos/checkout_temp.html', context)
 
 
 # -------------------------------------------------------------
