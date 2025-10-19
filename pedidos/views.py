@@ -163,4 +163,4 @@ def lista_pedidos(request):
         'pedidos': pedidos,
     }
     
-    return render(request, 'pedidos/templates/pedidos/lista_pedidos.html', context)
+    return render(request, 'pedidos/checkout_temp.html', context)
