@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from carrinho.models import ItemCarrinho
-from pedidos.frete_service import calcular_frete_simulado, calcular_peso_carrinho
+# from pedidos.frete_service import calcular_frete_simulado, calcular_peso_carrinho # Não precisamos mais disso
 from .models import EnderecoEntrega, Pedido, ItemPedido
 from django.db import transaction
 from django import forms
@@ -35,6 +35,7 @@ class CheckoutFormSimplificado(forms.Form):
             #    self.fields['telefone'].initial = user.profile.telefone
 
 
+# View Principal do Checkout (MODIFICADA)
 @login_required
 def checkout(request):
     session_key = _get_session_key(request)
@@ -54,7 +55,7 @@ def checkout(request):
             
             # --- O "PULO DO GATO" ESTÁ AQUI ---
             # Como seu modelo Pedido EXIGE um EnderecoEntrega,
-            # vamos criar um "Endereço Falso" apenas com os dados de retirada.
+            # vamos criar um "Endereco Falso" apenas com os dados de retirada.
             
             cleaned_data = form.cleaned_data
             
@@ -62,8 +63,6 @@ def checkout(request):
                 with transaction.atomic():
                     
                     # 1. Crie o Endereço Falso (Dummy)
-                    # Usamos os dados do form para nome/email e o telefone no 'complemento'
-                    # Os outros campos são "chumbados" (hard-coded)
                     endereco_retirada = EnderecoEntrega.objects.create(
                         nome=cleaned_data['nome'],
                         sobrenome="(Retirada na Loja)",
@@ -87,7 +86,6 @@ def checkout(request):
                     )
                     
                     # 3. Mova os itens do carrinho para o pedido
-                    # (Esta parte do seu código já estava correta)
                     for item_carrinho in itens_carrinho:
                         target = item_carrinho.variacao or item_carrinho.produto
                         
@@ -136,22 +134,16 @@ def checkout(request):
 
 
 # -------------------------------------------------------------
-## NOVO: Detalhe do Pedido (Adicionado para corrigir o Erro 500)
+## Detalhe do Pedido
 # -------------------------------------------------------------
 
 @login_required 
 def detalhe_pedido(request, pedido_id):
-    """
-    Exibe os detalhes de um pedido específico.
-    """
-    # Tenta buscar o pedido. Se não existir (404) ou se não pertencer ao usuário logado, retorna 404.
     pedido = get_object_or_404(
         Pedido, 
         id=pedido_id, 
         cliente=request.user
     )
-    
-    # Os itens do pedido serão acessados via relação reversa: pedido.itens.all()
     
     context = {
         'titulo': f'Detalhes do Pedido #{pedido.id}',
@@ -167,9 +159,6 @@ def detalhe_pedido(request, pedido_id):
 
 @login_required 
 def lista_pedidos(request):
-    """
-    Exibe uma lista de todos os pedidos feitos pelo usuário logado.
-    """
     pedidos = Pedido.objects.filter(cliente=request.user).order_by('-data_criacao')
     
     context = {
