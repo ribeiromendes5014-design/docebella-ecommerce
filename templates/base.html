@@ -82,3 +82,91 @@
     {% block extra_js %}{% endblock %}
 </body>
 </html>
+
+/* =======================================================
+   REGRAS DE LAYOUT GERAL (Exemplo para fins de demonstração)
+   Adicione este código ao seu base.css e ajuste-o conforme necessário.
+   ======================================================= */
+
+/* Seção Header Principal - Layout Desktop (Flexbox para alinhar) */
+.header-principal-unificado .container {
+    display: flex;
+    justify-content: space-between; /* Espaçamento entre os elementos */
+    align-items: center;
+    flex-wrap: wrap; /* Permite que os itens quebrem a linha se não couberem */
+}
+
+/* Container principal (apenas para centralizar o conteúdo) */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px; /* Adiciona algum padding nas laterais em telas pequenas */
+}
+
+/* ---------------------------------------------------------------------------------
+   MEDIA QUERIES: Regras específicas para TELAS PEQUENAS (Celulares, até 768px de largura)
+   --------------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+
+    /* 1. Resetando o layout do cabeçalho */
+    .header-principal-unificado .container {
+        /* Permite que o Flexbox reorganize em uma única coluna */
+        flex-direction: column; 
+        align-items: flex-start; /* Alinha tudo à esquerda */
+    }
+
+    /* 2. Menu de Navegação */
+    .menu-nav-unificado {
+        width: 100%; /* Ocupa toda a largura */
+        order: 3;    /* Move o menu para baixo (após a barra de busca, para melhor UX) */
+        margin-top: 10px;
+    }
+
+    .menu-nav-unificado ul {
+        display: flex; /* Mantém a lista na horizontal se couber */
+        flex-wrap: wrap; /* Permite que os itens quebrem a linha */
+        padding: 0;
+    }
+
+    .menu-nav-unificado li {
+        width: 50%; /* Faz com que os itens do menu ocupem 50% da largura (dois por linha) */
+        text-align: center;
+        padding: 5px 0;
+        box-sizing: border-box;
+    }
+
+    /* 3. Barra de Busca */
+    .search-bar {
+        width: 100%; /* Ocupa toda a largura para fácil digitação */
+        order: 2;    /* Coloca a busca antes do menu (melhor UX no celular) */
+        margin: 10px 0;
+    }
+    
+    .search-bar input[type="search"] {
+        width: 100%; /* Faz o campo de busca preencher o container */
+        box-sizing: border-box; /* Garante que o padding não aumente a largura total */
+    }
+    
+    /* 4. Ícones de Ação (Carrinho/Login) */
+    .icones-acao {
+        width: 100%;
+        order: 4; /* Coloca os ícones no final */
+        text-align: right;
+        padding-bottom: 10px; /* Espaço para o footer não ficar grudado */
+    }
+
+    /* 5. Logo */
+    .logo {
+        order: 1; /* Garante que o logo fique no topo */
+        width: 100%;
+    }
+
+    .logo-img {
+        max-width: 120px; /* Reduz o tamanho do logo no celular */
+    }
+    
+    /* Ajuste para o padding principal do main */
+    main.container {
+        padding-top: 80px; /* Garante que o conteúdo não fique escondido atrás do fixed-header-custom */
+    }
+}
