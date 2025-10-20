@@ -142,20 +142,20 @@
 
     /* --- 1. CABEÇALHO (Obrigatório para Redução de Altura) --- */
     
-    /* Remove a posição fixed e limpa a margem superior para evitar o header gigante */
+    /* Força o header a não ser fixo e a ter altura automática no celular */
     .fixed-header-custom {
-        position: static; /* Permite que o cabeçalho role junto com a página */
-        height: auto;
+        position: static !important; /* CORREÇÃO CRÍTICA: Desativa o fixed */
+        height: auto !important;
     }
     
-    /* Remove o padding de 70px do body que compensava o header fixo */
+    /* Zera o padding superior do BODY que compensava o header fixo */
     body {
-        padding-top: 0; 
+        padding-top: 0 !important; /* CORREÇÃO CRÍTICA: Remove o padding superior de 70px */
     }
 
     /* Layout do Header (Empilhamento Vertical) */
     .header-principal-unificado .container {
-        flex-direction: column; 
+        flex-direction: column !important; /* CORREÇÃO CRÍTICA: Força o empilhamento vertical */
         align-items: flex-start;
         padding-top: 10px;
         padding-bottom: 10px;
@@ -168,62 +168,65 @@
     }
     
     .logo {
-        /* Garante que o logo fique no topo, e a busca e menu sejam colocados depois */
-        order: 1; 
+        order: 1;
         margin-bottom: 10px;
     }
 
-    /* Barra de Busca (Ocupa toda a largura para fácil digitação) */
+    /* Barra de Busca (Ocupa toda a largura) */
     .search-bar {
-        width: 100%; 
-        order: 2; /* Fica em segundo */
+        width: 100%;
+        order: 2;
         margin-right: 0;
         margin-bottom: 10px;
     }
 
     .search-bar input {
-        width: 100%; 
+        width: 100%;
     }
 
     /* Menu de Navegação */
     .menu-nav-unificado {
-        width: 100%; 
-        order: 3; /* Fica após a busca */
+        width: 100%;
+        order: 3;
         margin-right: 0;
         margin-bottom: 10px;
     }
 
     .menu-nav-unificado ul {
-        flex-wrap: wrap; 
-        justify-content: space-between; /* Distribui os itens uniformemente */
+        flex-wrap: wrap;
+        justify-content: space-between;
     }
 
     .menu-nav-unificado ul li a {
-        /* Ajuste do padding para os links não ficarem muito apertados */
         padding: 5px 10px;
-        display: block; /* Ocupa a área de clique */
+        display: block;
         text-align: center;
     }
     
-    /* Ícones de Ação (Ajusta o layout para mobile) */
+    /* Ícones de Ação */
     .icones-acao {
-        order: 4; /* Fica no final */
+        order: 4;
         text-align: right;
         display: flex;
-        justify-content: flex-end; /* Alinha os ícones à direita */
+        justify-content: flex-end;
         gap: 10px;
     }
     
     /* --- 2. GRADE DE PRODUTOS (2 Colunas) --- */
     .product-grid {
-        /* Altera o grid para ter 2 colunas, se o espaço permitir */
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Min de 150px para caber 2 */
-        gap: 10px; /* Reduz o espaço entre os cards */
+        /* Força a exibição em 2 colunas iguais com espaçamento */
+        grid-template-columns: repeat(2, 1fr) !important; /* Força 2 colunas */
+        gap: 10px;
+    }
+
+    .product-card {
+        /* Garante que o item do grid não tenha largura fixa */
+        width: auto !important; 
     }
 
     /* Ajuste de tamanho da fonte do card para caber melhor */
     .product-card h3 {
-        font-size: 1em; 
+        font-size: 1em;
     }
 
     .product-card .price {
@@ -232,7 +235,12 @@
     
     /* --- 3. Formulários (Ajuste Geral de Largura) --- */
     .form-wrapper {
-        margin: 20px 10px; /* Reduz margens externas */
-        padding: 15px; /* Reduz padding interno */
+        margin: 20px 10px;
+        padding: 15px;
+    }
+    
+    /* Ajuste de padding para o conteúdo principal */
+    main.container {
+        padding-top: 20px !important; 
     }
 }
