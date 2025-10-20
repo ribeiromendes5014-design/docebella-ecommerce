@@ -193,11 +193,16 @@
         const produtoUsaVariacoes = {{ produto.usa_variacoes|yesno:"true,false" }};
         const estoqueTotal = {{ produto.get_estoque_total }};
 
+        // 🚨 1. Coleta todos os Tipos de Variação esperados (Ex: "Cor", "Tamanho") 🚨
+        const requiredTypes = document.querySelectorAll('.variacao-selector');
+
         if (produtoUsaVariacoes) {
             botoesVariacao.forEach(button => {
                 button.addEventListener('click', function() {
+                    const selectorDiv = this.closest('.variacao-selector');
+                    const tipo = selectorDiv.dataset.tipo;
+                    
                     // Remove 'selecionado' de todos os botões do mesmo TIPO
-                    const tipo = this.closest('.variacao-selector').dataset.tipo;
                     document.querySelectorAll(`.variacao-selector[data-tipo="${tipo}"] .btn-variacao`).forEach(btn => {
                         btn.classList.remove('selecionado');
                     });
@@ -205,17 +210,34 @@
                     // Adiciona 'selecionado' ao botão clicado
                     this.classList.add('selecionado');
                     
-                    // Atualiza o campo oculto
-                    const variacaoId = this.dataset.id;
-                    variacaoInput.value = variacaoId;
+                    // 🚨 ATUALIZAÇÃO CRÍTICA: Lógica para enviar o ID correto 🚨
+                    // Para simplificar, vamos enviar APENAS o ID da última variação clicada.
+                    // ATENÇÃO: Seu backend de carrinho precisará de AJUSTES para lidar
+                    // com o ID da variação, que pode ser o ID de uma Cor OU de um Tamanho.
+                    variacaoInput.value = this.dataset.id;
                 });
             });
 
-            // Validação simples: exige variação selecionada se o produto usa variação
+            // 🚨 2. Validação: Checa se uma opção foi selecionada para CADA TIPO 🚨
             form.addEventListener('submit', function(e) {
-                if (produtoUsaVariacoes && !variacaoInput.value) {
+                let allRequiredSelected = true;
+                const selecoesFeitas = form.querySelectorAll('.btn-variacao.selecionado').length;
+                
+                // Se o número de seleções feitas for menor que o número de tipos obrigatórios...
+                if (requiredTypes.length > 0 && selecoesFeitas < requiredTypes.length) {
+                    allRequiredSelected = false;
+                }
+
+                if (!allRequiredSelected) {
                     e.preventDefault();
-                    alert("Por favor, selecione uma opção antes de adicionar ao carrinho.");
+                    alert("Por favor, selecione uma opção para cada tipo de variação disponível.");
+                    return;
+                }
+                
+                // Se o produto usa variações, a variação_id deve ser preenchida.
+                if (!variacaoInput.value) {
+                     e.preventDefault();
+                     alert("Por favor, selecione uma opção antes de adicionar ao carrinho.");
                 }
             });
         }
@@ -224,10 +246,6 @@
         if (!produtoUsaVariacoes && estoqueTotal <= 0) {
             document.querySelector('.btn-comprar').disabled = true;
         }
-
     });
 </script>
-{% endblock %}
-
-
 {% endblock %}
