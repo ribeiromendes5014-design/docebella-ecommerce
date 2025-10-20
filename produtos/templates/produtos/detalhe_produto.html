@@ -15,21 +15,33 @@
         box-shadow: var(--sombra-card);
     }
     
-    /* Coluna Esquerda: Imagem/Galeria */
+    /* Coluna Esquerda: Imagem/Galeria - CORREÇÃO DE LARGURA */
     .produto-galeria {
-        flex: 1;
+        /* 🔴 CORREÇÃO: Limita a largura máxima da coluna de imagem para caber ao lado do texto */
+        max-width: 450px; 
+        flex-grow: 0;   /* Impede que esta coluna use mais espaço do que o necessário */
+        flex-shrink: 0; /* Impede que ela encolha a menos que a tela seja muito pequena */
         min-width: 300px;
     }
+    
+    /* Estilos para o wrapper da imagem principal */
+    .produto-galeria .main-image-wrapper {
+        max-width: 100%; /* Garante que o wrapper não seja maior que a coluna (450px) */
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
     .produto-galeria img {
         width: 100%;
         height: auto;
         border-radius: 8px;
-        border: 1px solid #ddd;
+        border: none; /* A borda foi movida para o main-image-wrapper */
     }
 
-    /* Coluna Direita: Informações e Ações */
+    /* Coluna Direita: Informações e Ações - OCUPA O ESPAÇO RESTANTE */
     .produto-info {
-        flex: 1;
+        flex-grow: 1; /* 🔴 CORREÇÃO: Deixa esta coluna ocupar todo o espaço restante */
         min-width: 400px;
     }
     
@@ -100,16 +112,11 @@
         border-top: 1px solid #eee;
         padding-top: 20px;
     }
-    
-    /* ESTILOS DA GALERIA */
-    .produto-galeria .main-image-wrapper {
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        overflow: hidden;
-    }
-    .produto-galeria .galeria-miniaturas .miniatura.selecionado {
-        border-color: var(--cor-principal) !important;
-    }
+    
+    /* ESTILOS DA GALERIA */
+    .produto-galeria .galeria-miniaturas .miniatura.selecionado {
+        border-color: var(--cor-principal) !important;
+    }
 </style>
 {% endblock %}
 
