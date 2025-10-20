@@ -380,107 +380,81 @@ body {
    ======================================================= */
 @media (max-width: 768px) {
 
-    /* --- 1. CABEÇALHO (Obrigatório para Redução de Altura) --- */
+    /* --- 1. CABEÇALHO (Manter Fixo e Compacto) --- */
     
-    /* Força o header a não ser fixo e a ter altura automática no celular */
-    .fixed-header-custom {
-        position: static !important; /* CORREÇÃO CRÍTICA: Desativa o fixed */
+    /* 1.1 MANTÉM a fixação do desktop. Se você usou o position: static, COMENTE-O! */
+    /* .fixed-header-custom {
+        position: static !important;
         height: auto !important;
-    }
-    
-    /* Zera o padding superior do BODY que compensava o header fixo */
+    } */ 
+
+    /* 1.2 REATIVA o padding original no body, para o conteúdo não ficar por baixo do header fixo */
     body {
-        padding-top: 0 !important; /* CORREÇÃO CRÍTICA: Remove o padding superior de 70px */
+        padding-top: 70px !important; /* Volta o padding para compensar o header fixo */
     }
 
-    /* Layout do Header (Empilhamento Vertical) */
+    /* 1.3 CORREÇÃO CRÍTICA: Remove o empilhamento vertical, forçando o layout horizontal */
     .header-principal-unificado .container {
-        flex-direction: column !important; /* CORREÇÃO CRÍTICA: Força o empilhamento vertical */
-        align-items: flex-start;
-        padding-top: 10px;
-        padding-bottom: 10px;
+        /* Removemos o 'flex-direction: column !important;' */
+        flex-direction: row; 
+        flex-wrap: wrap; /* Permite que os itens quebrem a linha, se necessário */
+        justify-content: space-between; /* Espaçamento padrão */
+        align-items: center;
+        padding-top: 5px; /* Reduz o padding para compactar */
+        padding-bottom: 5px; /* Reduz o padding para compactar */
     }
 
-    /* Logo (Garante que ocupe a largura e se ajuste) */
-    .logo, .icones-acao {
-        width: 100%;
-        text-align: left;
+    /* Logo - Reduz o tamanho e prioriza o espaço */
+    .logo a {
+        padding-right: 5px;
+        font-size: 1.5rem;
     }
-    
-    .logo {
-        order: 1;
-        margin-bottom: 10px;
+    .logo .logo-img {
+        height: 40px; /* Logo menor para celular */
     }
 
-    /* Barra de Busca (Ocupa toda a largura) */
+    /* Menu de Navegação - Esconde ou transforma em algo mais compacto (opcional) */
+    /* Se quiser esconder o menu no celular, use: */
+    .menu-nav-unificado {
+         display: none; 
+    }
+    /* Se quiser manter, remova o display: none e ajuste o flex */
+
+
+    /* Barra de Busca - Ocupa o espaço restante e fica menor */
     .search-bar {
-        width: 100%;
-        order: 2;
-        margin-right: 0;
-        margin-bottom: 10px;
+        flex-grow: 1; /* Ocupa o espaço entre o menu e os ícones */
+        margin-right: 10px;
     }
-
     .search-bar input {
         width: 100%;
+        padding: 6px 10px; /* Input menor */
     }
 
-    /* Menu de Navegação */
-    .menu-nav-unificado {
-        width: 100%;
-        order: 3;
-        margin-right: 0;
-        margin-bottom: 10px;
-    }
-
-    .menu-nav-unificado ul {
-        flex-wrap: wrap;
-        justify-content: space-between;
-    }
-
-    .menu-nav-unificado ul li a {
-        padding: 5px 10px;
-        display: block;
-        text-align: center;
-    }
-    
-    /* Ícones de Ação */
+    /* Ícones de Ação (Login, Carrinho) - Garante que fiquem alinhados */
     .icones-acao {
-        order: 4;
-        text-align: right;
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
+        gap: 8px; /* Reduz o espaço entre os ícones */
+    }
+    .icones-acao a, .icones-acao .link-like-button {
+        font-size: 1.2rem; /* Ícones menores */
+        padding: 0;
     }
     
     /* --- 2. GRADE DE PRODUTOS (2 Colunas) --- */
     .product-grid {
-        /* Força a exibição em 2 colunas iguais com espaçamento */
         grid-template-columns: repeat(2, 1fr) !important; /* Força 2 colunas */
         gap: 10px;
     }
 
-    .product-card {
-        /* Garante que o item do grid não tenha largura fixa */
-        width: auto !important; 
-    }
-
-    /* Ajuste de tamanho da fonte do card para caber melhor */
-    .product-card h3 {
-        font-size: 1em;
-    }
-
-    .product-card .price {
-        font-size: 1.2rem;
-    }
-    
-    /* --- 3. Formulários (Ajuste Geral de Largura) --- */
+    /* Ajustes menores para formulários, cards, etc. */
     .form-wrapper {
         margin: 20px 10px;
         padding: 15px;
     }
-    
-    /* Ajuste de padding para o conteúdo principal */
-    main.container {
-        padding-top: 20px !important; 
+    .product-card h3 {
+        font-size: 1em;
+    }
+    .product-card .price {
+        font-size: 1.2rem;
     }
 }
