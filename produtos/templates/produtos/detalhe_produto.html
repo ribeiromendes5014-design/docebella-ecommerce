@@ -3,170 +3,170 @@
 
 {% block extra_css %}
 <style>
-    /* Estilos gerais do container do detalhe do produto */
-    .produto-detalhe-container {
-        display: flex;
-        /* Altera para flex-wrap: wrap para garantir que as colunas quebrem em telas menores */
-        flex-wrap: wrap; 
-        gap: 40px; /* Espaço entre as colunas */
-        margin-top: 20px;
-        background-color: white;
-        padding: 30px;
-        border-radius: 8px;
-        box-shadow: var(--sombra-card);
-        align-items: flex-start; /* Alinha o topo das colunas */
-    }
-    
-    /* Coluna Esquerda: Imagem/Galeria */
-    .produto-galeria {
-        /* Define a largura exata da coluna da galeria */
-        flex: 0 0 450px; /* flex-grow:0, flex-shrink:0, flex-basis:450px */
-        max-width: 450px; /* Garante que não exceda esta largura */
-        min-width: 300px; /* Garante um tamanho mínimo em telas menores */
-        box-sizing: border-box; /* Inclui padding e border na largura total */
-    }
+    /* Estilos gerais do container do detalhe do produto */
+    .produto-detalhe-container {
+        display: flex;
+        /* Altera para flex-wrap: wrap para garantir que as colunas quebrem em telas menores */
+        flex-wrap: wrap; 
+        gap: 40px; /* Espaço entre as colunas */
+        margin-top: 20px;
+        background-color: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: var(--sombra-card);
+        align-items: flex-start; /* Alinha o topo das colunas */
+    }
+    
+    /* Coluna Esquerda: Imagem/Galeria */
+    .produto-galeria {
+        /* Define a largura exata da coluna da galeria */
+        flex: 0 0 450px; /* flex-grow:0, flex-shrink:0, flex-basis:450px */
+        max-width: 450px; /* Garante que não exceda esta largura */
+        min-width: 300px; /* Garante um tamanho mínimo em telas menores */
+        box-sizing: border-box; /* Inclui padding e border na largura total */
+    }
 
-    /* Wrapper da imagem principal para garantir borda e overflow */
-    .produto-galeria .main-image-wrapper {
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        overflow: hidden; /* Corta qualquer coisa que exceda o limite */
-        margin-bottom: 15px; /* Espaço abaixo da imagem principal */
-    }
+    /* Wrapper da imagem principal para garantir borda e overflow */
+    .produto-galeria .main-image-wrapper {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden; /* Corta qualquer coisa que exceda o limite */
+        margin-bottom: 15px; /* Espaço abaixo da imagem principal */
+    }
 
-    /* Imagem principal dentro do wrapper */
-    .produto-galeria #main-image {
-        width: 100%; /* A imagem preenche a largura do seu container */
-        height: auto; /* Mantém a proporção */
-        display: block; /* Remove espaços extras comuns em imagens */
-        object-fit: contain; /* Garante que a imagem se ajuste sem cortar ou esticar, mantendo a proporção */
-        max-height: 400px; /* Limita a altura da imagem para não ficar gigante, ajuste se precisar */
-    }
+    /* Imagem principal dentro do wrapper */
+    .produto-galeria #main-image {
+        width: 100%; /* A imagem preenche a largura do seu container */
+        height: auto; /* Mantém a proporção */
+        display: block; /* Remove espaços extras comuns em imagens */
+        object-fit: contain; /* Garante que a imagem se ajuste sem cortar ou esticar, mantendo a proporção */
+        max-height: 400px; /* Limita a altura da imagem para não ficar gigante, ajuste se precisar */
+    }
 
-    /* Miniaturas da galeria */
-    .galeria-miniaturas {
-        display: flex;
-        gap: 10px;
-        margin-top: 15px;
-        overflow-x: auto; /* Permite rolagem horizontal se muitas miniaturas */
-        padding-bottom: 5px; /* Para evitar que a sombra de rolagem corte a miniatura */
-    }
-    .galeria-miniaturas .miniatura {
-        width: 60px;
-        height: 60px;
-        object-fit: cover; /* Corta e preenche o espaço */
-        cursor: pointer;
-        border: 1px solid #ddd;
-        border-radius: 4px; /* Pequenas bordas arredondadas para miniaturas */
-        transition: border-color 0.2s ease;
-    }
-    .galeria-miniaturas .miniatura.selecionado {
-        border-color: var(--cor-principal) !important; /* Destaca a miniatura selecionada */
-        border-width: 2px !important;
-    }
-    
-    /* Coluna Direita: Informações e Ações */
-    .produto-info {
-        flex: 1; /* Ocupa o espaço restante */
-        min-width: 350px; /* Garante um mínimo para o texto em telas menores */
-        box-sizing: border-box;
-    }
-    
-    .preco-principal {
-        font-size: 2rem;
-        font-weight: bold;
-        color: var(--cor-principal);
-        margin: 10px 0 20px;
-    }
-    
-    /* Seletores de Variação */
-    .variacao-selector {
-        margin-bottom: 25px;
-        border-top: 1px solid #eee;
-        padding-top: 15px;
-    }
-    .variacao-selector h4 {
-        font-size: 1rem;
-        margin-bottom: 10px;
-        font-weight: 500;
-        color: var(--cor-secundaria);
-    }
-    .variacao-selector button {
-        background-color: #f1f1f1;
-        border: 1px solid #ddd;
-        padding: 8px 12px;
-        margin-right: 8px;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    .variacao-selector button:hover {
-        background-color: #e0e0e0;
-    }
-    .variacao-selector button.selecionado {
-        background-color: var(--cor-principal);
-        color: white;
-        border-color: var(--cor-principal);
-    }
-    
-    /* Quantidade e Botão Comprar */
-    .acoes-compra {
-        display: flex;
-        gap: 20px;
-        align-items: center;
-        margin-top: 20px;
-    }
+    /* Miniaturas da galeria */
+    .galeria-miniaturas {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+        overflow-x: auto; /* Permite rolagem horizontal se muitas miniaturas */
+        padding-bottom: 5px; /* Para evitar que a sombra de rolagem corte a miniatura */
+    }
+    .galeria-miniaturas .miniatura {
+        width: 60px;
+        height: 60px;
+        object-fit: cover; /* Corta e preenche o espaço */
+        cursor: pointer;
+        border: 1px solid #ddd;
+        border-radius: 4px; /* Pequenas bordas arredondadas para miniaturas */
+        transition: border-color 0.2s ease;
+    }
+    .galeria-miniaturas .miniatura.selecionado {
+        border-color: var(--cor-principal) !important; /* Destaca a miniatura selecionada */
+        border-width: 2px !important;
+    }
+    
+    /* Coluna Direita: Informações e Ações */
+    .produto-info {
+        flex: 1; /* Ocupa o espaço restante */
+        min-width: 350px; /* Garante um mínimo para o texto em telas menores */
+        box-sizing: border-box;
+    }
+    
+    .preco-principal {
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--cor-principal);
+        margin: 10px 0 20px;
+    }
+    
+    /* Seletores de Variação */
+    .variacao-selector {
+        margin-bottom: 25px;
+        border-top: 1px solid #eee;
+        padding-top: 15px;
+    }
+    .variacao-selector h4 {
+        font-size: 1rem;
+        margin-bottom: 10px;
+        font-weight: 500;
+        color: var(--cor-secundaria);
+    }
+    .variacao-selector button {
+        background-color: #f1f1f1;
+        border: 1px solid #ddd;
+        padding: 8px 12px;
+        margin-right: 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .variacao-selector button:hover {
+        background-color: #e0e0e0;
+    }
+    .variacao-selector button.selecionado {
+        background-color: var(--cor-principal);
+        color: white;
+        border-color: var(--cor-principal);
+    }
+    
+    /* Quantidade e Botão Comprar */
+    .acoes-compra {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        margin-top: 20px;
+    }
 
-    .acoes-compra input[type="number"] {
-        padding: 10px;
-        width: 80px;
-        text-align: center;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-    }
-    
-    .btn-comprar {
-        font-size: 1.1rem;
-        padding: 12px 30px;
-        background-color: #28a745; /* Verde para Comprar */
-    }
-    .btn-comprar:hover {
-        background-color: #1e7e34;
-    }
-    
-    .descricao-completa {
-        margin-top: 30px;
-        border-top: 1px solid #eee;
-        padding-top: 20px;
-    }
+    .acoes-compra input[type="number"] {
+        padding: 10px;
+        width: 80px;
+        text-align: center;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    
+    .btn-comprar {
+        font-size: 1.1rem;
+        padding: 12px 30px;
+        background-color: #28a745; /* Verde para Comprar */
+    }
+    .btn-comprar:hover {
+        background-color: #1e7e34;
+    }
+    
+    .descricao-completa {
+        margin-top: 30px;
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+    }
 
-    /* Media Queries para Responsividade (melhor visualização em celulares) */
-    @media (max-width: 768px) {
-        .produto-detalhe-container {
-            flex-direction: column; /* Empilha as colunas */
-            gap: 20px;
-            padding: 20px;
-        }
-        .produto-galeria, .produto-info {
-            max-width: 100%; /* Ocupa a largura total */
-            min-width: unset; /* Remove o mínimo para se ajustar */
-            flex-basis: auto; /* Remove a largura fixa */
-        }
-        .produto-galeria #main-image {
-            max-height: 300px; /* Altura menor em dispositivos móveis */
-        }
-        .galeria-miniaturas {
-            justify-content: center; /* Centraliza as miniaturas em telas pequenas */
-        }
-        .acoes-compra {
-            flex-direction: column; /* Empilha quantidade e botão */
-            align-items: stretch; /* Estica para preencher a largura */
-        }
-        .acoes-compra input[type="number"], .btn-comprar {
-            width: 100%; /* Ocupa largura total */
-            box-sizing: border-box;
-        }
-    }
+    /* Media Queries para Responsividade (melhor visualização em celulares) */
+    @media (max-width: 768px) {
+        .produto-detalhe-container {
+            flex-direction: column; /* Empilha as colunas */
+            gap: 20px;
+            padding: 20px;
+        }
+        .produto-galeria, .produto-info {
+            max-width: 100%; /* Ocupa a largura total */
+            min-width: unset; /* Remove o mínimo para se ajustar */
+            flex-basis: auto; /* Remove a largura fixa */
+        }
+        .produto-galeria #main-image {
+            max-height: 300px; /* Altura menor em dispositivos móveis */
+        }
+        .galeria-miniaturas {
+            justify-content: center; /* Centraliza as miniaturas em telas pequenas */
+        }
+        .acoes-compra {
+            flex-direction: column; /* Empilha quantidade e botão */
+            align-items: stretch; /* Estica para preencher a largura */
+        }
+        .acoes-compra input[type="number"], .btn-comprar {
+            width: 100%; /* Ocupa largura total */
+            box-sizing: border-box;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -277,101 +277,121 @@
     
 </div>
 
-{% endblock content %} <--- ESTE ESTÁ FALTANDO!
+{% endblock content %}
+
 
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('form-adicionar-carrinho');
-        const variacaoInput = document.getElementById('variacao-input');
-        const botoesVariacao = document.querySelectorAll('.btn-variacao');
-        const mainImage = document.getElementById('main-image'); // Imagem principal
-        const miniaturas = document.querySelectorAll('.miniatura'); // Miniaturas da galeria
-        const requiredTypes = document.querySelectorAll('.variacao-selector');
-        const produtoUsaVariacoes = {{ produto.usa_variacoes|yesno:"true,false" }};
-        const estoqueTotal = {{ produto.get_estoque_total }};
-        const defaultImageUrl = mainImage ? mainImage.src : "{% static 'img/placeholder.png' %}";
-        
-        // 🚨 1. Mapeamento de Imagens por Variação (Gerado pelo Django) 🚨
-        const variacaoImageMap = {
-            // Gera um mapeamento no JS: {"ID_VARIAÇÃO": "URL_DA_FOTO"}
-            {% for variacao in produto.variacoes.all %}
-                {% if variacao.imagem %}
-                    "{{ variacao.id }}": "{{ variacao.imagem.url }}",
-                {% endif %}
-            {% endfor %}
-        };
-        
-        // --- Eventos de Galeria e Variação ---
+    // 🚨 1. Função de manipulação principal (refatorada para suportar touch)
+    function handleVariacaoSelection(button) {
+        const form = document.getElementById('form-adicionar-carrinho');
+        const variacaoInput = document.getElementById('variacao-input');
+        const mainImage = document.getElementById('main-image');
+        const miniaturas = document.querySelectorAll('.miniatura');
+        const variacaoImageMap = window.variacaoImageMap; // Acessa o mapeamento gerado
 
-        // Evento 1. Miniaturas da Galeria (Troca a foto principal)
-        miniaturas.forEach(miniatura => {
-            miniatura.addEventListener('click', function() {
-                // Troca a URL da imagem principal pela URL da miniatura
-                mainImage.src = this.dataset.fullUrl;
-                
-                // Remove destaque de todas as miniaturas
-                miniaturas.forEach(m => m.classList.remove('selecionado'));
-                
-                // Adiciona destaque à miniatura clicada
-                this.classList.add('selecionado');
-            });
-        });
+        const selectorDiv = button.closest('.variacao-selector');
+        const tipo = selectorDiv.dataset.tipo;
+        const variacaoId = button.dataset.id;
+        const defaultImageUrl = mainImage ? mainImage.src : "{% static 'img/placeholder.png' %}";
+        
+        // A. Gerencia o Estilo (Só pode selecionar um por tipo)
+        document.querySelectorAll(`.variacao-selector[data-tipo="${tipo}"] .btn-variacao`).forEach(btn => {
+            btn.classList.remove('selecionado');
+        });
+        button.classList.add('selecionado');
+        
+        // B. 🔴 Troca a Imagem Principal (Se a variação tiver foto)
+        if (variacaoImageMap[variacaoId]) {
+            mainImage.src = variacaoImageMap[variacaoId];
+            // Remove destaque das miniaturas (pois a imagem mudou via variação)
+            miniaturas.forEach(m => m.classList.remove('selecionado'));
+        } else {
+            // Volta para a foto principal do produto se a variação não tiver foto
+            mainImage.src = defaultImageUrl;
+        }
+        
+        // C. Atualiza o campo oculto
+        variacaoInput.value = variacaoId;
+    }
 
 
-        // Evento 2. Botões de Variação (Seleção e Troca de Foto)
-        if (produtoUsaVariacoes) {
-            botoesVariacao.forEach(button => {
-                button.addEventListener('click', function() {
-                    const selectorDiv = this.closest('.variacao-selector');
-                    const tipo = selectorDiv.dataset.tipo;
-                    const variacaoId = this.dataset.id;
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('form-adicionar-carrinho');
+        const variacaoInput = document.getElementById('variacao-input');
+        const botoesVariacao = document.querySelectorAll('.btn-variacao');
+        const requiredTypes = document.querySelectorAll('.variacao-selector');
+        const mainImage = document.getElementById('main-image');
+        const miniaturas = document.querySelectorAll('.miniatura');
+        
+        // Variáveis Django
+        const produtoUsaVariacoes = {{ produto.usa_variacoes|yesno:"true,false" }};
+        const estoqueTotal = {{ produto.get_estoque_total }};
+        const defaultImageUrl = mainImage ? mainImage.src : "{% static 'img/placeholder.png' %}";
 
-                    // A. Gerencia o Estilo (Só pode selecionar um por tipo)
-                    document.querySelectorAll(`.variacao-selector[data-tipo="${tipo}"] .btn-variacao`).forEach(btn => {
-                        btn.classList.remove('selecionado');
-                    });
-                    this.classList.add('selecionado');
-                    
-                    // B. 🔴 Troca a Imagem Principal (Se a variação tiver foto)
-                    if (variacaoImageMap[variacaoId]) {
-                        mainImage.src = variacaoImageMap[variacaoId];
-                        // Remove destaque das miniaturas e destaca a imagem principal
-                        miniaturas.forEach(m => m.classList.remove('selecionado'));
-                        // Opcional: Adicionar um destaque visual na imagem principal, se desejado
-                    } else {
-                        // Volta para a foto principal se a variação não tiver foto
-                        mainImage.src = defaultImageUrl;
-                    }
-                    
-                    // C. Atualiza o campo oculto (apenas para o JS de validação)
-                    variacaoInput.value = variacaoId; 
-                });
-            });
+        // 🚨 2. Mapeamento de Imagens por Variação (GLOBAL PARA FÁCIL ACESSO) 🚨
+        window.variacaoImageMap = {
+            {% for variacao in produto.variacoes.all %}
+                {% if variacao.imagem %}
+                    "{{ variacao.id }}": "{{ variacao.imagem.url }}",
+                {% endif %}
+            {% endfor %}
+        };
+        
+        // --- Eventos de Galeria e Variação ---
 
-            // 🚨 3. Validação: Checa se uma opção foi selecionada para CADA TIPO 🚨
-            form.addEventListener('submit', function(e) {
-                const selecoesFeitas = form.querySelectorAll('.variacao-selector .btn-variacao.selecionado').length;
-                
-                // Checa se o número de seleções é igual ao número de tipos de variação
-                if (requiredTypes.length > 0 && selecoesFeitas < requiredTypes.length) {
-                    e.preventDefault();
-                    alert("Por favor, selecione uma opção para cada tipo de variação (Cor, Tamanho, etc.) disponível.");
-                    return;
-                }
-                
-                // Se a validação do tipo passou, garante que o ID principal está lá
-                if (!variacaoInput.value) {
-                    e.preventDefault();
-                    alert("Por favor, selecione pelo menos uma opção de variação.");
-                }
-            });
-        }
-        
-        // Desabilitar o botão se o estoque for zero e não houver variação
-        if (!produtoUsaVariacoes && estoqueTotal <= 0) {
-            document.querySelector('.btn-comprar').disabled = true;
-        }
-    });
+        // Evento 1. Miniaturas da Galeria (Troca a foto principal)
+        miniaturas.forEach(miniatura => {
+            miniatura.addEventListener('click', function() {
+                mainImage.src = this.dataset.fullUrl;
+                
+                // Gerencia o Destaque
+                miniaturas.forEach(m => m.classList.remove('selecionado'));
+                this.classList.add('selecionado');
+                
+                // Limpa a seleção de variação (opcional, mas seguro)
+                botoesVariacao.forEach(btn => btn.classList.remove('selecionado'));
+            });
+        });
+
+
+        // Evento 2. Botões de Variação (Lógica de Click e Touch)
+        if (produtoUsaVariacoes) {
+            botoesVariacao.forEach(button => {
+                
+                // 🔴 CLICK (Desktop)
+                button.addEventListener('click', function() {
+                    handleVariacaoSelection(this);
+                });
+
+                // 🔴 TOUCHSTART (Celular) - CORREÇÃO CRÍTICA
+                button.addEventListener('touchstart', function(e) {
+                    e.preventDefault(); 
+                    handleVariacaoSelection(this);
+                });
+            });
+
+            // 🚨 3. Validação: Checa se uma opção foi selecionada para CADA TIPO 🚨
+            form.addEventListener('submit', function(e) {
+                const selecoesFeitas = form.querySelectorAll('.variacao-selector .btn-variacao.selecionado').length;
+                
+                if (requiredTypes.length > 0 && selecoesFeitas < requiredTypes.length) {
+                    e.preventDefault();
+                    alert("Por favor, selecione uma opção para cada tipo de variação (Cor, Tamanho, etc.) disponível.");
+                    return;
+                }
+                
+                if (!variacaoInput.value) {
+                    e.preventDefault();
+                    alert("Por favor, selecione pelo menos uma opção de variação.");
+                }
+            });
+        }
+        
+        // Desabilitar o botão se o estoque for zero e não houver variação
+        if (!produtoUsaVariacoes && estoqueTotal <= 0) {
+            document.querySelector('.btn-comprar').disabled = true;
+        }
+    });
 </script>
 {% endblock %}
