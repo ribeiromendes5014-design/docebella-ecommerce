@@ -1,5 +1,3 @@
-# docebella_project/settings.py
-
 from pathlib import Path
 from decouple import config
 import os
@@ -68,14 +66,7 @@ MIDDLEWARE = [
 
 # NOVO: Formato correto para Django 4.2+ e WhiteNoise
 # ESTE BLOCO SERÁ SOBRESCRITO PELA LÓGICA DE PRODUÇÃO ABAIXO
-STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
+# Removido o bloco antigo de STORAGES aqui.
 
 # 🚨 ADICIONE ESTA LINHA FALTANTE 🚨
 ROOT_URLCONF = 'docebella_project.urls' 
@@ -107,7 +98,7 @@ DATABASES = {
     'default': dj_database_url.parse(
         # Tenta ler a variável de ambiente (padrão do Render), senão usa a URL fixa
         os.environ.get('DATABASE_URL', POSTGRES_URL),
-        conn_max_age=600  # Mantém a conexão ativa
+        conn_max_age=600   # Mantém a conexão ativa
     )
 }
 
@@ -158,32 +149,15 @@ USERNAME_FIELD = 'email'
 REQUIRED_FIELDS = ['nome_completo'] 
 
 # ----------------------------------------------------
-# CONFIGURAÇÕES DE AUTENTICAÇÃO (continuação)
+# CONFIGURAÇÕES DE ARQUIVOS (Static - Manter)
 # ----------------------------------------------------
+# Configurações de Estáticos são mantidas com os nomes de variáveis do bloco original.
 
-# Corrige o erro 404. Redireciona para sua URL de login customizada /conta/login/
-LOGIN_URL = '/conta/login/'
-
-# URL para onde o usuário será redirecionado após o login (se não houver um ?next=)
-LOGIN_REDIRECT_URL = '/' # Você pode mudar para '/conta/painel/' se preferir
-
-
-# Default primary key field type
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# ----------------------------------------------------
-# CONFIGURAÇÕES DE ARQUIVOS (Estáticos e Mídia)
-# ----------------------------------------------------
-
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-]
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Configurações de Mídia em Desenvolvimento (Serão sobrescritas em produção)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# Removidas as configurações antigas de MEDIA_URL e MEDIA_ROOT aqui.
 
 
 # ----------------------------------------------------
@@ -197,61 +171,73 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-#3-c$i&#$#wx^n6^#0v4w
 ALLOWED_HOSTS = [
     '127.0.0.1', 
     'localhost', 
-    'catalagoloja-zn2u.onrender.com',  # <-- SEU DOMÍNIO EXATO
-    '.onrender.com'                   # <-- O curinga correto para o Render
+    'catalagoloja-zn2u.onrender.com', 
+    '.onrender.com'               
 ] 
 
 # >>> CORREÇÃO CRÍTICA DO ERRO 403 (CSRF) <<<
-# Adicione a URL base do seu servidor HTTPS para que o Django confie na requisição POST
 CSRF_TRUSTED_ORIGINS = [
     'https://catalagoloja-zn2u.onrender.com', 
     'https://*.onrender.com'
 ]
 
-# 🚨 LÓGICA DE MÍDIA (S3/Cloud) PARA PRODUÇÃO 🚨
-if not DEBUG:
-    # Configurações para o AWS S3 (ou similar via django-storages)
-    
-    # Busca chaves do ambiente (Render)
-    # Adicione default=None para evitar o erro UndefinedValueError se a variável faltar
-    AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default=None)
-    AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default=None)
-    AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default=None)
-    
-    # Use sua região correta, que é 'us-east-2'
-    AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', default='us-east-2')
-    
-    
-    # 🚨 NOVO BLOCO DE VERIFICAÇÃO CRÍTICA 🚨
-    if AWS_STORAGE_BUCKET_NAME:
-        
-        # Garante que os arquivos sejam públicos
-        AWS_DEFAULT_ACL = 'public-read'
-        
-        # Define o S3 como o backend padrão para todos os arquivos de MÍDIA
-        DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-        
-        # 🚨 CORREÇÃO PRINCIPAL AQUI: Define o endpoint e simplifica a MEDIA_URL 🚨
-        
-        # 1. Define o Endereço de Serviço para a Região (mais confiável)
-        AWS_S3_ENDPOINT_URL = f'https://s3.{AWS_S3_REGION_NAME}.amazonaws.com'
-        
-        # 2. Define o DOMÍNIO CUSTOMIZADO que inclui a região (necessário para us-east-2)
-        AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com'
-        
-        # 3. Define a URL base para o seu bucket
-        MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
 
+# #######################################################################
+# # Bloco de CONFIGURAÇÕES DE ARQUIVOS (Mídia/S3) - CORREÇÃO DE ATIVAÇÃO
+# #######################################################################
 
-        # Sobrescreve o bloco STORAGES para usar o S3
-        STORAGES = {
-            "default": {
-                "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-            },
-            "staticfiles": {
-                "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-            },
-        }
+# Sua configuração de chaves (AJUSTADA: Default é agora uma string vazia para facilitar a checagem)
+AWS_ACCESS_KEY_ID = 'AKIAQGI66E5UD5MGBJWW' # <- CHAVE REAL
+AWS_SECRET_ACCESS_KEY = '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' # <- CHAVE REAL
+AWS_STORAGE_BUCKET_NAME = 'ocebella-ecommerce-media-2025' # <- NOME DO BUCKET REAL
+AWS_S3_REGION_NAME = 'us-east-2'
+
+# Inicializa o storage local para fallback
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+# Configuração que pode ajudar a resolver conflitos de caminho
+AWS_LOCATION = 'media' # O Django S3Boto3Storage adiciona isso como prefixo
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400', # Cache de 1 dia
+}
+AWS_DEFAULT_ACL = 'public-read'
+# 🚨 CORREÇÃO CRÍTICA AQUI 🚨
+# Ativa o S3 se o nome do bucket ESTIVER configurado E o access key TAMBÉM estiver.
+if AWS_STORAGE_BUCKET_NAME and AWS_ACCESS_KEY_ID:
+    
+    # 1. Define o S3 como o backend padrão para todos os arquivos de MÍDIA
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    
+    # 2. Define o Domínio Customizado do S3
+    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com'
+    
+    # 3. Faz a MEDIA_URL apontar para o S3
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
+
+# 🚨 ADICIONE ESTAS DUAS LINHAS TEMPORARIAMENTE 🚨
+print(f"DEBUG: DEFAULT_FILE_STORAGE está usando: {DEFAULT_FILE_STORAGE}")
+print(f"DEBUG: MEDIA_URL está usando: {MEDIA_URL}")
+# 🚨 REMOVA DEPOIS DE TESTAR 🚨
+
+# ----------------------------------------------------
+# BLOCO STORAGES (Nível de topo)
+# ----------------------------------------------------
+# Usa o DEFAULT_FILE_STORAGE que foi definido acima (S3 ou Local)
+STORAGES = {
+    "default": {
+        "BACKEND": DEFAULT_FILE_STORAGE,
+    },
+    # Usa Whitenoise para arquivos estáticos (sempre bom)
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+# #######################################################################
+# # Fim do Bloco de CONFIGURAÇÕES DE ARQUIVOS
+# #######################################################################
+
 
 # ----------------------------------------------------
 # CONFIGURAÇÕES JAZZMIN (Admin Moderno)

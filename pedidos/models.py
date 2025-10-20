@@ -1,16 +1,13 @@
-# pedidos/models.py - CORRIGIDO
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone # Importar timezone para as datas de validade
 from produtos.models import Produto, Variacao
 
-from produtos.models import Produto, Variacao 
-
 
 class OpcaoFrete(models.Model):
     # 🚨 Adicione temporariamente 'blank=True' 🚨
-    nome = models.CharField(max_length=100, unique=True, blank=True) 
+    nome = models.CharField(max_length=100, unique=True, blank=True)
     custo = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     ativo = models.BooleanField(default=True)
 
@@ -19,21 +16,21 @@ class OpcaoFrete(models.Model):
         
 class EnderecoEntrega(models.Model):
     nome = models.CharField(max_length=255)
-    sobrenome = models.CharField(max_length=255, blank=True, null=True) # <<< ADICIONE ISSO
+    sobrenome = models.CharField(max_length=255, blank=True, null=True)
     email = models.EmailField()
     
     # Tornar OPCIONAL:
-    cep = models.CharField(max_length=9, blank=True, null=True) # <<< NOVO
-    rua = models.CharField(max_length=255, blank=True, null=True) # <<< NOVO
-    numero = models.CharField(max_length=10, blank=True, null=True) # <<< NOVO
+    cep = models.CharField(max_length=9, blank=True, null=True)
+    rua = models.CharField(max_length=255, blank=True, null=True)
+    numero = models.CharField(max_length=10, blank=True, null=True)
     complemento = models.CharField(max_length=255, blank=True)
-    bairro = models.CharField(max_length=100, blank=True, null=True) # <<< NOVO
-    cidade = models.CharField(max_length=100, blank=True, null=True) # <<< NOVO
-    estado = models.CharField(max_length=2, blank=True, null=True) # <<< NOVO
+    bairro = models.CharField(max_length=100, blank=True, null=True)
+    cidade = models.CharField(max_length=100, blank=True, null=True)
+    estado = models.CharField(max_length=2, blank=True, null=True)
 
     def __str__(self):
         return f'{self.rua}, {self.numero} - {self.cidade}/{self.estado}'
- 
+    
     class Meta:
         verbose_name_plural = "Endereços de Entrega"
 
@@ -56,10 +53,14 @@ class Pedido(models.Model):
     cupom = models.ForeignKey('Cupom', on_delete=models.SET_NULL, null=True, blank=True)
     
     # Informações financeiras
-    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Aguardando Pagamento')
+    # 🚨 CORREÇÃO CRÍTICA AQUI: O status padrão agora é 'Em Separação' 🚨
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Em Separação')
     valor_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     valor_frete = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     valor_desconto = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    
+    # Adicionado 'metodo_envio' (Corrigido o erro anterior da view)
+    metodo_envio = models.CharField(max_length=100, default='Retirada na Loja')
     
     # Rastreamento
     codigo_rastreio = models.CharField(max_length=100, blank=True, null=True)
@@ -73,7 +74,8 @@ class Pedido(models.Model):
 class ItemPedido(models.Model):
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name="itens")
     produto = models.ForeignKey(Produto, on_delete=models.CASCADE)
-    variacao = models.ForeignKey(Variacao, on_delete=models.CASCADE)
+    # 🚨 CORRIGIDO AQUI: Permite que produtos simples sejam criados com VARIAÇÃO NULA 🚨
+    variacao = models.ForeignKey(Variacao, on_delete=models.CASCADE, null=True, blank=True)
     preco_unitario = models.DecimalField(max_digits=10, decimal_places=2)
     quantidade = models.PositiveIntegerField()
 

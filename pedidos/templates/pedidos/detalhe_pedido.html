@@ -10,13 +10,15 @@
 
     {% if pedido %}
         <p style="font-size: 1.1rem; margin-top: 20px;">
-            Obrigado por sua compra, <strong>{{ pedido.cliente.username }}</strong>!
+            {# CORRIGIDO: Usa nome_completo em vez de username #}
+            Obrigado por sua compra, <strong>{{ pedido.cliente.nome_completo }}</strong>!
             Seu pedido foi registrado.
         </p>
 
         <div style="background-color: #f8f9fa; padding: 15px; border-radius: 4px; margin-top: 20px;">
             <h3 style="margin-top: 0; color: #343a40;">Resumo do Pedido #{{ pedido.id }}</h3>
             
+            {# NOTE: get_status_display é o método correto para mostrar a label do status #}
             <p><strong>Status:</strong> {{ pedido.get_status_display }}</p>
             <p><strong>Método de Envio:</strong> {{ pedido.metodo_envio }}</p>
             
@@ -36,7 +38,8 @@
         </ul>
         
         <div style="text-align: center; margin-top: 40px;">
-            <a href="{% url 'pedidos:lista_pedidos' %}" class="btn-principal" style="text-decoration: none; padding: 10px 20px;">
+            {# CORREÇÃO CRÍTICA: 'pedidos:lista_pedidos' mudado para 'pedidos:lista' #}
+            <a href="{% url 'pedidos:lista' %}" class="btn-principal" style="text-decoration: none; padding: 10px 20px;">
                 Ver Todos os Meus Pedidos
             </a>
         </div>

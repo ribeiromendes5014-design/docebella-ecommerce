@@ -52,11 +52,6 @@ def checkout(request):
         form = CheckoutFormSimplificado(request.POST, user=request.user)
         
         if form.is_valid():
-            
-            # --- O "PULO DO GATO" ESTÁ AQUI ---
-            # Como seu modelo Pedido EXIGE um EnderecoEntrega,
-            # vamos criar um "Endereco Falso" apenas com os dados de retirada.
-            
             cleaned_data = form.cleaned_data
             
             try:
@@ -66,26 +61,26 @@ def checkout(request):
                     endereco_retirada = EnderecoEntrega.objects.create(
                         nome=cleaned_data['nome'],
                         sobrenome="",
-                        email=cleaned_data['email'],
+                        email=request.user.email,
                         cep="00000-000",
                         rua="Retirada na Loja",
                         numero="S/N",
                         complemento=f"Telefone: {cleaned_data['telefone']}",
                         bairro="Loja",
-                        cidade="Doce&Bella", # Ou o nome da sua cidade
-                        estado="PR" # Ou o seu estado
+                        cidade="Doce&Bella",
+                        estado="PR"
                     )
                     
-                    # 2. Crie o Pedido, agora com R$ 0 de frete
+                    # 2. Crie o Pedido
                     pedido = Pedido.objects.create(
                         cliente=request.user,
-                        endereco=endereco_retirada, # Usamos o endereço falso
-                        valor_total=subtotal_carrinho, # Total é SÓ o subtotal
+                        endereco=endereco_retirada,
+                        valor_total=subtotal_carrinho,
                         valor_frete=0.00,
                         metodo_envio="Retirada na Loja"
                     )
                     
-                    # 3. Mova os itens do carrinho para o pedido
+                    # 3. Mova os itens do carrinho e atualize o estoque
                     for item_carrinho in itens_carrinho:
                         target = item_carrinho.variacao or item_carrinho.produto
                         
@@ -108,15 +103,26 @@ def checkout(request):
                     itens_carrinho.delete()
                     messages.success(request, f"Pedido #{pedido.id} criado com sucesso! Aguardando pagamento.")
                     
-                    # FINALMENTE, o REDIRECT que faltava!
                     return redirect('pedidos:detalhe_pedido', pedido_id=pedido.id)
                 
             except Exception as e:
+                # 🚨 ESTE BLOCO ESTAVA MAL INDENTADO 🚨
+                print("\n=======================================================")
+                print("FALHA NA CRIAÇÃO DO PEDIDO (EXCEPTION DISPARADA):")
+                print("MOTIVO:", e)
+                print("=======================================================\n")
+                
                 messages.error(request, f"Ocorreu um erro ao finalizar o pedido. Motivo: {e}")
                 return redirect('carrinho:ver_carrinho')
         
         else:
+            # 🚨 ESTE BLOCO ESTAVA MAL INDENTADO 🚨
             # Se o formulário for inválido, recarrega a página mostrando os erros
+            print("\n=======================================================")
+            print("ERRO DE VALIDAÇÃO DO FORMULÁRIO (IS_VALID() = False):")
+            print(form.errors)
+            print("=======================================================\n")
+            
             messages.error(request, "Por favor, corrija os erros no formulário.")
 
     else:
@@ -127,14 +133,14 @@ def checkout(request):
         'form': form,
         'itens_carrinho': itens_carrinho,
         'subtotal_carrinho': subtotal_carrinho,
-        'frete_opcoes': {}, # Deixamos vazio, pois não há opções
+        'frete_opcoes': {},
         'titulo': "Checkout - Finalizar Pedido"
     }
     return render(request, 'pedidos/checkout.html', context)
 
 
 # -------------------------------------------------------------
-## Detalhe do Pedido
+## Detalhe do Pedido (MANTIDO)
 # -------------------------------------------------------------
 
 @login_required 
@@ -150,11 +156,12 @@ def detalhe_pedido(request, pedido_id):
         'pedido': pedido,
     }
     
-    return render(request, 'pedidos/checkout.html', context)
+    # 🚨 CORREÇÃO CRÍTICA 2: Renderizar o template 'pedidos/detalhe_pedido.html'
+    return render(request, 'pedidos/detalhe_pedido.html', context)
 
 
 # -------------------------------------------------------------
-## Lista de Pedidos
+## Lista de Pedidos (MANTIDO)
 # -------------------------------------------------------------
 
 @login_required 
@@ -166,4 +173,5 @@ def lista_pedidos(request):
         'pedidos': pedidos,
     }
     
-    return render(request, 'pedidos/checkout.html', context)
+    # 🚨 CORREÇÃO CRÍTICA 3: Renderizar o template 'pedidos/lista_pedidos.html'
+    return render(request, 'pedidos/lista_pedidos.html', context)

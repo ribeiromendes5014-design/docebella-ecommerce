@@ -1,7 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load widget_tweaks %} {% block extra_css %}
+{% load widget_tweaks %}
+
+{% block extra_css %}
 <style>
+    /* Estilos (Mantidos iguais) */
     .page-title {
         text-align: center;
         margin-bottom: 40px;
@@ -12,7 +15,6 @@
         flex-wrap: wrap;
         gap: 30px;
     }
-    /* Coluna do Formulário (Esquerda) */
     .checkout-form {
         flex: 2;
         min-width: 400px;
@@ -21,7 +23,6 @@
         border-radius: 8px;
         box-shadow: var(--sombra-card);
     }
-    /* Coluna do Resumo (Direita) */
     .checkout-summary {
         flex: 1;
         min-width: 300px;
@@ -29,14 +30,13 @@
         padding: 20px;
         border: 1px solid #ddd;
         border-radius: 8px;
-        height: fit-content; /* Faz o resumo parar na altura do conteúdo */
+        height: fit-content;
     }
     .checkout-summary h2 {
         border-bottom: 2px solid var(--cor-principal);
         padding-bottom: 10px;
         margin-bottom: 20px;
     }
-    /* Itens do resumo */
     .summary-item {
         display: flex;
         justify-content: space-between;
@@ -44,7 +44,6 @@
         color: #555;
         margin-bottom: 10px;
     }
-    /* Estilos para o formulário */
     .form-row {
         display: flex;
         gap: 15px;
@@ -59,122 +58,121 @@
         margin-bottom: 5px;
         font-weight: 500;
     }
-    /* Classe genérica para inputs estilizados com widget_tweaks */
     .form-control {
         padding: 10px;
         border: 1px solid #ccc;
         border-radius: 4px;
         width: 100%;
-        box-sizing: border-box; /* Garante que o padding não quebre o layout */
+        box-sizing: border-box;
     }
     .total-line-checkout {
-        border-top: 2px solid var(--cor-principal); 
-        padding-top: 10px; 
-        margin-top: 15px; 
-        font-size: 1.5rem; 
+        border-top: 2px solid var(--cor-principal);
+        padding-top: 10px;
+        margin-top: 15px;
+        font-size: 1.5rem;
         color: var(--cor-principal);
+    }
+    .form-error {
+        color: #dc3545;
+        font-size: 0.875em;
+        margin-top: 4px;
+    }
+    .help-text {
+        font-size: 0.9em;
+        color: #6c757d;
+        margin-top: 4px;
     }
 </style>
 {% endblock %}
 
-
 {% block content %}
-<h1 class="page-title">{{ titulo }}</h1>
+<h1 class="page-title">Finalizar Pedido (Retirada na Loja)</h1>
 
 <div class="checkout-container">
 
     <div class="checkout-form">
-        <h2>1. Endereço de Entrega</h2>
+        <h2>1. Dados para Contato e Retirada</h2>
         
+        {% if form.non_field_errors %}
+            <div class="error-message">
+                <p>Por favor, corrija os seguintes erros:</p>
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        {% if messages %}
+            {% for message in messages %}
+                {# Adiciona a classe 'alert-danger' se for erro de formulário #}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
         <form action="{% url 'pedidos:checkout' %}" method="POST">
             {% csrf_token %}
             
-            <div class="form-row">
-                <div class="form-group" style="flex: 1;">
-                    <label for="{{ form.nome.id_for_label }}">Nome:</label>
-                    {% render_field form.nome class="form-control" placeholder="Seu nome" %}
-                </div>
-                <div class="form-group" style="flex: 1;">
-                    <label for="{{ form.sobrenome.id_for_label }}">Sobrenome:</label>
-                    {% render_field form.sobrenome class="form-control" placeholder="Seu sobrenome" %}
-                </div>
-            </div>
-
+            {# BLOCO CORRIGIDO 1: CAMPO NOME #}
             <div class="form-group" style="margin-bottom: 15px;">
-                <label for="{{ form.email.id_for_label }}">E-mail:</label>
-                {% render_field form.email class="form-control" placeholder="seuemail@exemplo.com" %}
+                <label for="{{ form.nome.id_for_label }}">Nome Completo:</label>
+                {% render_field form.nome class="form-control" placeholder="Seu nome completo" %}
+                {% if form.nome.errors %}<div class="form-error">{{ form.nome.errors.as_text }}</div>{% endif %}
             </div>
 
-            <div class="form-row">
-                <div class="form-group" style="flex: 1;">
-                    <label for="{{ form.cep.id_for_label }}">CEP:</label>
-                    {% render_field form.cep class="form-control" placeholder="00000-000" %}
-                </div>
-                 <div class="form-group" style="flex: 3;">
-                    <label for="{{ form.rua.id_for_label }}">Rua / Av.:</label>
-                    {% render_field form.rua class="form-control" placeholder="Nome da sua rua" %}
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group" style="flex: 1;">
-                    <label for="{{ form.numero.id_for_label }}">Número:</label>
-                    {% render_field form.numero class="form-control" placeholder="Nº" %}
-                </div>
-                 <div class="form-group" style="flex: 2;">
-                    <label for="{{ form.complemento.id_for_label }}">Complemento:</label>
-                    {% render_field form.complemento class="form-control" placeholder="Apto, Bloco, etc." %}
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group" style="flex: 2;">
-                    <label for="{{ form.bairro.id_for_label }}">Bairro:</label>
-                    {% render_field form.bairro class="form-control" placeholder="Seu bairro" %}
-                </div>
-                 <div class="form-group" style="flex: 2;">
-                    <label for="{{ form.cidade.id_for_label }}">Cidade:</label>
-                    {% render_field form.cidade class="form-control" placeholder="Sua cidade" %}
-                </div>
-                 <div class="form-group" style="flex: 1;">
-                    <label for="{{ form.estado.id_for_label }}">Estado:</label>
-                    {% render_field form.estado class="form-control" placeholder="UF" %}
-                </div>
+            {# BLOCO CORRIGIDO 2: CAMPO TELEFONE (Resolve o erro 'obrigatório') #}
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label for="{{ form.telefone.id_for_label }}">Telefone (WhatsApp):</label>
+                {% render_field form.telefone class="form-control" placeholder="(00) 90000-0000" %}
+                {% if form.telefone.help_text %}<div class="help-text">{{ form.telefone.help_text }}</div>{% endif %}
+                {% if form.telefone.errors %}<div class="form-error">{{ form.telefone.errors.as_text }}</div>{% endif %}
             </div>
             
-            <hr style="margin: 20px 0;">
+            {# TODOS OS DEMAIS CAMPOS DE ENDEREÇO (SOBRENOME, CEP, RUA, ETC.) FORAM REMOVIDOS #}
+
+            <hr style="margin: 30px 0 20px 0;">
+
+            <h2>2. Método de Entrega</h2>
             
+            <div style="border: 1px solid #ccc; border-radius: 4px; padding: 10px; background: #f9f9f9;">
+                <strong>Retirada na Loja</strong> (Sem Custo)
+                <p style="margin: 5px 0 0 0; font-size: 0.9rem;">Seu pedido será separado para retirada na loja.</p>
+            </div>
+
+            <hr style="margin: 30px 0 20px 0;">
+
             <button type="submit" class="btn-principal" style="width: 100%; font-size: 1.1rem;">
-                Salvar Endereço e Calcular Frete
+                Finalizar Pedido
             </button>
         </form>
     </div>
 
     <div class="checkout-summary">
         <h2>Resumo do Pedido</h2>
-        
+
         {% for item in itens_carrinho %}
         <div class="summary-item">
-            <span>{{ item.produto.nome }} (x{{ item.quantidade }})</span>
+            <span>{{ item.produto.nome }} (x{{ item.quantidade }}) 
+                {% if item.variacao %} - ({{ item.variacao.valor }}){% endif %}
+            </span>
             <strong>R$ {{ item.get_subtotal|floatformat:2 }}</strong>
         </div>
         {% endfor %}
-        
+
         <hr style="margin: 20px 0;">
-        
+
         <div class="summary-item" style="font-weight: bold; color: #333; font-size: 1.1rem;">
             <span>Subtotal</span>
             <strong>R$ {{ subtotal_carrinho|floatformat:2 }}</strong>
         </div>
+
         <div class="summary-item" style="color: #666;">
-            <span>Frete</span>
-            <strong>(a calcular)</strong>
+            <span>Frete (Retirada)</span>
+            <strong>R$ 0,00</strong>
         </div>
-        
+
         <div class="total-line-checkout">
             Total: <strong>R$ {{ subtotal_carrinho|floatformat:2 }}</strong>
         </div>
     </div>
-
 </div>
 {% endblock %}
