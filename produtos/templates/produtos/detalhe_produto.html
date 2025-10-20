@@ -16,7 +16,37 @@
         box-shadow: var(--sombra-card);
         align-items: flex-start; /* Alinha o topo das colunas */
     }
-    
+    /* Coluna Esquerda: Imagem/Galeria */
+.produto-galeria {
+    /* Mantenha suas regras originais, elas estão corretas */
+    flex: 0 0 450px; 
+    max-width: 450px; 
+    min-width: 300px;
+    box-sizing: border-box;
+}
+
+/* Wrapper da imagem principal para garantir borda e overflow */
+.produto-galeria .main-image-wrapper {
+    /* 🛑 CORREÇÃO CRÍTICA: Garante que o wrapper não cresça além do limite. */
+    width: 100%;
+    max-width: 450px; /* Garante que o wrapper não ultrapasse a largura do container */
+    
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden; 
+    margin-bottom: 15px; 
+}
+
+/* Imagem principal dentro do wrapper */
+.produto-galeria #main-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+    /* 🛑 CORREÇÃO CRÍTICA: Se a imagem estiver escapando, force a largura dentro do container */
+    max-width: 100%; 
+    max-height: 400px; 
+}
     /* Coluna Esquerda: Imagem/Galeria */
     .produto-galeria {
         /* Define a largura exata da coluna da galeria */
