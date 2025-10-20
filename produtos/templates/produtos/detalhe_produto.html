@@ -116,12 +116,38 @@
 <div class="produto-detalhe-container">
     
     <div class="produto-galeria">
+    
+    <div class="main-image-wrapper">
         {% if produto.imagem %}
-            <img src="{{ produto.imagem.url }}" alt="Imagem principal do produto {{ produto.nome }}">
+            <img id="main-image" src="{{ produto.imagem.url }}" alt="Imagem principal do produto {{ produto.nome }}">
         {% else %}
-            <img src="{% static 'img/placeholder.png' %}" alt="Sem Imagem">
+            <img id="main-image" src="{% static 'img/placeholder.png' %}" alt="Sem Imagem">
         {% endif %}
     </div>
+
+    <div class="galeria-miniaturas" style="display: flex; gap: 10px; margin-top: 15px; overflow-x: auto;">
+        
+        {% if produto.imagem %}
+            <img class="miniatura" 
+                 data-full-url="{{ produto.imagem.url }}" 
+                 src="{{ produto.imagem.url }}" 
+                 alt="Miniatura Principal" 
+                 style="width: 60px; height: 60px; cursor: pointer; border: 2px solid var(--cor-principal);"
+            >
+        {% endif %}
+        
+        {% for imagem_galeria in produto.galeria_imagens.all %}
+            <img class="miniatura" 
+                 data-full-url="{{ imagem_galeria.imagem.url }}" 
+                 src="{{ imagem_galeria.imagem.url }}" 
+                 alt="{{ imagem_galeria.descricao }}" 
+                 style="width: 60px; height: 60px; cursor: pointer; border: 1px solid #ddd;"
+            >
+        {% endfor %}
+
+    </div>
+    
+</div>
     
     <div class="produto-info">
         
@@ -190,59 +216,87 @@
         const form = document.getElementById('form-adicionar-carrinho');
         const variacaoInput = document.getElementById('variacao-input');
         const botoesVariacao = document.querySelectorAll('.btn-variacao');
+        const mainImage = document.getElementById('main-image'); // Imagem principal
+        const miniaturas = document.querySelectorAll('.miniatura'); // Miniaturas da galeria
+        const requiredTypes = document.querySelectorAll('.variacao-selector');
         const produtoUsaVariacoes = {{ produto.usa_variacoes|yesno:"true,false" }};
         const estoqueTotal = {{ produto.get_estoque_total }};
+        const defaultImageUrl = mainImage ? mainImage.src : "{% static 'img/placeholder.png' %}";
+        
+        // 🚨 1. Mapeamento de Imagens por Variação (Gerado pelo Django) 🚨
+        const variacaoImageMap = {
+            // Gera um mapeamento no JS: {"ID_VARIACAO": "URL_DA_FOTO"}
+            {% for variacao in produto.variacoes.all %}
+                {% if variacao.imagem %}
+                    "{{ variacao.id }}": "{{ variacao.imagem.url }}",
+                {% endif %}
+            {% endfor %}
+        };
+        
+        // --- Eventos de Galeria e Variação ---
 
-        // 🚨 1. Coleta todos os Tipos de Variação esperados (Ex: "Cor", "Tamanho") 🚨
-        const requiredTypes = document.querySelectorAll('.variacao-selector');
+        // Evento 1. Miniaturas da Galeria (Troca a foto principal)
+        miniaturas.forEach(miniatura => {
+            miniatura.addEventListener('click', function() {
+                // Troca a URL da imagem principal pela URL da miniatura
+                mainImage.src = this.dataset.fullUrl;
+                
+                // Remove destaque de todas as miniaturas
+                miniaturas.forEach(m => m.style.border = '1px solid #ddd');
+                
+                // Adiciona destaque à miniatura clicada
+                this.style.border = '2px solid var(--cor-principal)'; 
+            });
+        });
 
+
+        // Evento 2. Botões de Variação (Seleção e Troca de Foto)
         if (produtoUsaVariacoes) {
             botoesVariacao.forEach(button => {
                 button.addEventListener('click', function() {
                     const selectorDiv = this.closest('.variacao-selector');
                     const tipo = selectorDiv.dataset.tipo;
-                    
-                    // Remove 'selecionado' de todos os botões do mesmo TIPO
+                    const variacaoId = this.dataset.id;
+
+                    // A. Gerencia o Estilo (Só pode selecionar um por tipo)
                     document.querySelectorAll(`.variacao-selector[data-tipo="${tipo}"] .btn-variacao`).forEach(btn => {
                         btn.classList.remove('selecionado');
                     });
-
-                    // Adiciona 'selecionado' ao botão clicado
                     this.classList.add('selecionado');
                     
-                    // 🚨 ATUALIZAÇÃO CRÍTICA: Lógica para enviar o ID correto 🚨
-                    // Para simplificar, vamos enviar APENAS o ID da última variação clicada.
-                    // ATENÇÃO: Seu backend de carrinho precisará de AJUSTES para lidar
-                    // com o ID da variação, que pode ser o ID de uma Cor OU de um Tamanho.
-                    variacaoInput.value = this.dataset.id;
+                    // B. 🔴 Troca a Imagem Principal
+                    if (variacaoImageMap[variacaoId]) {
+                        mainImage.src = variacaoImageMap[variacaoId];
+                    } else {
+                        // Volta para a foto principal se a variação não tiver foto
+                        mainImage.src = defaultImageUrl;
+                    }
+                    
+                    // C. Atualiza o campo oculto (apenas para o JS de validação)
+                    variacaoInput.value = variacaoId; 
                 });
             });
 
-            // 🚨 2. Validação: Checa se uma opção foi selecionada para CADA TIPO 🚨
+            // 🚨 3. Validação: Checa se uma opção foi selecionada para CADA TIPO 🚨
             form.addEventListener('submit', function(e) {
-                let allRequiredSelected = true;
-                const selecoesFeitas = form.querySelectorAll('.btn-variacao.selecionado').length;
+                const selecoesFeitas = form.querySelectorAll('.variacao-selector .btn-variacao.selecionado').length;
                 
-                // Se o número de seleções feitas for menor que o número de tipos obrigatórios...
+                // Checa se o número de seleções é igual ao número de tipos de variação
                 if (requiredTypes.length > 0 && selecoesFeitas < requiredTypes.length) {
-                    allRequiredSelected = false;
-                }
-
-                if (!allRequiredSelected) {
                     e.preventDefault();
-                    alert("Por favor, selecione uma opção para cada tipo de variação disponível.");
+                    alert("Por favor, selecione uma opção para cada tipo de variação (Cor, Tamanho, etc.) disponível.");
                     return;
                 }
                 
-                // Se o produto usa variações, a variação_id deve ser preenchida.
+                // Se a validação do tipo passou, garante que o ID principal está lá
                 if (!variacaoInput.value) {
-                     e.preventDefault();
-                     alert("Por favor, selecione uma opção antes de adicionar ao carrinho.");
+                    e.preventDefault();
+                    alert("Por favor, selecione pelo menos uma opção de variação.");
                 }
             });
         }
         
-        // Se o produto não usa variação e o estoque é zero, desabilita o botão Comprar
+        // Desabilitar o botão se o estoque for zero e não houver variação
         if (!produtoUsaVariacoes && estoqueTotal <= 0) {
             document.querySelector('.btn-comprar').disabled = true;
         }
