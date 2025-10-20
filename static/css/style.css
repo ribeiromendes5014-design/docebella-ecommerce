@@ -135,3 +135,104 @@
     text-align: right;
     line-height: 1.2;
 }
+/* =======================================================
+   MEDIA QUERIES: AJUSTES PARA TELAS PEQUENAS (CELULAR)
+   ======================================================= */
+@media (max-width: 768px) {
+
+    /* --- 1. CABEÇALHO (Obrigatório para Redução de Altura) --- */
+    
+    /* Remove a posição fixed e limpa a margem superior para evitar o header gigante */
+    .fixed-header-custom {
+        position: static; /* Permite que o cabeçalho role junto com a página */
+        height: auto;
+    }
+    
+    /* Remove o padding de 70px do body que compensava o header fixo */
+    body {
+        padding-top: 0; 
+    }
+
+    /* Layout do Header (Empilhamento Vertical) */
+    .header-principal-unificado .container {
+        flex-direction: column; 
+        align-items: flex-start;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    /* Logo (Garante que ocupe a largura e se ajuste) */
+    .logo, .icones-acao {
+        width: 100%;
+        text-align: left;
+    }
+    
+    .logo {
+        /* Garante que o logo fique no topo, e a busca e menu sejam colocados depois */
+        order: 1; 
+        margin-bottom: 10px;
+    }
+
+    /* Barra de Busca (Ocupa toda a largura para fácil digitação) */
+    .search-bar {
+        width: 100%; 
+        order: 2; /* Fica em segundo */
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+
+    .search-bar input {
+        width: 100%; 
+    }
+
+    /* Menu de Navegação */
+    .menu-nav-unificado {
+        width: 100%; 
+        order: 3; /* Fica após a busca */
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+
+    .menu-nav-unificado ul {
+        flex-wrap: wrap; 
+        justify-content: space-between; /* Distribui os itens uniformemente */
+    }
+
+    .menu-nav-unificado ul li a {
+        /* Ajuste do padding para os links não ficarem muito apertados */
+        padding: 5px 10px;
+        display: block; /* Ocupa a área de clique */
+        text-align: center;
+    }
+    
+    /* Ícones de Ação (Ajusta o layout para mobile) */
+    .icones-acao {
+        order: 4; /* Fica no final */
+        text-align: right;
+        display: flex;
+        justify-content: flex-end; /* Alinha os ícones à direita */
+        gap: 10px;
+    }
+    
+    /* --- 2. GRADE DE PRODUTOS (2 Colunas) --- */
+    .product-grid {
+        /* Altera o grid para ter 2 colunas, se o espaço permitir */
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Min de 150px para caber 2 */
+        gap: 10px; /* Reduz o espaço entre os cards */
+    }
+
+    /* Ajuste de tamanho da fonte do card para caber melhor */
+    .product-card h3 {
+        font-size: 1em; 
+    }
+
+    .product-card .price {
+        font-size: 1.2rem;
+    }
+    
+    /* --- 3. Formulários (Ajuste Geral de Largura) --- */
+    .form-wrapper {
+        margin: 20px 10px; /* Reduz margens externas */
+        padding: 15px; /* Reduz padding interno */
+    }
+}
