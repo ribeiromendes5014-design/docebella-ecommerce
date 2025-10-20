@@ -17,31 +17,42 @@
         align-items: flex-start; /* Alinha o topo das colunas */
     }
     
-    /* Coluna Esquerda: Imagem/Galeria */
-    .produto-galeria {
-        /* Define a largura exata da coluna da galeria */
-        flex: 0 0 450px; /* flex-grow:0, flex-shrink:0, flex-basis:450px */
-        max-width: 450px; /* Garante que não exceda esta largura */
-        min-width: 300px; /* Garante um tamanho mínimo em telas menores */
-        box-sizing: border-box; /* Inclui padding e border na largura total */
-    }
+    /* Coluna Esquerda: Imagem/Galeria - CORREÇÃO CRÍTICA DE LARGURA (Desktop) */
+.produto-galeria {
+    /* Força a largura máxima de 450px para a coluna da imagem e impede crescimento */
+    flex: 0 0 450px !important; 
+    max-width: 450px !important; 
+    min-width: 300px; 
+    box-sizing: border-box;
+}
 
-    /* Wrapper da imagem principal para garantir borda e overflow */
-    .produto-galeria .main-image-wrapper {
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        overflow: hidden; /* Corta qualquer coisa que exceda o limite */
-        margin-bottom: 15px; /* Espaço abaixo da imagem principal */
-    }
+/* Wrapper da imagem principal para garantir borda e overflow */
+.produto-galeria .main-image-wrapper {
+    /* Garante que o wrapper da imagem respeite o container */
+    width: 100%;
+    max-width: 450px; 
+    
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden; 
+    margin-bottom: 15px; 
+}
 
-    /* Imagem principal dentro do wrapper */
-    .produto-galeria #main-image {
-        width: 100%; /* A imagem preenche a largura do seu container */
-        height: auto; /* Mantém a proporção */
-        display: block; /* Remove espaços extras comuns em imagens */
-        object-fit: contain; /* Garante que a imagem se ajuste sem cortar ou esticar, mantendo a proporção */
-        max-height: 400px; /* Limita a altura da imagem para não ficar gigante, ajuste se precisar */
-    }
+/* Imagem principal dentro do wrapper */
+.produto-galeria #main-image {
+    /* Garante que a imagem se ajuste ao wrapper */
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+/* Coluna Direita: Informações e Ações - OCUPA O RESTANTE */
+.produto-info {
+    /* Permite que o lado direito ocupe todo o espaço restante */
+    flex-grow: 1 !important; 
+    min-width: 350px;
+}
 
     /* Miniaturas da galeria */
     .galeria-miniaturas {
