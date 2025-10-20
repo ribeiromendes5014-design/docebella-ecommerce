@@ -28,41 +28,75 @@ def adicionar_ao_carrinho(request, produto_slug):
     quantidade = int(request.POST.get('quantidade', 1))
     
     variacao = None
-    if produto.usa_variacoes and variacao_id:
-        variacao = get_object_or_404(Variacao, id=variacao_id, produto=produto)
-    elif produto.usa_variacoes and not variacao_id:
-        messages.error(request, "Selecione uma opção de produto (variação).")
-        # Este redirect está correto sem namespace, pois o app 'produtos' não tem um
-        return redirect('detalhe_produto', slug=produto_slug) 
-
-    # 2. Verificação de Estoque (Simplificada)
-    estoque_disponivel = variacao.estoque if variacao else produto.estoque
+    estoque_disponivel = produto.estoque # Assume estoque do produto pai por padrão
     
+    # --- 1.1. Lógica de Variação (Validação e Busca) ---
+    if produto.usa_variacoes:
+        if not variacao_id:
+            messages.error(request, "Selecione uma opção de produto (variação).")
+            # O nome da view é 'detalhe_produto' sem namespace, o redirect está correto.
+            return redirect('detalhe_produto', slug=produto_slug)
+        
+        try:
+            # Busca a variação única (a combinação) pelo ID
+            variacao = Variacao.objects.get(id=variacao_id, produto=produto)
+            # 🚨 CRÍTICO: Usa o estoque da variação, não do produto pai.
+            estoque_disponivel = variacao.estoque 
+            
+        except Variacao.DoesNotExist:
+            messages.error(request, 'Variação selecionada é inválida.')
+            return redirect('detalhe_produto', slug=produto_slug)
+    
+    # --- 2. Verificação de Estoque FINAL (Antes de Adicionar/Atualizar) ---
+    
+    # Valida se a quantidade é válida
     if quantidade <= 0:
         messages.error(request, "A quantidade deve ser maior que zero.")
-        return redirect('detalhe_produto', slug=produto_slug) 
+        return redirect('detalhe_produto', slug=produto_slug)
     
+    # Valida se o item está em estoque (para o caso de ser o primeiro item)
+    if estoque_disponivel <= 0:
+        messages.error(request, "Produto esgotado.")
+        return redirect('detalhe_produto', slug=produto_slug)
+
+
     # 3. Adicionar/Atualizar Item no Carrinho
-    item, criado = ItemCarrinho.objects.get_or_create(
+    
+    # Tenta encontrar o item existente (usa a variação como parte da chave de busca)
+    item_query = ItemCarrinho.objects.filter(
         session_key=session_key,
         produto=produto,
-        variacao=variacao, 
-        defaults={'quantidade': quantidade}
+        variacao=variacao # Se variacao for None, busca itens sem variação
     )
     
-    if not criado:
+    if item_query.exists():
+        item = item_query.first()
         # Se o item já existe, apenas incrementa a quantidade
         nova_quantidade = item.quantidade + quantidade
         
+        # 🚨 CORREÇÃO DE ESTOQUE: Aqui você estava usando estoque_disponivel, mas se a
+        # variação for nula, precisa usar o estoque do produto. A lógica acima já resolveu isso.
         if nova_quantidade > estoque_disponivel:
-             messages.error(request, f"Estoque insuficiente! Máximo: {estoque_disponivel}.")
-             return redirect('detalhe_produto', slug=produto_slug) 
+              messages.error(request, f"Estoque insuficiente! Máximo disponível: {estoque_disponivel}.")
+              return redirect('detalhe_produto', slug=produto_slug)
         
         item.quantidade = nova_quantidade
         item.save()
+        criado = False # Marca como não criado para a mensagem de sucesso
+        
+    else:
+        # Se não existe, cria um novo item
+        ItemCarrinho.objects.create(
+            session_key=session_key,
+            produto=produto,
+            variacao=variacao,
+            quantidade=quantidade
+        )
+        criado = True # Marca como criado para a mensagem de sucesso
 
-    messages.success(request, f"{item.produto.nome} adicionado ao carrinho!")
-    return redirect('detalhe_produto', slug=produto_slug)
+    messages.success(request, f"{produto.nome} adicionado ao carrinho!")
+    # É melhor redirecionar para a página do carrinho após adicionar o item
+    return redirect('carrinho:ver_carrinho')
 
 
 # View para listar e calcular o carrinho (Página Completa)
