@@ -471,6 +471,38 @@ body {
         opacity: 1 !important;
     }
 }
+/* ===== AJUSTE DE ESPAÇAMENTO DO RODAPÉ NO CELULAR ===== */
+@media (max-width: 768px) {
+  .footer-info {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 6px !important;              /* 🔹 diminui o espaço entre blocos */
+    padding: 15px 10px !important;    /* 🔹 reduz padding interno */
+  }
+
+  .footer-col {
+    margin: 5px 0 !important;         /* 🔹 tira o espaçamento extra entre colunas */
+  }
+
+  .footer-col h4 {
+    margin-bottom: 4px !important;    /* 🔹 título mais próximo dos links */
+  }
+
+  .footer-list li {
+    margin: 2px 0 !important;         /* 🔹 links mais juntos */
+  }
+
+  .payments {
+    gap: 6px !important;              /* 🔹 ícones de pagamento mais próximos */
+  }
+
+  .payment-logo {
+    height: 24px !important;          /* 🔹 levemente menores no mobile */
+  }
+}
+
+
 
 
 
