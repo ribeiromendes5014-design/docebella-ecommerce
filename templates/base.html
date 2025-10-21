@@ -102,7 +102,7 @@
           <p class="footer-line">
               <i class="fa-solid fa-location-dot"></i>
               <a href="https://www.google.com/maps/place/Ilha+do+Mel+-+Encantadas/@-25.578,-48.323,15z"
-                 target="_blank" style="color:#333; text-decoration:none;">Ilha do Mel – Encantadas (📍Como chegar)</a>
+                 target="_blank" style="color:#333; text-decoration:none;">Ilha do Mel – Encantadas</a>
           </p>
       </div>
 
@@ -127,10 +127,10 @@
       <div class="footer-col">
           <h4>Meios de Pagamento</h4>
           <div class="payments">
-              <img src="https://cdn-icons-png.flaticon.com/512/349/349221.png" alt="Visa" class="payment-logo">
-              <img src="https://cdn-icons-png.flaticon.com/512/349/349230.png" alt="Mastercard" class="payment-logo">
-              <img src="https://cdn-icons-png.flaticon.com/512/196/196566.png" alt="Pix" class="payment-logo">
-              <img src="https://cdn-icons-png.flaticon.com/512/825/825454.png" alt="Boleto" class="payment-logo">
+              <img src="https://d26lpennugtm8s.cloudfront.net/assets/common/img/logos/payment/new_logos_payment/visa@2x.png" alt="Visa" class="payment-logo">
+              <img src="https://d26lpennugtm8s.cloudfront.net/assets/common/img/logos/payment/new_logos_payment/mastercard@2x.png" alt="Mastercard" class="payment-logo">
+              <img src="https://d26lpennugtm8s.cloudfront.net/assets/common/img/logos/payment/new_logos_payment/br/elo@2x.png" alt="Elo" class="payment-logo">
+              <img src="https://d26lpennugtm8s.cloudfront.net/assets/common/img/logos/payment/new_logos_payment/payment-method-types/pix@2x.png" alt="Pix" class="payment-logo">
           </div>
       </div>
   </div>
@@ -168,55 +168,31 @@
   font-size: 1.05rem;
 }
 
-.footer-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
+.footer-list { list-style: none; padding: 0; margin: 0; }
 .footer-list li { margin: 6px 0; }
-
-.footer-list a {
-  color: #555;
-  text-decoration: none;
-}
-
+.footer-list a { color: #555; text-decoration: none; }
 .footer-list a:hover { color: #f45ca5; }
 
 .footer-line {
-  margin: 6px 0;
-  color: #333;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  margin: 6px 0; color: #333; display: flex; align-items: center; gap: 8px;
 }
-
 .footer-line i.fa-whatsapp { color: #25D366; }
 .footer-line i.fa-instagram { color: #E4405F; }
 .footer-line i.fa-location-dot { color: #f45ca5; }
-
 .footer-line a:hover { color: #f45ca5; }
 
 .payments {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
 }
-
 .payment-logo {
-  height: 32px;
-  width: auto;
+  height: 28px; width: auto; image-rendering:-webkit-optimize-contrast;
   filter: saturate(0.95) contrast(1.05);
 }
 
 @media (max-width: 768px) {
   .footer-info {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 10px;
-    padding: 20px 10px;
+    flex-direction: column; align-items: center; text-align: center;
+    gap: 10px; padding: 20px 10px;
   }
   .footer-col { margin: 4px 0; }
   .payments { justify-content: center; }
@@ -238,7 +214,6 @@
   100% { box-shadow: 0 0 0 0 rgba(37,211,102,0); }
 }
 
-/* ===== Balão popup ===== */
 .whatsapp-popup {
   position: fixed; bottom: 100px; right: 95px;
   background-color: #fff; color: #333; border-radius: 10px;
