@@ -3,214 +3,154 @@
 
 {% block extra_css %}
 <style>
-    /* Estilos gerais do container do detalhe do produto */
-    .produto-detalhe-container {
-        display: flex;
-        /* Altera para flex-wrap: wrap para garantir que as colunas quebrem em telas menores */
-        flex-wrap: wrap; 
-        gap: 40px; /* Espaço entre as colunas */
-        margin-top: 20px;
-        background-color: white;
-        padding: 30px;
-        border-radius: 8px;
-        box-shadow: var(--sombra-card);
-        align-items: flex-start; /* Alinha o topo das colunas */
-    }
-    
-    /* Coluna Esquerda: Imagem/Galeria - CORREÇÃO CRÍTICA DE LARGURA (Desktop) */
+/* ====== Layout Principal ====== */
+.produto-detalhe-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 60px;
+  padding: 40px 20px;
+  background-color: #fff;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ====== Coluna da Imagem ====== */
 .produto-galeria {
-    /* Força a largura máxima de 450px para a coluna da imagem e impede crescimento */
-    flex: 0 0 450px !important; 
-    max-width: 450px !important; 
-    min-width: 300px; 
-    box-sizing: border-box;
+  flex: 1 1 450px;
+  max-width: 500px;
+  text-align: center;
 }
 
-/* Wrapper da imagem principal para garantir borda e overflow */
-.produto-galeria .main-image-wrapper {
-    /* Garante que o wrapper da imagem respeite o container */
-    width: 100%;
-    max-width: 450px; 
-    
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    overflow: hidden; 
-    margin-bottom: 15px; 
+.produto-galeria img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  object-fit: cover;
 }
 
-/* Imagem principal dentro do wrapper */
-.produto-galeria #main-image {
-    /* Garante que a imagem se ajuste ao wrapper */
-    width: 100%;
-    max-width: 100%;
-    height: auto;
-    object-fit: contain;
-}
-
-/* Coluna Direita: Informações e Ações - REFORÇO */
+/* ====== Coluna das Informações ====== */
 .produto-info {
-    flex-grow: 1 !important; 
-    min-width: 400px; /* Garante que haja espaço mínimo para o texto */
-    padding-left: 15px; /* Garante algum espaçamento interno */
+  flex: 1 1 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-    /* Miniaturas da galeria */
-    .galeria-miniaturas {
-        display: flex;
-        gap: 10px;
-        margin-top: 15px;
-        overflow-x: auto; /* Permite rolagem horizontal se muitas miniaturas */
-        padding-bottom: 5px; /* Para evitar que a sombra de rolagem corte a miniatura */
-    }
-    .galeria-miniaturas .miniatura {
-        width: 60px;
-        height: 60px;
-        object-fit: cover; /* Corta e preenche o espaço */
-        cursor: pointer;
-        border: 1px solid #ddd;
-        border-radius: 4px; /* Pequenas bordas arredondadas para miniaturas */
-        transition: border-color 0.2s ease;
-    }
-    .galeria-miniaturas .miniatura.selecionado {
-        border-color: var(--cor-principal) !important; /* Destaca a miniatura selecionada */
-        border-width: 2px !important;
-    }
-    
-    /* Coluna Direita: Informações e Ações */
-    .produto-info {
-        flex: 1; /* Ocupa o espaço restante */
-        min-width: 350px; /* Garante um mínimo para o texto em telas menores */
-        box-sizing: border-box;
-    }
-    
-    .preco-principal {
-        font-size: 2rem;
-        font-weight: bold;
-        color: var(--cor-principal);
-        margin: 10px 0 20px;
-    }
-    
-    /* Seletores de Variação */
-    .variacao-selector {
-        margin-bottom: 25px;
-        border-top: 1px solid #eee;
-        padding-top: 15px;
-    }
-    .variacao-selector h4 {
-        font-size: 1rem;
-        margin-bottom: 10px;
-        font-weight: 500;
-        color: var(--cor-secundaria);
-    }
-    .variacao-selector button {
-        background-color: #f1f1f1;
-        border: 1px solid #ddd;
-        padding: 8px 12px;
-        margin-right: 8px;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    .variacao-selector button:hover {
-        background-color: #e0e0e0;
-    }
-    .variacao-selector button.selecionado {
-        background-color: var(--cor-principal);
-        color: white;
-        border-color: var(--cor-principal);
-    }
-    .variacao-selector {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px;
+.produto-info h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 10px;
 }
 
-.variacao-selector h4 {
-    margin-bottom: 8px;
-    font-weight: 600;
+.preco-principal {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #111;
 }
 
-    /* Quantidade e Botão Comprar - REFORÇO CRÍTICO */
+.produto-info p {
+  color: #555;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* ====== Botão e Quantidade ====== */
 .acoes-compra {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 15px;
-    margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 10px;
 }
 
 .acoes-compra input[type="number"] {
-    width: 80px;
-    padding: 8px;
-    text-align: center;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+  width: 60px;
+  text-align: center;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
 }
 
-.acoes-compra .btn-comprar {
-    flex: 1;
-    min-width: 160px;
-    padding: 12px 20px;
-    background-color: var(--cor-principal, #ff69b4);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background 0.2s ease;
+.btn-comprar {
+  background-color: #111;
+  color: white;
+  padding: 12px 30px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
-.acoes-compra .btn-comprar:hover {
-    background-color: #e05c9a;
+.btn-comprar:hover {
+  background-color: #333;
 }
 
-    
-    .btn-comprar {
-        font-size: 1.1rem;
-        padding: 12px 30px;
-        background-color: #28a745; /* Verde para Comprar */
-    }
-    .btn-comprar:hover {
-        background-color: #1e7e34;
-    }
-    
-    .descricao-completa {
-        margin-top: 30px;
-        border-top: 1px solid #eee;
-        padding-top: 20px;
-    }
+/* ====== Variações ====== */
+.variacao-selector {
+  margin-top: 20px;
+}
 
-    /* Media Queries para Responsividade (melhor visualização em celulares) */
-    @media (max-width: 768px) {
-        .produto-detalhe-container {
-            flex-direction: column; /* Empilha as colunas */
-            gap: 20px;
-            padding: 20px;
-        }
-        .produto-galeria, .produto-info {
-            max-width: 100%; /* Ocupa a largura total */
-            min-width: unset; /* Remove o mínimo para se ajustar */
-            flex-basis: auto; /* Remove a largura fixa */
-        }
-        .produto-galeria #main-image {
-            max-height: 300px; /* Altura menor em dispositivos móveis */
-        }
-        .galeria-miniaturas {
-            justify-content: center; /* Centraliza as miniaturas em telas pequenas */
-        }
-        .acoes-compra {
-            flex-direction: column; /* Empilha quantidade e botão */
-            align-items: stretch; /* Estica para preencher a largura */
-        }
-        .acoes-compra input[type="number"], .btn-comprar {
-            width: 100%; /* Ocupa largura total */
-            box-sizing: border-box;
-        }
-    }
+.variacao-selector h4 {
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #222;
+}
+
+.variacao-selector button {
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  padding: 8px 16px;
+  margin-right: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.variacao-selector button:hover,
+.variacao-selector button.selecionado {
+  background-color: #111;
+  color: white;
+}
+
+/* ====== Descrição ====== */
+.descricao-completa {
+  margin-top: 25px;
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+}
+
+.descricao-completa h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+/* ====== Responsivo ====== */
+@media (max-width: 768px) {
+  .produto-detalhe-container {
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .produto-info h1 {
+    font-size: 1.6rem;
+  }
+
+  .preco-principal {
+    font-size: 1.5rem;
+  }
+
+  .btn-comprar {
+    width: 100%;
+  }
+}
 </style>
 {% endblock %}
+
 
 
 {% block content %}
