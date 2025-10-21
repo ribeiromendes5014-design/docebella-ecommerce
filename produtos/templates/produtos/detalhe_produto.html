@@ -254,25 +254,30 @@ document.addEventListener('DOMContentLoaded', function() {
   miniatura.addEventListener('touchend', trocarImagem, { passive: true });
 });
 
-  // Evento 2. Botões de Variação (Desktop + Mobile)
+  // Evento 2. Botões de Variação (Desktop + Mobile - CORRIGIDO)
 if (produtoUsaVariacoes) {
     botoesVariacao.forEach(button => {
-        const acionarSelecao = () => handleVariacaoSelection(button);
+        const acionarSelecao = (e) => {
+            e.preventDefault();      // evita comportamento padrão do botão
+            e.stopPropagation();     // impede conflito com o form
+            handleVariacaoSelection(button);
+        };
 
-        // Clique normal
+        // Clique normal (Desktop)
         button.addEventListener('click', acionarSelecao);
 
-        // Toque em mobile — sem preventDefault (impedia o click)
-        button.addEventListener('touchend', acionarSelecao, { passive: true });
+        // Toque (Mobile - funciona em Safari/Chrome)
+        button.addEventListener('touchstart', acionarSelecao, { passive: false });
     });
 
+    // Validação antes de enviar o form
     form.addEventListener('submit', function(e) {
-      const selecoesFeitas = form.querySelectorAll('.variacao-selector .btn-variacao.selecionado').length;
-      if (requiredTypes.length > 0 && selecoesFeitas < requiredTypes.length) {
-        e.preventDefault();
-        alert("Por favor, selecione uma opção para cada tipo de variação.");
-        return;
-      }
+        const selecoesFeitas = form.querySelectorAll('.variacao-selector .btn-variacao.selecionado').length;
+        if (requiredTypes.length > 0 && selecoesFeitas < requiredTypes.length) {
+            e.preventDefault();
+            alert("Por favor, selecione uma opção para cada tipo de variação.");
+            return;
+        }
       if (!variacaoInput.value) {
         e.preventDefault();
         alert("Por favor, selecione pelo menos uma variação.");
