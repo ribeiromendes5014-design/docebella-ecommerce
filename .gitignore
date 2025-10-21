@@ -1,21 +1,37 @@
-venv_clean/
+# 🐍 Python
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 *.pyd
 *.db
 *.sqlite3
-*.log
-.DS_Store
-.env
-*.env
+
+# 🧩 Virtual Envs
+venv/
+.venv/
+env/
 venv_clean/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
+
+# 🔐 Arquivos de ambiente
 .env
 *.env
+
+# 🧰 IDEs e sistema
+.vscode/
+.idea/
 .DS_Store
-*.sqlite3
+Thumbs.db
+
+# 🗂️ Logs e temporários
 *.log
+*.pot
+*.pyproj
+*.mypy_cache/
+*.pytest_cache/
+*.coverage
+.coverage.*
+
+# 🌐 Django e Render
+/staticfiles/
+media/
+*.bak
