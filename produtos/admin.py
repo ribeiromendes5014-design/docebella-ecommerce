@@ -1,35 +1,29 @@
-# produtos/admin.py (VERSÃO FINAL COM IMAGENS E GALERIA)
+# produtos/admin.py (VERSÃO AJUSTADA PARA O MODELO ATUAL)
 
 from django.contrib import admin
-# 🚨 1. Importar todos os novos modelos (incluindo ImagemProduto) 🚨
-from .models import Categoria, Produto, Variacao, ImagemProduto 
-from .models import Promocao
+from .models import Categoria, Produto, Variacao, ImagemProduto, Promocao
 
 
 # -----------------------------------------------------------------
-# 1. Inlines (Seções que aparecem abaixo do formulário principal)
+# 1. Inlines (Imagens e Variações)
 # -----------------------------------------------------------------
 
-# 1.1. Inline para a Galeria de Imagens
 class ImagemProdutoInline(admin.TabularInline):
     """Permite adicionar várias fotos por produto na mesma página."""
     model = ImagemProduto
-    extra = 1 # Mostra um campo de upload vazio por padrão
-    # Permite linkar a imagem à variação específica
-    fields = ('imagem', 'variacao', 'descricao', 'ordem') 
+    extra = 1
+    fields = ('imagem', 'variacao', 'descricao', 'ordem')
 
 
-# 1.2. Inline para Variações (com campo de imagem)
 class VariacaoInline(admin.TabularInline):
     """Permite editar as variações dentro da página do Produto."""
     model = Variacao
-    extra = 1 
-    # 🚨 Incluir o novo campo 'imagem' aqui 🚨
+    extra = 1
     fields = ('tipo', 'valor', 'preco_adicional', 'estoque', 'imagem')
 
 
 # -----------------------------------------------------------------
-# 2. Classes de Registro no Admin
+# 2. Categoria
 # -----------------------------------------------------------------
 
 @admin.register(Categoria)
@@ -38,6 +32,10 @@ class CategoriaAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('nome',)}
 
 
+# -----------------------------------------------------------------
+# 3. Produto
+# -----------------------------------------------------------------
+
 @admin.register(Produto)
 class ProdutoAdmin(admin.ModelAdmin):
     list_display = ('nome', 'categoria', 'preco', 'estoque', 'disponivel', 'usa_variacoes')
@@ -45,11 +43,9 @@ class ProdutoAdmin(admin.ModelAdmin):
     search_fields = ('nome', 'descricao')
     prepopulated_fields = {'slug': ('nome',)}
     list_editable = ('preco', 'estoque', 'disponivel')
-    
-    # 🚨 3. Ligar os Inlines ao ProdutoAdmin 🚨
-    inlines = [VariacaoInline, ImagemProdutoInline] 
-    
-    # Definição dos campos para o formulário principal
+
+    inlines = [VariacaoInline, ImagemProdutoInline]
+
     fieldsets = (
         (None, {
             'fields': ('categoria', 'nome', 'slug', 'descricao', 'preco', 'imagem'),
@@ -60,37 +56,48 @@ class ProdutoAdmin(admin.ModelAdmin):
         }),
     )
 
-    # --------------------------------------------------------------------------------
-    # 4. Função para Manipular a Exibição do Campo ESTOQUE
-    # --------------------------------------------------------------------------------
     def get_fieldsets(self, request, obj=None):
-        """Alterna a exibição do campo 'estoque' se o objeto usa variações."""
+        """Remove o campo 'estoque' se o produto usa variações."""
         fieldsets = list(self.fieldsets)
-        
-        # Encontra o fieldset de Controle de Estoque (é sempre o segundo item)
         controle_fieldset = list(fieldsets[1][1]['fields'])
-        
-        # O Django só chama esta lógica se estiver editando um objeto (obj is not None)
-        if obj and obj.usa_variacoes:
-            if 'estoque' in controle_fieldset:
-                controle_fieldset.remove('estoque')
-        
-        # Atualiza o fieldset com a lista de campos ajustada
+        if obj and obj.usa_variacoes and 'estoque' in controle_fieldset:
+            controle_fieldset.remove('estoque')
         fieldsets[1][1]['fields'] = tuple(controle_fieldset)
-        
         return fieldsets
-    
 
+
+# -----------------------------------------------------------------
+# 4. Promoção (AJUSTADO)
+# -----------------------------------------------------------------
 
 @admin.register(Promocao)
 class PromocaoAdmin(admin.ModelAdmin):
-    list_display = ("nome", "desconto_percentual", "ativa", "data_inicio", "data_fim")
-    list_filter = ("ativa", "data_inicio", "data_fim")
-    search_fields = ("nome", "descricao")
-    filter_horizontal = ("produtos",)
+    list_display = ('produto', 'preco_promocional', 'ativa', 'data_inicio', 'data_fim')
+    list_filter = ('ativa', 'data_inicio', 'data_fim', 'produto__categoria')
+    search_fields = ('produto__nome',)
+    autocomplete_fields = ('produto',)
+
     fieldsets = (
-        (None, {"fields": ("nome", "descricao", "desconto_percentual", "ativa")}),
-        ("Período da promoção", {"fields": ("data_inicio", "data_fim")}),
-        ("Produtos incluídos", {"fields": ("produtos",)}),
+        (None, {
+            'fields': ('produto', 'preco_promocional', 'ativa'),
+        }),
+        ('Período da Promoção', {
+            'fields': ('data_inicio', 'data_fim'),
+        }),
     )
 
+    def get_queryset(self, request):
+        """Otimiza a consulta com select_related no produto."""
+        return super().get_queryset(request).select_related('produto')
+
+    def esta_vigente(self, obj):
+        """Exibe um ícone ou texto para status de validade."""
+        return "✅ Vigente" if obj.esta_vigente() else "⛔ Expirada"
+    esta_vigente.short_description = "Status"
+
+
+# -----------------------------------------------------------------
+# ✅ DICA:
+# -----------------------------------------------------------------
+# O campo autocomplete_fields ('produto',) permite buscar produtos grandes via AJAX.
+# Isso evita travamentos no admin quando houver muitos produtos.
