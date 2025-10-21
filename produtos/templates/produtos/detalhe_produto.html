@@ -95,27 +95,32 @@
         {% endif %}
     </div>
 
-    <div class="galeria-miniaturas" style="display: flex; gap: 10px; margin-top: 15px; overflow-x: auto;">
-        
-        {% if produto.imagem %}
-            <img class="miniatura selecionado" 
-                 data-full-url="{{ produto.imagem.url }}" 
-                 src="{{ produto.imagem.url }}" 
-                 alt="Miniatura Principal" 
-                 style="width: 60px; height: 60px; object-fit: cover; cursor: pointer; border: 2px solid var(--cor-principal);"
-            >
-        {% endif %}
-        
-        {% for imagem_galeria in produto.galeria_imagens.all %}
-            <img class="miniatura" 
-                 data-full-url="{{ imagem_galeria.imagem.url }}" 
-                 src="{{ imagem_galeria.imagem.url }}" 
-                 alt="{{ imagem_galeria.descricao }}" 
-                 style="width: 60px; height: 60px; object-fit: cover; cursor: pointer; border: 1px solid #ddd;"
-            >
-        {% endfor %}
+    <div class="galeria-miniaturas">
+  {% if produto.imagem %}
+    <img class="miniatura selecionado"
+         src="{{ produto.imagem.url }}"
+         data-full-url="{{ produto.imagem.url }}"
+         alt="Miniatura principal">
+  {% endif %}
 
-    </div>
+  {% for imagem_galeria in produto.galeria_imagens.all %}
+    {% if imagem_galeria.imagem %}
+      <img class="miniatura"
+           src="{{ imagem_galeria.imagem.url }}"
+           data-full-url="{{ imagem_galeria.imagem.url }}"
+           alt="{{ imagem_galeria.descricao|default:'Miniatura' }}">
+    {% else %}
+      <!-- fallback visual caso alguma variação esteja sem arquivo -->
+      <img class="miniatura"
+           src="{% static 'img/placeholder.png' %}"
+           data-full-url="{% static 'img/placeholder.png' %}"
+           alt="Sem imagem">
+    {% endif %}
+  {% empty %}
+    <!-- Sem imagens extras: não mostra “quadrados vazios” -->
+  {% endfor %}
+</div>
+
     
 </div>
     
