@@ -14,7 +14,7 @@ def home(request):
 
     produtos_list = produtos_list.order_by('-id')
 
-    paginator = Paginator(produtos_list, 40)
+    paginator = Paginator(produtos_list, 12)
     page = request.GET.get('page')
     produtos = paginator.get_page(page)
 
