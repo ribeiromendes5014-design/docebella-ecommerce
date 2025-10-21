@@ -126,21 +126,9 @@
   <h1>{{ produto.nome }}</h1>
   <p class="preco-principal">{{ produto.get_display_price }}</p>
 
-  {% with parcela=(produto.preco|floatformat:2) %}
-    {% with valor_parcela=produto.preco|divisibleby:0.8872 %}
-    {% endwith %}
-  {% endwith %}
-
   <p style="font-size: 1rem; color: #777;">
-    ou 3x de R$ {{ ((produto.preco|floatformat:2)|floatformat:2)|default_if_none:"0" }} sem juros
+    ou 3x de R$ {{ valor_parcela|floatformat:2|intcomma }} sem juros
   </p>
-
-  <!-- ✅ CORRETO: cálculo em template -->
-  {% with valor_parcela=((produto.preco|floatformat:2|floatval)/0.8872)/3 %}
-    <p style="font-size: 1rem; color: #777;">
-      ou 3x de R$ {{ valor_parcela|floatformat:2 }} sem juros
-    </p>
-  {% endwith %}
 
   <p class="status-estoque" style="color: {% if produto.get_estoque_total == 0 %}#d32f2f{% else %}#2e7d32{% endif %};">
     {{ produto.get_status_estoque }}
@@ -180,6 +168,7 @@
     <h3>Descrição do Produto</h3>
     <p>{{ produto.descricao|linebreaksbr }}</p>
   </div>
+</div>
 
   {% if produtos_relacionados %}
   <div class="produtos-relacionados" style="margin-top:50px; border-top:1px solid #eee; padding-top:30px;">
