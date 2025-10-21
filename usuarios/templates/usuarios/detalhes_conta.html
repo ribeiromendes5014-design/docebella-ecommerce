@@ -1,14 +1,76 @@
 {% extends 'base.html' %}
-{% block content %}
-<div class="form-wrapper">
-    <div class="breadcrumb">Início . Minha Conta . Detalhes</div>
-    <h2 class="form-title-custom">{{ titulo }}</h2>
-    
-    <p>Aqui você pode ver ou editar suas informações pessoais.</p>
-    
-    <p>Usuário: {{ request.user.username }}</p>
-    <p>E-mail: {{ request.user.email }}</p>
+{% load static %}
 
-    <p><a href="{% url 'usuarios:painel_cliente' %}">Voltar para o Painel</a></p>
+{% block title %}Minha Conta - Doce & Bella{% endblock %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 750px;">
+    <div class="breadcrumb mb-3" style="color:#999;">
+        <a href="{% url 'home' %}" style="color:#f45ca5; text-decoration:none;">Início</a> 
+        <span> › </span> 
+        <a href="{% url 'usuarios:painel_cliente' %}" style="color:#f45ca5; text-decoration:none;">Minha Conta</a> 
+        <span> › </span> 
+        Detalhes
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-4" style="background:#fffafc; padding:30px;">
+        <h2 class="text-center mb-4" style="color:#f45ca5; font-weight:700;">💖 Detalhes da Conta</h2>
+
+        <p class="text-center mb-4" style="color:#555;">
+            Aqui você pode ver ou editar suas informações pessoais.
+        </p>
+
+        <div style="background-color:#fff; border-radius:10px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+            <p><strong>Usuário:</strong> {{ request.user.username }}</p>
+            <p><strong>Nome completo:</strong> {{ request.user.first_name }} {{ request.user.last_name }}</p>
+            <p><strong>E-mail:</strong> {{ request.user.email }}</p>
+
+            {% if request.user.profile %}
+                <p><strong>Telefone:</strong> {{ request.user.profile.telefone }}</p>
+                <p><strong>Endereço:</strong> {{ request.user.profile.endereco }}</p>
+            {% endif %}
+        </div>
+
+        <hr class="my-4">
+
+        <div class="d-flex flex-column gap-2">
+            <a href="{% url 'usuarios:editar_perfil' %}" 
+               class="btn btn-outline-primary w-100" 
+               style="border-color:#f45ca5; color:#f45ca5;">
+                ✏️ Editar Informações
+            </a>
+
+            <a href="{% url 'usuarios:alterar_senha' %}" 
+               class="btn btn-outline-primary w-100" 
+               style="border-color:#f45ca5; color:#f45ca5;">
+                🔐 Redefinir Senha
+            </a>
+
+            <a href="{% url 'pedidos:lista' %}" 
+               class="btn btn-outline-primary w-100" 
+               style="border-color:#f45ca5; color:#f45ca5;">
+                📦 Ver Meus Pedidos
+            </a>
+
+            <form method="post" action="{% url 'usuarios:logout' %}" class="w-100">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger w-100">🚪 Sair da Conta</button>
+            </form>
+        </div>
+    </div>
 </div>
+
+<style>
+.btn:hover {
+    background-color: #f45ca5 !important;
+    color: white !important;
+    border: none !important;
+}
+.card {
+    transition: all 0.2s ease;
+}
+.card:hover {
+    transform: scale(1.01);
+}
+</style>
 {% endblock %}
