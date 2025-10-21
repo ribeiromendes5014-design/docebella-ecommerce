@@ -73,11 +73,90 @@
         {% block content %}{% endblock %}
     </main>
 
-    <footer>
-        <div class="container" style="text-align: center; padding: 20px 0; border-top: 1px solid #ddd; background-color: white;">
-            <p>&copy; 2025 Doce & Bella E-commerce.</p>
+    <footer style="background-color: #f8f8f8; margin-top: 40px;">
+
+    <!-- SEÇÃO CADASTRE-SE -->
+    <div style="background-color: #f45ca5; color: white; text-align: center; padding: 30px 20px;">
+        <img src="https://d1a9qnv764bsoo.cloudfront.net/stores/002/838/949/rte/bot-email.png" 
+             alt="Ícone Cadastre-se" 
+             style="width: 60px; margin-bottom: 10px;">
+
+        <h2 style="font-size: 1.6rem; margin-bottom: 8px;">cadastre-se!</h2>
+        <p style="margin-bottom: 20px; font-size: 1rem;">Receba novidades e promoções no seu WhatsApp 💕</p>
+
+        <form method="post" action="#" 
+              style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; max-width: 500px; margin: 0 auto;">
+            {% csrf_token %}
+            <input type="text" name="nome" placeholder="Seu nome..." 
+                   style="padding: 10px; border-radius: 8px; border: none; width: 45%; max-width: 220px;">
+            <input type="tel" name="whatsapp" placeholder="Seu WhatsApp..." 
+                   style="padding: 10px; border-radius: 8px; border: none; width: 45%; max-width: 220px;">
+            <button type="submit"
+                    style="background-color: #fff; color: #f45ca5; border: none; border-radius: 8px; padding: 10px 20px; font-weight: bold; cursor: pointer;">
+                ENVIAR
+            </button>
+        </form>
+    </div>
+
+    <!-- SEÇÃO INFERIOR -->
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-around; align-items: flex-start; 
+                padding: 40px 20px; background-color: #fff; text-align: left;">
+
+        <!-- 📞 CENTRAL DE ATENDIMENTO -->
+        <div style="flex: 1 1 220px; margin: 10px;">
+            <h4 style="color: #f45ca5; font-weight: 600; margin-bottom: 10px;">Central de Atendimento</h4>
+            <p style="margin: 4px 0;">
+                <i class="fab fa-whatsapp" style="color:#25D366; margin-right:6px;"></i>
+                <a href="https://wa.me/5541987876191" target="_blank" style="color:#333; text-decoration:none;">
+                    (41) 98787-6191
+                </a>
+            </p>
+
+            <p style="margin: 8px 0;">
+                <i class="fab fa-instagram" style="color:#E4405F; margin-right:6px;"></i>
+                <a href="https://www.instagram.com/docebellacosmetico" target="_blank" style="color:#333; text-decoration:none;">
+                    @docebellacosmetico
+                </a>
+            </p>
         </div>
-    </footer>
+
+        <!-- 🏪 INSTITUCIONAL -->
+        <div style="flex: 1 1 180px; margin: 10px;">
+            <h4 style="color: #f45ca5; font-weight: 600; margin-bottom: 10px;">Institucional</h4>
+            <ul style="list-style: none; padding: 0;">
+                <li><a href="#" style="color: #555; text-decoration: none;">Quem Somos</a></li>
+                <li><a href="#" style="color: #555; text-decoration: none;">Política de Privacidade</a></li>
+                <li><a href="#" style="color: #555; text-decoration: none;">Contato</a></li>
+            </ul>
+        </div>
+
+        <!-- 💬 MINHA CONTA -->
+        <div style="flex: 1 1 180px; margin: 10px;">
+            <h4 style="color: #f45ca5; font-weight: 600; margin-bottom: 10px;">Minha Conta</h4>
+            <ul style="list-style: none; padding: 0;">
+                <li><a href="{% url 'usuarios:login' %}" style="color: #555; text-decoration: none;">Login</a></li>
+                <li><a href="{% url 'usuarios:cadastro' %}" style="color: #555; text-decoration: none;">Criar Conta</a></li>
+                <li><a href="{% url 'usuarios:painel_cliente' %}" style="color: #555; text-decoration: none;">Meus Pedidos</a></li>
+            </ul>
+        </div>
+
+        <!-- 💳 MEIOS DE PAGAMENTO -->
+        <div style="flex: 1 1 220px; margin: 10px;">
+            <h4 style="color: #f45ca5; font-weight: 600; margin-bottom: 10px;">Meios de Pagamento</h4>
+            <img src="https://cdn-icons-png.flaticon.com/512/349/349221.png" alt="Visa" style="width:40px; margin:5px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/349/349230.png" alt="Mastercard" style="width:40px; margin:5px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/196/196566.png" alt="Pix" style="width:40px; margin:5px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/825/825454.png" alt="Boleto" style="width:40px; margin:5px;">
+        </div>
+    </div>
+
+    <!-- RODAPÉ FINAL -->
+    <div style="text-align: center; padding: 12px; background-color: #f45ca5; color: white; font-size: 0.9rem;">
+        &copy; 2025 Doce & Bella Cosméticos. Todos os direitos reservados 💖
+    </div>
+
+</footer>
+
 
     <!-- 💬 BOTÃO FLUTUANTE WHATSAPP -->
     <a href="https://wa.me/5541987876191?text=Olá!%20Gostaria%20de%20ajuda%20com%20um%20produto%20da%20Doce%20%26%20Bella."
