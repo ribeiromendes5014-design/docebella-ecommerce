@@ -36,6 +36,11 @@ class Produto(models.Model):
     disponivel = models.BooleanField(default=True)
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)
+    def valor_parcela_3x(self):
+        """Retorna o valor da parcela em 3x com ajuste de 0.8872."""
+        if not self.preco:
+            return 0
+        return (self.preco / 0.8872) / 3
 
     def __str__(self):
         return self.nome
