@@ -3,17 +3,27 @@ from django.shortcuts import render
 from produtos.models import Produto
 from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404
-
+from django.db.models import Q, Exists, OuterRef
+from produtos.models import Produto, Variacao
 
 def home(request):
     query = request.GET.get('q', '')
-    produtos_list = Produto.objects.filter(disponivel=True, estoque__gt=0)
+
+    # Mostra produtos disponíveis que:
+    # - têm estoque > 0 direto OU
+    # - possuem variações com estoque > 0
+    produtos_list = Produto.objects.filter(
+        disponivel=True
+    ).filter(
+        Q(estoque__gt=0) | Exists(
+            Variacao.objects.filter(produto=OuterRef('pk'), estoque__gt=0)
+        )
+    )
 
     if query:
         produtos_list = produtos_list.filter(nome__icontains=query)
 
     produtos_list = produtos_list.order_by('-id')
-
     paginator = Paginator(produtos_list, 12)
     page = request.GET.get('page')
     produtos = paginator.get_page(page)
