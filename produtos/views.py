@@ -5,6 +5,8 @@ from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Q, Exists, OuterRef
 from produtos.models import Produto, Variacao
+from decimal import Decimal
+
 
 def home(request):
     query = request.GET.get('q', '')
