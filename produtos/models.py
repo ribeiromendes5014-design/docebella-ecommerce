@@ -158,7 +158,7 @@ class Promocao(models.Model):
     desconto_percentual = models.DecimalField(
         "Desconto (%)", max_digits=5, decimal_places=2, help_text="Ex: 10.00 = 10%"
     )
-    produtos = models.ManyToManyField(Produto, related_name='promocoes', blank=True)
+    produtos = models.ManyToManyField('Produto', related_name='promocoes', blank=True)
     data_inicio = models.DateTimeField("Início da promoção", default=timezone.now)
     data_fim = models.DateTimeField("Fim da promoção", blank=True, null=True)
     ativa = models.BooleanField(default=True)
@@ -172,7 +172,6 @@ class Promocao(models.Model):
         return f"{self.nome} ({self.desconto_percentual}% off)"
 
     def esta_vigente(self):
-        """Retorna True se a promoção estiver ativa e dentro do prazo"""
         agora = timezone.now()
         if not self.ativa:
             return False
