@@ -11,15 +11,18 @@
 
 /* ===== Coluna da imagem ===== */
 .produto-galeria{ flex:1 1 480px; max-width:520px }
-.produto-galeria .main-image-wrapper{ width:100%; border:1px solid #e9e9e9; border-radius:10px; overflow:hidden }
+.produto-galeria .main-image-wrapper{
+  width:100%; border:1px solid #e9e9e9; border-radius:10px; overflow:hidden
+}
 #main-image{ display:block; width:100%; height:auto; object-fit:contain }
 
-/* Miniaturas — (corrige “quadrados em branco”) */
-.galeria-miniaturas{ display:flex; gap:12px; margin-top:14px; overflow-x:auto; padding-bottom:4px }
+/* Miniaturas — corrige “quadrados em branco” */
+.galeria-miniaturas{
+  display:flex; gap:12px; margin-top:14px; overflow-x:auto; padding-bottom:4px
+}
 .galeria-miniaturas .miniatura{
   display:block; width:72px; aspect-ratio:1/1; object-fit:cover;
-  border:1px solid #ddd; border-radius:6px;
-  background:none !important; /* evita “fundo” branco por CSS global */
+  border:1px solid #ddd; border-radius:6px; background:none !important;
 }
 .galeria-miniaturas .miniatura.selecionado{ border:2px solid #111 }
 
@@ -29,7 +32,7 @@
 .preco-principal{ font-size:1.8rem; font-weight:600; color:#111; margin:0 }
 .produto-info p{ color:#555; font-size:1rem; line-height:1.6; margin:0 }
 
-/* Estoque verde/vermelho */
+/* Estoque colorido */
 .produto-info .status-estoque{ font-weight:600; margin-top:6px }
 
 /* ===== Variações ===== */
@@ -42,7 +45,7 @@
 .variacao-selector .btn-variacao:hover,
 .variacao-selector .btn-variacao.selecionado{ background:#111; color:#fff; border-color:#111 }
 
-/* ===== Quantidade + Comprar (alinha em linha e no mobile empilha) ===== */
+/* ===== Quantidade + Comprar ===== */
 .acoes-compra{ display:flex; align-items:center; gap:14px; margin-top:8px; flex-wrap:wrap }
 .acoes-compra input[type="number"]{
   width:72px; text-align:center; padding:8px; border:1px solid #ddd; border-radius:6px
@@ -72,242 +75,180 @@
 {% endblock %}
 
 
-
-
 {% block content %}
-
-<p style="margin-bottom: 15px; font-size: 0.9rem;">
-    <a href="{% url 'home' %}">Início</a> > 
-    <a href="#">{{ produto.categoria.nome }}</a> > 
-    {{ produto.nome }}
+<p class="breadcrumb">
+  <a href="{% url 'home' %}">Início</a> > 
+  <a href="#">{{ produto.categoria.nome }}</a> > 
+  {{ produto.nome }}
 </p>
 
-
 <div class="produto-detalhe-container">
-    
-    <div class="produto-galeria">
-    
-    <div class="main-image-wrapper">
-        {% if produto.imagem %}
-            <img id="main-image" src="{{ produto.imagem.url }}" alt="Imagem principal do produto {{ produto.nome }}">
-        {% else %}
-            <img id="main-image" src="{% static 'img/placeholder.png' %}" alt="Sem Imagem">
-        {% endif %}
-    </div>
+  
+  <!-- Coluna esquerda: Imagem principal + miniaturas -->
+  <div class="produto-galeria">
 
-    <div class="galeria-miniaturas">
-  {% if produto.imagem %}
-    <img class="miniatura selecionado"
-         src="{{ produto.imagem.url }}"
-         data-full-url="{{ produto.imagem.url }}"
-         alt="Miniatura principal">
-  {% endif %}
+    <div class="main-image-wrapper">
+      {% if produto.imagem %}
+        <img id="main-image" src="{{ produto.imagem.url }}" alt="Imagem principal do produto {{ produto.nome }}">
+      {% else %}
+        <img id="main-image" src="{% static 'img/placeholder.png' %}" alt="Sem Imagem">
+      {% endif %}
+    </div>
 
-  {% for imagem_galeria in produto.galeria_imagens.all %}
-    {% if imagem_galeria.imagem %}
-      <img class="miniatura"
-           src="{{ imagem_galeria.imagem.url }}"
-           data-full-url="{{ imagem_galeria.imagem.url }}"
-           alt="{{ imagem_galeria.descricao|default:'Miniatura' }}">
-    {% else %}
-      <!-- fallback visual caso alguma variação esteja sem arquivo -->
-      <img class="miniatura"
-           src="{% static 'img/placeholder.png' %}"
-           data-full-url="{% static 'img/placeholder.png' %}"
-           alt="Sem imagem">
-    {% endif %}
-  {% empty %}
-    <!-- Sem imagens extras: não mostra “quadrados vazios” -->
-  {% endfor %}
+    <div class="galeria-miniaturas">
+      {% if produto.imagem %}
+        <img class="miniatura selecionado"
+             src="{{ produto.imagem.url }}"
+             data-full-url="{{ produto.imagem.url }}"
+             alt="Miniatura principal">
+      {% endif %}
+
+      {% for imagem_galeria in produto.galeria_imagens.all %}
+        {% if imagem_galeria.imagem %}
+          <img class="miniatura"
+               src="{{ imagem_galeria.imagem.url }}"
+               data-full-url="{{ imagem_galeria.imagem.url }}"
+               alt="{{ imagem_galeria.descricao|default:'Miniatura' }}">
+        {% else %}
+          <img class="miniatura"
+               src="{% static 'img/placeholder.png' %}"
+               data-full-url="{% static 'img/placeholder.png' %}"
+               alt="Sem imagem">
+        {% endif %}
+      {% empty %}
+        <!-- Nenhuma imagem extra -->
+      {% endfor %}
+    </div>
+
+  </div>
+
+  <!-- Coluna direita: informações -->
+  <div class="produto-info">
+    <h1>{{ produto.nome }}</h1>
+    <p class="preco-principal">{{ produto.get_display_price }}</p>
+    <p style="font-size: 1rem; color: #777;">
+      ou 3x de R$ {{ produto.preco|floatformat:2 }} (Valor a ser corrigido) sem juros
+    </p>
+    <p class="status-estoque" style="color: {% if produto.get_estoque_total == 0 %}#d32f2f{% else %}#2e7d32{% endif %};">
+      {{ produto.get_status_estoque }}
+    </p>
+
+    <form id="form-adicionar-carrinho" action="{% url 'carrinho:adicionar_ao_carrinho' produto.slug %}" method="POST">
+      {% csrf_token %}
+      
+      {% if produto.usa_variacoes %}
+        {% for tipo, variacoes in variacoes_por_tipo.items %}
+          <div class="variacao-selector" data-tipo="{{ tipo }}">
+            <h4>Selecione o {{ tipo }}:</h4>
+            {% for variacao in variacoes %}
+              <button type="button"
+                      data-id="{{ variacao.id }}"
+                      data-estoque="{{ variacao.estoque }}"
+                      class="btn-variacao"
+                      {% if variacao.estoque == 0 %}disabled{% endif %}>
+                {{ variacao.valor }}
+              </button>
+            {% endfor %}
+          </div>
+        {% endfor %}
+        <input type="hidden" name="variacao_id" id="variacao-input" value="">
+      {% endif %}
+
+      <div class="acoes-compra">
+        <input type="number" name="quantidade" id="quantidade" value="1" min="1" max="99">
+        {% if produto.get_estoque_total > 0 %}
+          <button type="submit" class="btn-principal btn-comprar">Comprar</button>
+        {% else %}
+          <button class="btn-principal btn-comprar" disabled style="opacity: 0.5;">Esgotado</button>
+        {% endif %}
+      </div>
+    </form>
+
+    <div class="descricao-completa">
+      <h3>Descrição do Produto</h3>
+      <p>{{ produto.descricao|linebreaksbr }}</p>
+    </div>
+  </div>
+
 </div>
-
-    
-</div>
-    
-    <div class="produto-info">
-        
-        <h1 style="font-size: 1.8rem; color: var(--cor-secundaria);">{{ produto.nome }}</h1>
-        
-        <p class="preco-principal">{{ produto.get_display_price }}</p>
-        
-        <p style="font-size: 1rem; color: #6c757d;">
-            ou 3x de R$ {{ produto.preco|floatformat:2 }} (Valor a ser corrigido) sem juros
-        </p>
-
-        <p style="font-size: 1rem; font-weight: bold; margin-top: 15px; color: {% if produto.get_estoque_total == 0 %}red{% else %}green{% endif %};">
-            {{ produto.get_status_estoque }}
-        </p>
-
-        <form id="form-adicionar-carrinho" action="{% url 'carrinho:adicionar_ao_carrinho' produto.slug %}" method="POST">
-            {% csrf_token %}
-            
-            {% if produto.usa_variacoes %}
-                {% for tipo, variacoes in variacoes_por_tipo.items %}
-                    <div class="variacao-selector" data-tipo="{{ tipo }}">
-                        <h4>Selecione o {{ tipo }}:</h4>
-                        {% for variacao in variacoes %}
-                            <button type="button" 
-                                data-id="{{ variacao.id }}" 
-                                data-estoque="{{ variacao.estoque }}"
-                                class="btn-variacao" 
-                                {% if variacao.estoque == 0 %}disabled{% endif %}>
-                                {{ variacao.valor }}
-                            </button>
-                        {% endfor %}
-                    </div>
-                {% endfor %}
-                
-                <input type="hidden" name="variacao_id" id="variacao-input" value="">
-            {% endif %}
-
-            <div class="acoes-compra">
-                <input type="number" name="quantidade" id="quantidade" value="1" min="1" max="99">
-                
-                {% if produto.get_estoque_total > 0 %}
-                    <button type="submit" class="btn-principal btn-comprar">
-                        Comprar
-                    </button>
-                {% else %}
-                    <button class="btn-principal btn-comprar" disabled style="opacity: 0.5;">
-                        Esgotado
-                    </button>
-                {% endif %}
-            </div>
-            
-        </form>
-
-        <div class="descricao-completa">
-            <h3>Descrição do Produto</h3>
-            <p>{{ produto.descricao|linebreaksbr }}</p>
-        </div>
-        
-    </div>
-    
-</div>
-
 {% endblock content %}
 
 
 {% block extra_js %}
 <script>
-    // 🚨 1. Função de manipulação principal (refatorada para suportar touch)
-    function handleVariacaoSelection(button) {
-        const form = document.getElementById('form-adicionar-carrinho');
-        const variacaoInput = document.getElementById('variacao-input');
-        const mainImage = document.getElementById('main-image');
-        const miniaturas = document.querySelectorAll('.miniatura');
-        const variacaoImageMap = window.variacaoImageMap; // Acessa o mapeamento gerado
+function handleVariacaoSelection(button) {
+  const variacaoInput = document.getElementById('variacao-input');
+  const mainImage = document.getElementById('main-image');
+  const miniaturas = document.querySelectorAll('.miniatura');
+  const tipo = button.closest('.variacao-selector').dataset.tipo;
+  const variacaoId = button.dataset.id;
+  const variacaoImageMap = window.variacaoImageMap || {};
+  const defaultImageUrl = mainImage ? mainImage.src : "{% static 'img/placeholder.png' %}";
 
-        const selectorDiv = button.closest('.variacao-selector');
-        const tipo = selectorDiv.dataset.tipo;
-        const variacaoId = button.dataset.id;
-        const defaultImageUrl = mainImage ? mainImage.src : "{% static 'img/placeholder.png' %}";
-        
-        // A. Gerencia o Estilo (Só pode selecionar um por tipo)
-        document.querySelectorAll(`.variacao-selector[data-tipo="${tipo}"] .btn-variacao`).forEach(btn => {
-            btn.classList.remove('selecionado');
-        });
-        button.classList.add('selecionado');
-        
-        // B. 🔴 Troca a Imagem Principal (Se a variação tiver foto)
-        if (variacaoImageMap[variacaoId]) {
-            mainImage.src = variacaoImageMap[variacaoId];
-            
-            // Remove destaque das miniaturas (pois a imagem mudou via variação)
-            miniaturas.forEach(m => m.classList.remove('selecionado'));
+  document.querySelectorAll(`.variacao-selector[data-tipo="${tipo}"] .btn-variacao`).forEach(btn => {
+    btn.classList.remove('selecionado');
+  });
+  button.classList.add('selecionado');
 
-        } else {
-            // Volta para a foto principal se a variação não tiver foto
-            mainImage.src = defaultImageUrl;
-        }
-        
-        // C. Atualiza o campo oculto
-        variacaoInput.value = variacaoId;
-    }
+  mainImage.src = variacaoImageMap[variacaoId] || defaultImageUrl;
+  miniaturas.forEach(m => m.classList.remove('selecionado'));
+  variacaoInput.value = variacaoId;
+}
 
+document.addEventListener('DOMContentLoaded', function() {
+  const botoesVariacao = document.querySelectorAll('.btn-variacao');
+  const form = document.getElementById('form-adicionar-carrinho');
+  const mainImage = document.getElementById('main-image');
+  const miniaturas = document.querySelectorAll('.miniatura');
+  const requiredTypes = document.querySelectorAll('.variacao-selector');
+  const variacaoInput = document.getElementById('variacao-input');
+  const produtoUsaVariacoes = {{ produto.usa_variacoes|yesno:"true,false" }};
+  const estoqueTotal = {{ produto.get_estoque_total }};
+  const defaultImageUrl = mainImage ? mainImage.src : "{% static 'img/placeholder.png' %}";
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('form-adicionar-carrinho');
-        const variacaoInput = document.getElementById('variacao-input');
-        const botoesVariacao = document.querySelectorAll('.btn-variacao');
-        const requiredTypes = document.querySelectorAll('.variacao-selector');
-        const mainImage = document.getElementById('main-image');
-        const miniaturas = document.querySelectorAll('.miniatura');
-        
-        // Variáveis Django
-        const produtoUsaVariacoes = {{ produto.usa_variacoes|yesno:"true,false" }};
-        const estoqueTotal = {{ produto.get_estoque_total }};
-        const defaultImageUrl = mainImage ? mainImage.src : "{% static 'img/placeholder.png' %}";
+  window.variacaoImageMap = {
+    {% for variacao in produto.variacoes.all %}
+      {% if variacao.imagem %}
+        "{{ variacao.id }}": "{{ variacao.imagem.url }}",
+      {% endif %}
+    {% endfor %}
+  };
 
-        // 🚨 2. Mapeamento de Imagens por Variação (GLOBAL PARA FÁCIL ACESSO) 🚨
-        window.variacaoImageMap = {
-            {% for variacao in produto.variacoes.all %}
-                {% if variacao.imagem %}
-                    "{{ variacao.id }}": "{{ variacao.imagem.url }}",
-                {% endif %}
-            {% endfor %}
-        };
-        
-        // --- Eventos de Galeria e Variação ---
-
-        // Evento 1. Miniaturas da Galeria (Troca a foto principal)
-        miniaturas.forEach(miniatura => {
-            miniatura.addEventListener('click', function() {
-                mainImage.src = this.dataset.fullUrl;
-                
-                // Gerencia o Destaque
-                miniaturas.forEach(m => m.classList.remove('selecionado'));
-                this.classList.add('selecionado');
-                
-                // Limpa a seleção de variação (opcional, mas seguro)
-                botoesVariacao.forEach(btn => btn.classList.remove('selecionado'));
-            });
-            
-            // 🔴 CORREÇÃO CRÍTICA MÓVEL: Adiciona o evento touchstart nas miniaturas
-            miniatura.addEventListener('touchstart', function(e) {
-                e.preventDefault(); 
-                this.click(); // Simula o clique após o toque
-            });
-        });
-
-
-        // Evento 2. Botões de Variação (Lógica de Click e Touch)
-        if (produtoUsaVariacoes) {
-            botoesVariacao.forEach(button => {
-                
-                // 🔴 CLICK (Desktop)
-                button.addEventListener('click', function() {
-                    handleVariacaoSelection(this);
-                });
-
-                // 🔴 TOUCHSTART (Celular) - CORREÇÃO CRÍTICA
-                button.addEventListener('touchstart', function(e) {
-                    e.preventDefault(); 
-                    handleVariacaoSelection(this);
-                });
-            });
-
-            // 🚨 3. Validação: Checa se uma opção foi selecionada para CADA TIPO 🚨
-            form.addEventListener('submit', function(e) {
-                const selecoesFeitas = form.querySelectorAll('.variacao-selector .btn-variacao.selecionado').length;
-                
-                if (requiredTypes.length > 0 && selecoesFeitas < requiredTypes.length) {
-                    e.preventDefault();
-                    alert("Por favor, selecione uma opção para cada tipo de variação (Cor, Tamanho, etc.) disponível.");
-                    return;
-                }
-                
-                if (!variacaoInput.value) {
-                    e.preventDefault();
-                    alert("Por favor, selecione pelo menos uma opção de variação.");
-                }
-            });
-        }
-        
-        // Desabilitar o botão se o estoque for zero e não houver variação
-        if (!produtoUsaVariacoes && estoqueTotal <= 0) {
-            document.querySelector('.btn-comprar').disabled = true;
-        }
+  miniaturas.forEach(miniatura => {
+    miniatura.addEventListener('click', function() {
+      mainImage.src = this.dataset.fullUrl;
+      miniaturas.forEach(m => m.classList.remove('selecionado'));
+      this.classList.add('selecionado');
+      botoesVariacao.forEach(btn => btn.classList.remove('selecionado'));
     });
+    miniatura.addEventListener('touchstart', function(e) {
+      e.preventDefault(); this.click();
+    });
+  });
+
+  if (produtoUsaVariacoes) {
+    botoesVariacao.forEach(button => {
+      button.addEventListener('click', () => handleVariacaoSelection(button));
+      button.addEventListener('touchstart', e => { e.preventDefault(); handleVariacaoSelection(button); });
+    });
+
+    form.addEventListener('submit', function(e) {
+      const selecoesFeitas = form.querySelectorAll('.variacao-selector .btn-variacao.selecionado').length;
+      if (requiredTypes.length > 0 && selecoesFeitas < requiredTypes.length) {
+        e.preventDefault();
+        alert("Por favor, selecione uma opção para cada tipo de variação.");
+        return;
+      }
+      if (!variacaoInput.value) {
+        e.preventDefault();
+        alert("Por favor, selecione pelo menos uma variação.");
+      }
+    });
+  }
+
+  if (!produtoUsaVariacoes && estoqueTotal <= 0) {
+    document.querySelector('.btn-comprar').disabled = true;
+  }
+});
 </script>
 {% endblock %}
