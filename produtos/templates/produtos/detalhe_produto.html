@@ -4,76 +4,79 @@
 {% block extra_css %}
 <style>
 /* ===== Layout principal ===== */
-.produto-detalhe-container{
-  display:flex; flex-wrap:wrap; align-items:flex-start; gap:56px;
-  padding:40px 20px; max-width:1100px; margin:0 auto; background:#fff;
+.produto-detalhe-container {
+  display: flex; flex-wrap: wrap; align-items: flex-start; gap: 56px;
+  padding: 40px 20px; max-width: 1100px; margin: 0 auto; background: #fff;
 }
 
 /* ===== Coluna da imagem ===== */
-.produto-galeria{ flex:1 1 480px; max-width:520px }
-.produto-galeria .main-image-wrapper{
-  width:100%; border:1px solid #e9e9e9; border-radius:10px; overflow:hidden
+.produto-galeria { flex: 1 1 480px; max-width: 520px; }
+.produto-galeria .main-image-wrapper {
+  width: 100%; border: 1px solid #e9e9e9; border-radius: 10px; overflow: hidden;
 }
-#main-image{ display:block; width:100%; height:auto; object-fit:contain }
+#main-image { display: block; width: 100%; height: auto; object-fit: contain; }
 
-/* Miniaturas — corrige “quadrados em branco” */
-.galeria-miniaturas{
-  display:flex; gap:12px; margin-top:14px; overflow-x:auto; padding-bottom:4px
+/* Miniaturas */
+.galeria-miniaturas {
+  display: flex; gap: 12px; margin-top: 14px; overflow-x: auto; padding-bottom: 4px;
 }
-.galeria-miniaturas .miniatura{
-  display:block; width:72px; aspect-ratio:1/1; object-fit:cover;
-  border:1px solid #ddd; border-radius:6px; background:none !important;
+.galeria-miniaturas .miniatura {
+  display: block; width: 72px; aspect-ratio: 1/1; object-fit: cover;
+  border: 1px solid #ddd; border-radius: 6px; background: none !important;
+  flex-shrink: 0; /* evita compressão em mobile */
 }
-.galeria-miniaturas .miniatura.selecionado{ border:2px solid #111 }
+.galeria-miniaturas .miniatura.selecionado { border: 2px solid #111; }
 
 /* ===== Coluna das infos ===== */
-.produto-info{ flex:1 1 380px; display:flex; flex-direction:column; gap:12px }
-.produto-info h1{ font-size:2rem; font-weight:600; color:#222; margin:0 0 6px }
-.preco-principal{ font-size:1.8rem; font-weight:600; color:#111; margin:0 }
-.produto-info p{ color:#555; font-size:1rem; line-height:1.6; margin:0 }
+.produto-info { flex: 1 1 380px; display: flex; flex-direction: column; gap: 12px; }
+.produto-info h1 { font-size: 2rem; font-weight: 600; color: #222; margin: 0 0 6px; }
+.preco-principal { font-size: 1.8rem; font-weight: 600; color: #111; margin: 0; }
+.produto-info p { color: #555; font-size: 1rem; line-height: 1.6; margin: 0; }
 
 /* Estoque colorido */
-.produto-info .status-estoque{ font-weight:600; margin-top:6px }
+.produto-info .status-estoque { font-weight: 600; margin-top: 6px; }
 
 /* ===== Variações ===== */
-.variacao-selector{ margin-top:14px }
-.variacao-selector h4{ margin:0 0 8px; font-weight:600; color:#222 }
-.variacao-selector .btn-variacao{
-  background:#f5f5f5; border:1px solid #ddd; padding:8px 14px; border-radius:6px;
-  cursor:pointer; transition:.2s; margin-right:8px; margin-bottom:8px
+.variacao-selector { margin-top: 14px; }
+.variacao-selector h4 { margin: 0 0 8px; font-weight: 600; color: #222; }
+.variacao-selector .btn-variacao {
+  background: #f5f5f5; border: 1px solid #ddd; padding: 8px 14px; border-radius: 6px;
+  cursor: pointer; transition: .2s; margin-right: 8px; margin-bottom: 8px;
+  user-select: none; touch-action: manipulation;
 }
 .variacao-selector .btn-variacao:hover,
-.variacao-selector .btn-variacao.selecionado{ background:#111; color:#fff; border-color:#111 }
+.variacao-selector .btn-variacao.selecionado {
+  background: #111; color: #fff; border-color: #111;
+}
 
 /* ===== Quantidade + Comprar ===== */
-.acoes-compra{ display:flex; align-items:center; gap:14px; margin-top:8px; flex-wrap:wrap }
-.acoes-compra input[type="number"]{
-  width:72px; text-align:center; padding:8px; border:1px solid #ddd; border-radius:6px
+.acoes-compra { display: flex; align-items: center; gap: 14px; margin-top: 8px; flex-wrap: wrap; }
+.acoes-compra input[type="number"] {
+  width: 72px; text-align: center; padding: 8px; border: 1px solid #ddd; border-radius: 6px;
 }
-.btn-comprar{
-  background:#111; color:#fff; padding:12px 28px; border:none; border-radius:6px;
-  font-size:1rem; font-weight:500; cursor:pointer; transition:background .2s ease; min-width:180px
+.btn-comprar {
+  background: #111; color: #fff; padding: 12px 28px; border: none; border-radius: 6px;
+  font-size: 1rem; font-weight: 500; cursor: pointer; transition: background .2s ease; min-width: 180px;
 }
-.btn-comprar:hover{ background:#333 }
+.btn-comprar:hover { background: #333; }
 
 /* ===== Descrição ===== */
-.descricao-completa{ margin-top:22px; border-top:1px solid #eee; padding-top:16px }
-.descricao-completa h3{ font-size:1.1rem; font-weight:600; margin:0 0 8px }
+.descricao-completa { margin-top: 22px; border-top: 1px solid #eee; padding-top: 16px; }
+.descricao-completa h3 { font-size: 1.1rem; font-weight: 600; margin: 0 0 8px; }
 
 /* ===== Breadcrumb ===== */
-.breadcrumb{ font-size:.9rem; color:#7b7b7b; margin-bottom:18px }
-.breadcrumb a{ color:inherit }
+.breadcrumb { font-size: .9rem; color: #7b7b7b; margin-bottom: 18px; }
+.breadcrumb a { color: inherit; }
 
 /* ===== Responsivo ===== */
-@media (max-width:768px){
-  .produto-detalhe-container{ flex-direction:column; gap:28px; padding:24px 16px }
-  .produto-info h1{ font-size:1.6rem }
-  .preco-principal{ font-size:1.5rem }
-  .btn-comprar{ width:100% }
+@media (max-width: 768px) {
+  .produto-detalhe-container { flex-direction: column; gap: 28px; padding: 24px 16px; }
+  .produto-info h1 { font-size: 1.6rem; }
+  .preco-principal { font-size: 1.5rem; }
+  .btn-comprar { width: 100%; }
 }
 </style>
 {% endblock %}
-
 
 {% block content %}
 <p class="breadcrumb">
@@ -83,10 +86,9 @@
 </p>
 
 <div class="produto-detalhe-container">
-  
-  <!-- Coluna esquerda: Imagem principal + miniaturas -->
-  <div class="produto-galeria">
 
+  <!-- Coluna esquerda: imagem principal + miniaturas -->
+  <div class="produto-galeria">
     <div class="main-image-wrapper">
       {% if produto.imagem %}
         <img id="main-image" src="{{ produto.imagem.url }}" alt="Imagem principal do produto {{ produto.nome }}">
@@ -102,7 +104,6 @@
              data-full-url="{{ produto.imagem.url }}"
              alt="Miniatura principal">
       {% endif %}
-
       {% for imagem_galeria in produto.galeria_imagens.all %}
         {% if imagem_galeria.imagem %}
           <img class="miniatura"
@@ -116,26 +117,21 @@
                alt="Sem imagem">
         {% endif %}
       {% empty %}
-        <!-- Nenhuma imagem extra -->
       {% endfor %}
     </div>
-
   </div>
 
   <!-- Coluna direita: informações -->
   <div class="produto-info">
     <h1>{{ produto.nome }}</h1>
     <p class="preco-principal">{{ produto.get_display_price }}</p>
-    <p style="font-size: 1rem; color: #777;">
-      ou 3x de R$ {{ produto.preco|floatformat:2 }} (Valor a ser corrigido) sem juros
-    </p>
+    <p style="font-size: 1rem; color: #777;">ou 3x de R$ {{ produto.preco|floatformat:2 }} sem juros</p>
     <p class="status-estoque" style="color: {% if produto.get_estoque_total == 0 %}#d32f2f{% else %}#2e7d32{% endif %};">
       {{ produto.get_status_estoque }}
     </p>
 
     <form id="form-adicionar-carrinho" action="{% url 'carrinho:adicionar_ao_carrinho' produto.slug %}" method="POST">
       {% csrf_token %}
-      
       {% if produto.usa_variacoes %}
         {% for tipo, variacoes in variacoes_por_tipo.items %}
           <div class="variacao-selector" data-tipo="{{ tipo }}">
@@ -170,37 +166,30 @@
     </div>
 
     {% if produtos_relacionados %}
-      <div class="produtos-relacionados" style="margin-top: 50px; border-top: 1px solid #eee; padding-top: 30px;">
-        <h3 style="font-size: 1.4rem; font-weight: 600; margin-bottom: 20px; color: #222;">
-          Produtos Relacionados
-        </h3>
-        <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-          {% for item in produtos_relacionados %}
-            <div style="flex: 1 1 200px; max-width: 220px; text-align: center;">
-              <a href="{% url 'produto_detalhe' item.slug %}" style="text-decoration: none; color: inherit;">
-                {% if item.imagem %}
-                  <img src="{{ item.imagem.url }}"
-                       alt="{{ item.nome }}"
-                       style="width:100%; border-radius:8px; border:1px solid #eee; object-fit:cover; margin-bottom:10px;">
-                {% else %}
-                  <img src="{% static 'img/placeholder.png' %}"
-                       alt="{{ item.nome }}"
-                       style="width:100%; border-radius:8px; border:1px solid #eee; object-fit:cover; margin-bottom:10px;">
-                {% endif %}
-                <p style="font-size:1rem; font-weight:500;">{{ item.nome }}</p>
-                <p style="color:#111; font-weight:600;">{{ item.get_display_price }}</p>
-              </a>
-            </div>
-          {% endfor %}
-        </div>
+    <div class="produtos-relacionados" style="margin-top:50px; border-top:1px solid #eee; padding-top:30px;">
+      <h3 style="font-size:1.4rem; font-weight:600; margin-bottom:20px; color:#222;">Produtos Relacionados</h3>
+      <div style="display:flex; flex-wrap:wrap; gap:20px;">
+        {% for item in produtos_relacionados %}
+          <div style="flex:1 1 200px; max-width:220px; text-align:center;">
+            <a href="{% url 'produto_detalhe' item.slug %}" style="text-decoration:none; color:inherit;">
+              {% if item.imagem %}
+                <img src="{{ item.imagem.url }}" alt="{{ item.nome }}"
+                     style="width:100%; border-radius:8px; border:1px solid #eee; object-fit:cover; margin-bottom:10px;">
+              {% else %}
+                <img src="{% static 'img/placeholder.png' %}" alt="{{ item.nome }}"
+                     style="width:100%; border-radius:8px; border:1px solid #eee; object-fit:cover; margin-bottom:10px;">
+              {% endif %}
+              <p style="font-size:1rem; font-weight:500;">{{ item.nome }}</p>
+              <p style="color:#111; font-weight:600;">{{ item.get_display_price }}</p>
+            </a>
+          </div>
+        {% endfor %}
       </div>
+    </div>
     {% endif %}
-
   </div>
-
 </div>
 {% endblock content %}
-
 
 {% block extra_js %}
 <script>
@@ -213,12 +202,17 @@ function handleVariacaoSelection(button) {
   const variacaoImageMap = window.variacaoImageMap || {};
   const defaultImageUrl = mainImage ? mainImage.src : "{% static 'img/placeholder.png' %}";
 
-  document.querySelectorAll(`.variacao-selector[data-tipo="${tipo}"] .btn-variacao`).forEach(btn => {
-    btn.classList.remove('selecionado');
-  });
+  document.querySelectorAll(`.variacao-selector[data-tipo="${tipo}"] .btn-variacao`)
+    .forEach(btn => btn.classList.remove('selecionado'));
   button.classList.add('selecionado');
 
-  mainImage.src = variacaoImageMap[variacaoId] || defaultImageUrl;
+  // Atualiza imagem principal com a da variação (se existir)
+  if (variacaoImageMap[variacaoId]) {
+    mainImage.src = variacaoImageMap[variacaoId];
+  } else {
+    mainImage.src = defaultImageUrl;
+  }
+
   miniaturas.forEach(m => m.classList.remove('selecionado'));
   variacaoInput.value = variacaoId;
 }
@@ -234,6 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const estoqueTotal = {{ produto.get_estoque_total }};
   const defaultImageUrl = mainImage ? mainImage.src : "{% static 'img/placeholder.png' %}";
 
+  // Mapa das imagens por variação
   window.variacaoImageMap = {
     {% for variacao in produto.variacoes.all %}
       {% if variacao.imagem %}
@@ -242,42 +237,38 @@ document.addEventListener('DOMContentLoaded', function() {
     {% endfor %}
   };
 
+  // ===== Miniaturas =====
   miniaturas.forEach(miniatura => {
-  const trocarImagem = () => {
-    mainImage.src = miniatura.dataset.fullUrl;
-    miniaturas.forEach(m => m.classList.remove('selecionado'));
-    miniatura.classList.add('selecionado');
-    botoesVariacao.forEach(btn => btn.classList.remove('selecionado'));
-  };
+    const trocarImagem = (e) => {
+      e.preventDefault();
+      mainImage.src = miniatura.dataset.fullUrl;
+      miniaturas.forEach(m => m.classList.remove('selecionado'));
+      miniatura.classList.add('selecionado');
+      botoesVariacao.forEach(btn => btn.classList.remove('selecionado'));
+    };
+    miniatura.addEventListener('click', trocarImagem);
+    miniatura.addEventListener('touchstart', trocarImagem, { passive: false });
+  });
 
-  miniatura.addEventListener('click', trocarImagem);
-  miniatura.addEventListener('touchend', trocarImagem, { passive: true });
-});
-
-  // Evento 2. Botões de Variação (Desktop + Mobile - CORRIGIDO)
-if (produtoUsaVariacoes) {
+  // ===== Botões de Variação =====
+  if (produtoUsaVariacoes) {
     botoesVariacao.forEach(button => {
-        const acionarSelecao = (e) => {
-            e.preventDefault();      // evita comportamento padrão do botão
-            e.stopPropagation();     // impede conflito com o form
-            handleVariacaoSelection(button);
-        };
-
-        // Clique normal (Desktop)
-        button.addEventListener('click', acionarSelecao);
-
-        // Toque (Mobile - funciona em Safari/Chrome)
-        button.addEventListener('touchstart', acionarSelecao, { passive: false });
+      const acionarSelecao = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleVariacaoSelection(button);
+      };
+      button.addEventListener('click', acionarSelecao);
+      button.addEventListener('touchstart', acionarSelecao, { passive: false });
     });
 
-    // Validação antes de enviar o form
     form.addEventListener('submit', function(e) {
-        const selecoesFeitas = form.querySelectorAll('.variacao-selector .btn-variacao.selecionado').length;
-        if (requiredTypes.length > 0 && selecoesFeitas < requiredTypes.length) {
-            e.preventDefault();
-            alert("Por favor, selecione uma opção para cada tipo de variação.");
-            return;
-        }
+      const selecoesFeitas = form.querySelectorAll('.variacao-selector .btn-variacao.selecionado').length;
+      if (requiredTypes.length > 0 && selecoesFeitas < requiredTypes.length) {
+        e.preventDefault();
+        alert("Por favor, selecione uma opção para cada tipo de variação.");
+        return;
+      }
       if (!variacaoInput.value) {
         e.preventDefault();
         alert("Por favor, selecione pelo menos uma variação.");
