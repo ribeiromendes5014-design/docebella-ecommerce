@@ -48,9 +48,8 @@ class Produto(models.Model):
         Retorna o preço considerando promoções ativas.
         Se houver uma promoção vigente, aplica o desconto automaticamente.
         """
-        preco = self.preco if self.preco is not None else 0.00
+        preco = self.preco or 0.00
 
-        # Verifica promoções ativas associadas
         promo = self.promocoes.filter(
             ativa=True,
             data_inicio__lte=timezone.now()
@@ -59,9 +58,9 @@ class Produto(models.Model):
         ).first()
 
         if promo:
-            desconto = (preco * promo.desconto_percentual) / 100
-            preco_final = preco - desconto
+            preco_final = promo.preco_promocional
             return f"R$ {preco_final:.2f}".replace('.', ',') + " 🔥"
+
         return f"R$ {preco:.2f}".replace('.', ',')
 
     def get_estoque_total(self):
@@ -150,17 +149,17 @@ class ImagemProduto(models.Model):
 
 
 # ======================
-# PROMOÇÃO (NOVO MODELO)
+# PROMOÇÃO (CORRIGIDO)
 # ======================
 class Promocao(models.Model):
-    nome = models.CharField("Nome da promoção", max_length=100)
-    descricao = models.TextField(blank=True, null=True)
-    desconto_percentual = models.DecimalField(
-        "Desconto (%)", max_digits=5, decimal_places=2, help_text="Ex: 10.00 = 10%"
+    produto = models.ForeignKey(
+        Produto,
+        on_delete=models.CASCADE,
+        related_name='promocoes'
     )
-    produtos = models.ManyToManyField('Produto', related_name='promocoes', blank=True)
-    data_inicio = models.DateTimeField("Início da promoção", default=timezone.now)
-    data_fim = models.DateTimeField("Fim da promoção", blank=True, null=True)
+    preco_promocional = models.DecimalField(max_digits=10, decimal_places=2)
+    data_inicio = models.DateTimeField(default=timezone.now)
+    data_fim = models.DateTimeField(blank=True, null=True)
     ativa = models.BooleanField(default=True)
 
     class Meta:
@@ -169,14 +168,12 @@ class Promocao(models.Model):
         ordering = ["-data_inicio"]
 
     def __str__(self):
-        return f"{self.nome} ({self.desconto_percentual}% off)"
+        return f"Promoção de {self.produto.nome} - R$ {self.preco_promocional:.2f}"
 
     def esta_vigente(self):
         agora = timezone.now()
-        if not self.ativa:
-            return False
-        if self.data_inicio and self.data_inicio > agora:
-            return False
-        if self.data_fim and self.data_fim < agora:
-            return False
-        return True
+        return (
+            self.ativa and
+            self.data_inicio <= agora and
+            (self.data_fim is None or self.data_fim >= agora)
+        )
