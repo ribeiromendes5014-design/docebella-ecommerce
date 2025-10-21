@@ -178,8 +178,8 @@ ALLOWED_HOSTS = [
 
 # >>> CORREÇÃO CRÍTICA DO ERRO 403 (CSRF) <<<
 CSRF_TRUSTED_ORIGINS = [
-    'https://catalagoloja-zn2u.onrender.com', 
-    'https://*.onrender.com'
+    'https://docebella-ecommerce-pu7j.onrender.com',
+    'https://*.onrender.com',
 ]
 
 
