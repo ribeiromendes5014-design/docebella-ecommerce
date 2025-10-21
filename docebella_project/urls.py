@@ -3,29 +3,41 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import HttpResponseNotFound
+
+# =============================
+# 🔐 FAKE ADMIN (Honeypot opcional)
+# =============================
+# Se quiser enganar bots que tentarem /admin/, instale antes:
+# pip install django-admin-honeypot
+# e adicione 'admin_honeypot' em INSTALLED_APPS (settings.py)
 
 urlpatterns = [
+    # 🩷 Painel secreto real
     path('martins/', admin.site.urls),
-    
-    # 1. Rotas do App PRODUTOS (Home Page)
+
+    # 🪤 Honeypot (opcional, fake admin pra despistar bots)
+    path('admin/', include('admin_honeypot.urls', namespace='admin_honeypot')),
+
+    # =============================
+    # 🏠 Rotas principais do site
+    # =============================
+
+    # 1. Página inicial / produtos
     path('', include('produtos.urls')), 
-    
-    # 2. Rotas do App CARRINHO
+
+    # 2. Carrinho de compras
     path('carrinho/', include('carrinho.urls')),
-    
-    # 3. Rotas do App USUÁRIOS/CONTA (Contém as rotas customizadas de login/logout/cadastro/painel)
+
+    # 3. Usuários (login, cadastro, painel)
     path('conta/', include('usuarios.urls')), 
-    
-    # 4. Rotas do App PEDIDOS/CHECKOUT
-    # CORREÇÃO AQUI: Adicionamos o argumento namespace='pedidos'
+
+    # 4. Pedidos / checkout
     path('pedido/', include('pedidos.urls', namespace='pedidos')),
-    
-    # LINHA REMOVIDA/COMENTADA: 
-    # Removemos a inclusão padrão do Django para evitar conflitos,
-    # já que as URLs de login e logout foram definidas no app 'usuarios'.
-    # path('accounts/', include('django.contrib.auth.urls')), 
 ]
 
-# ... restante do código para MEDIA
+# =============================
+# 📁 Configuração de arquivos estáticos/media
+# =============================
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
