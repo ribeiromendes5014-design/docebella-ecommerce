@@ -177,6 +177,39 @@
     });
     </script>
     
+    <script>
+// ======== Notificação local de carrinho esquecido ========
+document.addEventListener("DOMContentLoaded", function() {
+  if (!("Notification" in window)) return;
+
+  if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+    Notification.requestPermission();
+  }
+
+  const totalItensCarrinho = parseInt("{{ CARRINHO_TOTAL_ITENS|default:0 }}");
+
+  // Evita repetir notificações na mesma sessão
+  const jaMostrou = sessionStorage.getItem("notificacao_carrinho");
+  
+  if (totalItensCarrinho > 0 && !jaMostrou) {
+    setTimeout(() => {
+      if (Notification.permission === "granted") {
+        const notification = new Notification("🛒 Esqueceu algo no carrinho?", {
+          body: "Você ainda tem produtos esperando por você na Doce & Bella 💖",
+          icon: "{% static 'img/logo.png' %}",
+        });
+
+        notification.onclick = function() {
+          window.open("{% url 'carrinho:ver_carrinho' %}", "_blank");
+        };
+
+        // Marca como exibida nesta sessão
+        sessionStorage.setItem("notificacao_carrinho", "true");
+      }
+    }, 120000);
+  }
+});
+</script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
