@@ -1,7 +1,7 @@
 # produtos/views.py
 from django.shortcuts import render, get_object_or_404
 from .models import Produto, Categoria, Variacao 
-
+from decimal import Decimal
 
 # View da Home Page
 def home_page(request):
@@ -37,9 +37,9 @@ def detalhe_produto(request, slug):
             variacoes_por_tipo[nome_tipo] = produto.variacoes.filter(tipo=nome_tipo).order_by('valor')
 
     # 🔹 Cálculo da simulação de parcelamento
-    preco = produto.preco or 0
-    valor_final = preco / 0.8872  # Corrige o valor com base na sua fórmula
-    valor_parcela = valor_final / 3  # Divide em 3x
+    preco = produto.preco or Decimal('0')
+    valor_final = preco / Decimal('0.8872')  # Corrige o valor com base na sua fórmula
+    valor_parcela = valor_final / Decimal('3')  # Divide em 3x
 
     # >> NOVO: Lógica para Produtos Relacionados <<
     produtos_relacionados = Produto.objects.filter(
