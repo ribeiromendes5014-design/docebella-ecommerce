@@ -2,62 +2,62 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ titulo|default:"Doce & Bella E-commerce" }}</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ titulo|default:"Doce & Bella E-commerce" }}</title>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'css/base.css' %}">
-    {% block extra_css %}{% endblock %}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  {% block extra_css %}{% endblock %}
 </head>
 <body>
 
 <!-- ===== HEADER DESKTOP ===== -->
 <header class="fixed-header-custom">  
-    <div class="header-principal-unificado">
-        <div class="container">
-            <div class="logo">
-                <a href="{% url 'home' %}">
-                    <img src="{% static 'img/logo.png' %}" alt="Logo Doce & Bella" class="logo-img"> 
-                </a>
-            </div>
+  <div class="header-principal-unificado">
+    <div class="container">
+      <div class="logo">
+        <a href="{% url 'home' %}">
+          <img src="{% static 'img/logo.png' %}" alt="Logo Doce & Bella" class="logo-img"> 
+        </a>
+      </div>
 
-            <div class="menu-nav-unificado">
-                <ul>
-                    <li><a href="{% url 'home' %}">Início</a></li>
-                    <li><a href="{% url 'listar_categoria' 'perfumes' %}">Perfumes</a></li>
-                    <li><a href="{% url 'home' %}">Todos os Produtos</a></li>
-                </ul>
-            </div>
+      <div class="menu-nav-unificado">
+        <ul>
+          <li><a href="{% url 'home' %}">Início</a></li>
+          <li><a href="{% url 'listar_categoria' 'perfumes' %}">Perfumes</a></li>
+          <li><a href="{% url 'home' %}">Todos os Produtos</a></li>
+        </ul>
+      </div>
 
-            <!-- 🔍 BARRA DE BUSCA -->
-            <div class="search-bar">
-                <form method="GET" action="{% url 'home' %}">
-                    <input type="search" name="q" placeholder="Buscar produtos..." value="{{ request.GET.q }}">
-                    <button type="submit" style="display:none;"></button>
-                </form>
-            </div>
+      <!-- 🔍 BARRA DE BUSCA -->
+      <div class="search-bar">
+        <form method="GET" action="{% url 'home' %}">
+          <input type="search" name="q" placeholder="Buscar produtos..." value="{{ request.GET.q }}">
+          <button type="submit" style="display:none;"></button>
+        </form>
+      </div>
 
-            <div class="icones-acao">
-                {% if user.is_authenticated %}
-                    <a href="{% url 'usuarios:painel_cliente' %}" title="Meu Painel"><i class="fas fa-user"></i></a>
-                    <form method="post" action="{% url 'usuarios:logout' %}" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="link-like-button" title="Sair">
-                            <i class="fas fa-sign-out-alt"></i>
-                        </button>
-                    </form>
-                {% else %}
-                    <a href="{% url 'usuarios:login' %}" title="Iniciar sessão / Criar conta"><i class="fas fa-user"></i></a>
-                {% endif %}
+      <div class="icones-acao">
+        {% if user.is_authenticated %}
+          <a href="{% url 'usuarios:painel_cliente' %}" title="Meu Painel"><i class="fas fa-user"></i></a>
+          <form method="post" action="{% url 'usuarios:logout' %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="link-like-button" title="Sair">
+              <i class="fas fa-sign-out-alt"></i>
+            </button>
+          </form>
+        {% else %}
+          <a href="{% url 'usuarios:login' %}" title="Iniciar sessão / Criar conta"><i class="fas fa-user"></i></a>
+        {% endif %}
 
-                <a href="{% url 'carrinho:ver_carrinho' %}" title="Carrinho de Compras">
-                    <i class="fas fa-shopping-bag"></i> 
-                    <span style="font-size: 0.8rem; font-weight: bold;">({{ CARRINHO_TOTAL_ITENS }})</span>
-                </a>
-            </div>
-        </div>
+        <a href="{% url 'carrinho:ver_carrinho' %}" title="Carrinho de Compras">
+          <i class="fas fa-shopping-bag"></i> 
+          <span style="font-size: 0.8rem; font-weight: bold;">({{ CARRINHO_TOTAL_ITENS }})</span>
+        </a>
+      </div>
     </div>
+  </div>
 </header>
 
 <!-- ===== HEADER MOBILE ===== -->
@@ -84,11 +84,13 @@
 <!-- ===== MENU LATERAL MOBILE ===== -->
 <nav id="mobile-menu" class="mobile-menu">
   <div class="mobile-menu-header">
-    <a href="{% url 'usuarios:login' %}">
-      <img src="https://d2az8otjr0j19j.cloudfront.net/templates/002/838/949/twig/static/images/top-acc.png" alt="Login">
-      <span>Iniciar sessão</span>
-    </a>
-    <p>ou <a href="{% url 'usuarios:cadastro' %}" class="criar-conta">Criar uma conta</a></p>
+    <div class="login-block">
+      <a href="{% url 'usuarios:login' %}">
+        <img src="https://d2az8otjr0j19j.cloudfront.net/templates/002/838/949/twig/static/images/top-acc.png" alt="Login">
+        <span>Iniciar sessão</span>
+      </a>
+      <p>ou <a href="{% url 'usuarios:cadastro' %}" class="criar-conta">Criar uma conta</a></p>
+    </div>
     <button class="menu-close" id="menu-close"><i class="fa fa-times"></i></button>
   </div>
 
@@ -131,6 +133,7 @@ main.container { margin-top: 120px; }
     justify-content: space-between;
     align-items: center;
   }
+
   .menu-toggle {
     background: none;
     border: none;
@@ -138,17 +141,26 @@ main.container { margin-top: 120px; }
     font-size: 24px;
     cursor: pointer;
   }
+
   .mobile-logo img {
     height: 65px;
     max-width: 180px;
   }
-  .cart-icon { position: relative; }
+
+  .cart-icon {
+    position: relative;
+    background: none !important;
+    z-index: 9998;
+  }
+
   .cart-icon img {
     width: 36px;
     background: #fdd9ea;
     border-radius: 12px;
     padding: 5px;
+    position: relative;
   }
+
   .cart-count {
     position: absolute;
     bottom: -8px;
@@ -164,6 +176,7 @@ main.container { margin-top: 120px; }
     align-items: center;
     justify-content: center;
   }
+
   .mobile-search {
     display: flex;
     justify-content: center;
@@ -174,6 +187,7 @@ main.container { margin-top: 120px; }
     padding: 5px 10px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   }
+
   .mobile-search input {
     flex: 1;
     border: none;
@@ -182,6 +196,7 @@ main.container { margin-top: 120px; }
     font-size: 0.95rem;
     outline: none;
   }
+
   .mobile-search button {
     background: none;
     border: none;
@@ -204,10 +219,12 @@ main.container { margin-top: 120px; }
     z-index: 9999;
     padding: 20px;
   }
+
   .mobile-menu.open {
     left: 0;
     opacity: 1;
   }
+
   .menu-overlay {
     display: none;
     position: fixed;
@@ -217,46 +234,63 @@ main.container { margin-top: 120px; }
     z-index: 9998;
     transition: opacity 0.3s ease;
   }
+
   .menu-overlay.show { display: block; opacity: 1; }
 
+  /* ===== HEADER LOGIN DO MENU ===== */
   .mobile-menu-header {
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: flex-start;
     background-color: #f9c7df;
     padding: 12px 15px;
     border-radius: 10px;
     position: relative;
   }
+
+  .mobile-menu-header .login-block {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
   .mobile-menu-header img { width: 30px; margin-right: 10px; }
   .mobile-menu-header span { color: #333; font-weight: 500; }
+
   .mobile-menu-header p {
-    position: absolute;
-    left: 55px;
-    top: 35px;
-    font-size: 0.85rem;
+    margin: 0;
+    font-size: 0.9rem;
     color: #444;
   }
+
   .mobile-menu-header a.criar-conta {
     color: #d63384;
     font-weight: 600;
     text-decoration: none;
   }
+
   .menu-close {
     background: none;
     border: none;
     color: #333;
     font-size: 24px;
+    position: absolute;
+    right: 12px;
+    top: 12px;
   }
+
+  /* ===== LISTA DE CATEGORIAS ===== */
   .mobile-category-list {
     list-style: none;
     padding: 20px 0 0 0;
     margin: 0;
   }
+
   .mobile-category-list li {
     border-bottom: 1px solid #f2c2db;
     padding: 10px 0;
   }
+
   .mobile-category-list a {
     color: #333;
     text-decoration: none;
@@ -265,8 +299,24 @@ main.container { margin-top: 120px; }
     align-items: center;
     gap: 8px;
   }
+
   .mobile-category-list a:hover { color: #f45ca5; }
   .mobile-category-list i { color: #f45ca5; }
+
+  /* ===== CORREÇÃO DE CONTEÚDO ===== */
+  main.container,
+  .container,
+  .conteudo,
+  #main,
+  #content {
+    margin-top: 160px !important;
+    display: block !important;
+    position: relative !important;
+    overflow: visible !important;
+    z-index: 1 !important;
+  }
+
+  body, main { background-color: #fff !important; }
 }
 </style>
 
