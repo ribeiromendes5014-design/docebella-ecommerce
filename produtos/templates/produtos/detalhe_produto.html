@@ -168,6 +168,26 @@
       <h3>Descrição do Produto</h3>
       <p>{{ produto.descricao|linebreaksbr }}</p>
     </div>
+    {% if produtos_relacionados %}
+<div class="produtos-relacionados" style="margin-top: 50px; border-top: 1px solid #eee; padding-top: 30px;">
+  <h3 style="font-size: 1.4rem; font-weight: 600; margin-bottom: 20px; color: #222;">
+    Produtos Relacionados
+  </h3>
+  <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+    {% for item in produtos_relacionados %}
+      <div style="flex: 1 1 200px; max-width: 220px; text-align: center;">
+        <a href="{% url 'produto_detalhe' item.slug %}" style="text-decoration: none; color: inherit;">
+          <img src="{{ item.imagem.url|default:'{% static 'img/placeholder.png' %}' }}"
+               alt="{{ item.nome }}"
+               style="width:100%; border-radius:8px; border:1px solid #eee; object-fit:cover; margin-bottom:10px;">
+          <p style="font-size:1rem; font-weight:500;">{{ item.nome }}</p>
+          <p style="color:#111; font-weight:600;">{{ item.get_display_price }}</p>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
   </div>
 
 </div>
@@ -215,21 +235,27 @@ document.addEventListener('DOMContentLoaded', function() {
   };
 
   miniaturas.forEach(miniatura => {
-    miniatura.addEventListener('click', function() {
-      mainImage.src = this.dataset.fullUrl;
-      miniaturas.forEach(m => m.classList.remove('selecionado'));
-      this.classList.add('selecionado');
-      botoesVariacao.forEach(btn => btn.classList.remove('selecionado'));
-    });
-    miniatura.addEventListener('touchstart', function(e) {
-      e.preventDefault(); this.click();
-    });
-  });
+  const trocarImagem = () => {
+    mainImage.src = miniatura.dataset.fullUrl;
+    miniaturas.forEach(m => m.classList.remove('selecionado'));
+    miniatura.classList.add('selecionado');
+    botoesVariacao.forEach(btn => btn.classList.remove('selecionado'));
+  };
 
-  if (produtoUsaVariacoes) {
+  miniatura.addEventListener('click', trocarImagem);
+  miniatura.addEventListener('touchend', trocarImagem, { passive: true });
+});
+
+  // Evento 2. Botões de Variação (Desktop + Mobile)
+if (produtoUsaVariacoes) {
     botoesVariacao.forEach(button => {
-      button.addEventListener('click', () => handleVariacaoSelection(button));
-      button.addEventListener('touchstart', e => { e.preventDefault(); handleVariacaoSelection(button); });
+        const acionarSelecao = () => handleVariacaoSelection(button);
+
+        // Clique normal
+        button.addEventListener('click', acionarSelecao);
+
+        // Toque em mobile — sem preventDefault (impedia o click)
+        button.addEventListener('touchend', acionarSelecao, { passive: true });
     });
 
     form.addEventListener('submit', function(e) {
