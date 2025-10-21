@@ -3,10 +3,8 @@ from django.shortcuts import render
 from produtos.models import Produto
 from django.core.paginator import Paginator
 
-def home_page(request):
-    # 🔍 Se tiver busca
+def home(request):
     query = request.GET.get('q', '')
-
     produtos_list = Produto.objects.filter(disponivel=True, estoque__gt=0)
 
     if query:
@@ -14,12 +12,15 @@ def home_page(request):
 
     produtos_list = produtos_list.order_by('-id')
 
-    # 🔢 Paginação opcional (12 por página)
-    paginator = Paginator(produtos_list, 40)
+    paginator = Paginator(produtos_list, 12)
     page = request.GET.get('page')
     produtos = paginator.get_page(page)
 
-    return render(request, 'produtos/home.html', {'produtos': produtos, 'query': query})
+    return render(request, 'produtos/home.html', {
+        'produtos': produtos,
+        'query': query,
+        'titulo': 'Doce & Bella E-commerce'
+    })
 
 
 
