@@ -1,4 +1,4 @@
-# produtos/admin.py (VERSÃO AJUSTADA PARA O MODELO ATUAL)
+# produtos/admin.py (VERSÃO AJUSTADA E CORRIGIDA)
 
 from django.contrib import admin
 from .models import Categoria, Produto, Variacao, ImagemProduto, Promocao
@@ -67,7 +67,7 @@ class ProdutoAdmin(admin.ModelAdmin):
 
 
 # -----------------------------------------------------------------
-# 4. Promoção (AJUSTADO)
+# 4. Promoção (CORRIGIDO)
 # -----------------------------------------------------------------
 
 @admin.register(Promocao)
@@ -76,6 +76,7 @@ class PromocaoAdmin(admin.ModelAdmin):
     list_filter = ("ativa", "data_inicio", "data_fim")
     search_fields = ("nome", "descricao", "produtos__nome")
     filter_horizontal = ("produtos",)
+
     fieldsets = (
         (None, {
             "fields": ("nome", "descricao", "desconto_percentual", "ativa")
@@ -90,17 +91,10 @@ class PromocaoAdmin(admin.ModelAdmin):
     )
 
     def get_queryset(self, request):
-        """Otimiza a consulta com select_related no produto."""
-        return super().get_queryset(request).select_related('produto')
+        """Retorna o queryset padrão sem usar select_related (pois é ManyToMany)."""
+        return super().get_queryset(request)
 
     def esta_vigente(self, obj):
         """Exibe um ícone ou texto para status de validade."""
         return "✅ Vigente" if obj.esta_vigente() else "⛔ Expirada"
     esta_vigente.short_description = "Status"
-
-
-# -----------------------------------------------------------------
-# ✅ DICA:
-# -----------------------------------------------------------------
-# O campo autocomplete_fields ('produto',) permite buscar produtos grandes via AJAX.
-# Isso evita travamentos no admin quando houver muitos produtos.
