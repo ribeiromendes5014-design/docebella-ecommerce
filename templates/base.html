@@ -61,6 +61,271 @@
         </div>
     </div>
 </header>
+    <!-- ===== HEADER MOBILE ===== -->
+<header class="header-mobile">
+  <div class="header-mobile-top">
+    <!-- Menu hamburguer -->
+    <button class="menu-toggle" id="menu-toggle">
+      <i class="fa fa-bars"></i>
+    </button>
+
+    <!-- Logo central -->
+    <a href="{% url 'home' %}" class="mobile-logo">
+      <img src="{% static 'img/logo.png' %}" alt="Logo Doce & Bella">
+    </a>
+
+    <!-- Ícone carrinho -->
+    <a href="{% url 'carrinho:ver_carrinho' %}" class="cart-icon">
+      <img src="https://d2az8otjr0j19j.cloudfront.net/templates/002/838/949/twig/static/images/top-cart.png" alt="Carrinho">
+      <span class="cart-count">{{ CARRINHO_TOTAL_ITENS|default:0 }}</span>
+    </a>
+  </div>
+
+  <!-- Barra de busca -->
+  <form method="GET" action="{% url 'home' %}" class="mobile-search">
+    <input type="search" name="q" placeholder="Buscar produtos..." value="{{ request.GET.q }}">
+    <button type="submit"><i class="fa fa-heart"></i></button>
+  </form>
+</header>
+
+<!-- ===== MENU LATERAL MOBILE ===== -->
+<nav id="mobile-menu" class="mobile-menu">
+  <div class="mobile-menu-header">
+    <a href="{% url 'usuarios:login' %}">
+      <img src="https://d2az8otjr0j19j.cloudfront.net/templates/002/838/949/twig/static/images/top-acc.png" alt="Login">
+      <span>Iniciar sessão</span>
+    </a>
+    <p>ou <a href="{% url 'usuarios:cadastro' %}" class="criar-conta">Criar uma conta</a></p>
+    <button class="menu-close" id="menu-close"><i class="fa fa-times"></i></button>
+  </div>
+
+  <ul class="mobile-category-list">
+    <li><a href="{% url 'home' %}"><i class="fa fa-heart"></i> Ver Tudo</a></li>
+    {% for categoria in categorias %}
+      <li>
+        <a href="{% url 'listar_categoria' categoria.slug %}">
+          <i class="fa fa-heart"></i> {{ categoria.nome }}
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+</nav>
+
+<!-- ===== BACKDROP ===== -->
+<div id="menu-overlay" class="menu-overlay"></div>
+
+<!-- ===== CSS ===== -->
+<style>
+/* ===== HEADER MOBILE ===== */
+.header-mobile {
+  display: none;
+  background-color: #f45ca5;
+  padding: 10px 15px 20px;
+  text-align: center;
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .header-mobile { display: block; }
+
+  .header-mobile-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .menu-toggle {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+  }
+
+  .mobile-logo img {
+    height: 65px; /* 🔹 Logo maior */
+    max-width: 180px;
+  }
+
+  .cart-icon {
+    position: relative;
+  }
+
+  .cart-icon img {
+    width: 36px;
+    background: #fdd9ea;
+    border-radius: 12px;
+    padding: 5px;
+  }
+
+  .cart-count {
+    position: absolute;
+    bottom: -8px;
+    right: 4px;
+    background: #fff;
+    color: #f45ca5;
+    font-size: 0.8rem;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* 🔍 Campo de busca */
+  .mobile-search {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+    background: #fff;
+    border-radius: 25px;
+    padding: 5px 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  .mobile-search input {
+    flex: 1;
+    border: none;
+    padding: 8px 10px;
+    border-radius: 25px;
+    font-size: 0.95rem;
+    outline: none;
+  }
+
+  .mobile-search button {
+    background: none;
+    border: none;
+    color: #f45ca5;
+    font-size: 18px;
+    cursor: pointer;
+  }
+
+  /* ===== MENU LATERAL ===== */
+  .mobile-menu {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 80%;
+    height: 100%;
+    background-color: #ffeaf3;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+    transition: left 0.4s ease;
+    z-index: 9999;
+    padding: 20px;
+  }
+
+  .mobile-menu.open { left: 0; }
+
+  .menu-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.4);
+    z-index: 9998;
+  }
+
+  .menu-overlay.show { display: block; }
+
+  .mobile-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #f9c7df;
+    padding: 12px 15px;
+    border-radius: 10px;
+    position: relative;
+  }
+
+  .mobile-menu-header img {
+    width: 30px;
+    margin-right: 10px;
+  }
+
+  .mobile-menu-header span {
+    color: #333;
+    font-weight: 500;
+  }
+
+  .mobile-menu-header p {
+    position: absolute;
+    left: 55px;
+    top: 35px;
+    font-size: 0.85rem;
+    color: #444;
+  }
+
+  .mobile-menu-header a.criar-conta {
+    color: #d63384;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .menu-close {
+    background: none;
+    border: none;
+    color: #333;
+    font-size: 24px;
+  }
+
+  .mobile-category-list {
+    list-style: none;
+    padding: 20px 0 0 0;
+    margin: 0;
+  }
+
+  .mobile-category-list li {
+    border-bottom: 1px solid #f2c2db;
+    padding: 10px 0;
+  }
+
+  .mobile-category-list a {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mobile-category-list a:hover {
+    color: #f45ca5;
+  }
+
+  .mobile-category-list i {
+    color: #f45ca5;
+  }
+}
+</style>
+
+<!-- ===== JS ===== -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const menu = document.getElementById("mobile-menu");
+  const overlay = document.getElementById("menu-overlay");
+  const openBtn = document.getElementById("menu-toggle");
+  const closeBtn = document.getElementById("menu-close");
+
+  openBtn.addEventListener("click", () => {
+    menu.classList.add("open");
+    overlay.classList.add("show");
+  });
+
+  closeBtn.addEventListener("click", () => {
+    menu.classList.remove("open");
+    overlay.classList.remove("show");
+  });
+
+  overlay.addEventListener("click", () => {
+    menu.classList.remove("open");
+    overlay.classList.remove("show");
+  });
+});
+</script>
+
 
 {% block hero_banner %}{% endblock %}
 
