@@ -26,8 +26,9 @@
                 <div class="menu-nav-unificado">
                     <ul>
                         <li><a href="{% url 'home' %}">Início</a></li>
-                        <li><a href="#">Body Splash</a></li>
-                        <li><a href="#">Produtos</a></li>
+                        <li><a href="{% url 'listar_categoria' 'body-splash' %}">Body Splash</a></li>
+                        <li><a href="{% url 'listar_categoria' 'perfumes' %}">Perfumes</a></li>
+                        <li><a href="{% url 'home' %}">Todos os Produtos</a></li>
                     </ul>
                 </div>
                 
