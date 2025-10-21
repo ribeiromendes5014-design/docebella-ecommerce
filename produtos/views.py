@@ -6,6 +6,7 @@ from django.shortcuts import render, get_object_or_404
 from django.db.models import Q, Exists, OuterRef
 from produtos.models import Produto, Variacao
 from decimal import Decimal
+from produtos.models import Produto, Categoria
 
 
 def home(request):
@@ -38,14 +39,13 @@ def home(request):
 
 
 def listar_por_categoria(request, categoria_slug):
-    produtos = Produto.objects.filter(
-        categoria__slug=categoria_slug,
-        disponivel=True
-    ).order_by('-id')
-
+    categoria = get_object_or_404(Categoria, slug=categoria_slug)
+    produtos = Produto.objects.filter(categoria=categoria, disponivel=True).order_by('-id')
+    
     return render(request, 'produtos/listar_categoria.html', {
+        'categoria': categoria,
         'produtos': produtos,
-        'titulo': f'{categoria_slug.title()} | Doce & Bella'
+        'titulo': f'{categoria.nome} | Doce & Bella'
     })
 
 
