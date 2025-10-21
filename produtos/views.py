@@ -36,19 +36,26 @@ def detalhe_produto(request, slug):
             nome_tipo = tipo['tipo']
             variacoes_por_tipo[nome_tipo] = produto.variacoes.filter(tipo=nome_tipo).order_by('valor')
 
+    # 🔹 Cálculo da simulação de parcelamento
+    preco = produto.preco or 0
+    valor_final = preco / 0.8872  # Corrige o valor com base na sua fórmula
+    valor_parcela = valor_final / 3  # Divide em 3x
+
     # >> NOVO: Lógica para Produtos Relacionados <<
     produtos_relacionados = Produto.objects.filter(
-        categoria=produto.categoria, # Busca produtos da mesma categoria
+        categoria=produto.categoria,  # Busca produtos da mesma categoria
         disponivel=True,
-        estoque__gt=0                # Com estoque
+        estoque__gt=0                 # Com estoque
     ).exclude(
-        id=produto.id                # Exclui o produto que estamos vendo
-    ).order_by('?')[:4]              # Pega 4 produtos aleatórios
+        id=produto.id                 # Exclui o produto atual
+    ).order_by('?')[:4]               # Pega 4 produtos aleatórios
     
+    # 🔹 Contexto enviado ao template
     context = {
         'produto': produto,
         'variacoes_por_tipo': variacoes_por_tipo,
-        'produtos_relacionados': produtos_relacionados, # Adiciona ao contexto
-        'titulo': f'{produto.nome} | Doce & Bella'
+        'produtos_relacionados': produtos_relacionados,
+        'valor_parcela': valor_parcela,  # Adicionado aqui
+        'titulo': f'{produto.nome} | Doce & Bella',
     }
     return render(request, 'produtos/detalhe_produto.html', context)
