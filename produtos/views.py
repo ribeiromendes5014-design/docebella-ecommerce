@@ -37,6 +37,17 @@ def home(request):
     })
 
 
+def listar_por_categoria(request, categoria_slug):
+    produtos = Produto.objects.filter(
+        categoria__slug=categoria_slug,
+        disponivel=True
+    ).order_by('-id')
+
+    return render(request, 'produtos/listar_categoria.html', {
+        'produtos': produtos,
+        'titulo': f'{categoria_slug.title()} | Doce & Bella'
+    })
+
 
 # NOVA VIEW: Detalhe do Produto (Com Produtos Relacionados)
 def detalhe_produto(request, slug):
