@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'admin_honeypot',
     
     # 🚨 CORREÇÃO DE LOCALIZAÇÃO 🚨: Adicionar humanize para formatação pt-br
     'django.contrib.humanize',
