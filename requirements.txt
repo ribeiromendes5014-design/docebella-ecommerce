@@ -81,6 +81,8 @@ django-storages[boto3]==1.14.2
 boto3
 dj-database-url
 psycopg2-binary
+git+https://github.com/andresmrm/django-admin-honeypot-updated.git@main
+
 
 
 
