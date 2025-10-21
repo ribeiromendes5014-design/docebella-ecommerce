@@ -152,14 +152,15 @@ class ImagemProduto(models.Model):
 # PROMOÇÃO (CORRIGIDO)
 # ======================
 class Promocao(models.Model):
-    produto = models.ForeignKey(
-        Produto,
-        on_delete=models.CASCADE,
-        related_name='promocoes'
+    nome = models.CharField("Nome da promoção", max_length=100)
+    descricao = models.TextField(blank=True, null=True)
+    desconto_percentual = models.DecimalField(
+        "Desconto (%)", max_digits=5, decimal_places=2,
+        help_text="Ex: 10.00 = 10%"
     )
-    preco_promocional = models.DecimalField(max_digits=10, decimal_places=2)
-    data_inicio = models.DateTimeField(default=timezone.now)
-    data_fim = models.DateTimeField(blank=True, null=True)
+    produtos = models.ManyToManyField('Produto', related_name='promocoes', blank=True)
+    data_inicio = models.DateTimeField("Início da promoção", default=timezone.now)
+    data_fim = models.DateTimeField("Fim da promoção", blank=True, null=True)
     ativa = models.BooleanField(default=True)
 
     class Meta:
@@ -168,12 +169,12 @@ class Promocao(models.Model):
         ordering = ["-data_inicio"]
 
     def __str__(self):
-        return f"Promoção de {self.produto.nome} - R$ {self.preco_promocional:.2f}"
+        return f"{self.nome} ({self.desconto_percentual}% off)"
 
     def esta_vigente(self):
         agora = timezone.now()
         return (
-            self.ativa and
-            self.data_inicio <= agora and
-            (self.data_fim is None or self.data_fim >= agora)
+            self.ativa
+            and self.data_inicio <= agora
+            and (self.data_fim is None or self.data_fim >= agora)
         )
