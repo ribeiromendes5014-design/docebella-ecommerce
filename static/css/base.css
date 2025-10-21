@@ -403,6 +403,9 @@ body {
         padding-top: 5px; /* Reduz o padding para compactar */
         padding-bottom: 5px; /* Reduz o padding para compactar */
     }
+    .menu-nav-unificado {
+        display: flex !important;
+    }
 
     /* Logo - Reduz o tamanho e prioriza o espaço */
     .logo a {
@@ -416,8 +419,11 @@ body {
     /* Menu de Navegação - Esconde ou transforma em algo mais compacto (opcional) */
     /* Se quiser esconder o menu no celular, use: */
     .menu-nav-unificado {
-         display: none; 
-    }
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+     }
+
     /* Se quiser manter, remova o display: none e ajuste o flex */
 
 
@@ -446,7 +452,7 @@ body {
         gap: 10px;
     }
 
-    /* Ajustes menores para formulários, cards, etc. */
+        /* Ajustes menores para formulários, cards, etc. */
     .form-wrapper {
         margin: 20px 10px;
         padding: 15px;
@@ -457,4 +463,15 @@ body {
     .product-card .price {
         font-size: 1.2rem;
     }
+
+    /* Força exibição das variações no celular */
+    .variacao-selector {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
 }
+
+
+
+
