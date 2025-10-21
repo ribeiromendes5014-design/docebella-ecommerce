@@ -72,17 +72,20 @@ class ProdutoAdmin(admin.ModelAdmin):
 
 @admin.register(Promocao)
 class PromocaoAdmin(admin.ModelAdmin):
-    list_display = ('produto', 'preco_promocional', 'ativa', 'data_inicio', 'data_fim')
-    list_filter = ('ativa', 'data_inicio', 'data_fim', 'produto__categoria')
-    search_fields = ('produto__nome',)
-    autocomplete_fields = ('produto',)
-
+    list_display = ("nome", "desconto_percentual", "ativa", "data_inicio", "data_fim")
+    list_filter = ("ativa", "data_inicio", "data_fim")
+    search_fields = ("nome", "descricao", "produtos__nome")
+    filter_horizontal = ("produtos",)
     fieldsets = (
         (None, {
-            'fields': ('produto', 'preco_promocional', 'ativa'),
+            "fields": ("nome", "descricao", "desconto_percentual", "ativa")
         }),
-        ('Período da Promoção', {
-            'fields': ('data_inicio', 'data_fim'),
+        ("Período da promoção", {
+            "fields": ("data_inicio", "data_fim")
+        }),
+        ("Produtos incluídos", {
+            "fields": ("produtos",),
+            "description": "Selecione um ou mais produtos para aplicar esta promoção."
         }),
     )
 
