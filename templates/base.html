@@ -1,4 +1,3 @@
-
 {% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -9,268 +8,278 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
-    
     {% block extra_css %}{% endblock %}
 </head>
 <body>
     
-    <header class="fixed-header-custom">  
-        <div class="header-principal-unificado">
-            <div class="container">
-                
-                <div class="logo">
-                    <a href="{% url 'home' %}">
-                        <img src="{% static 'img/logo.png' %}" alt="Logo Doce & Bella" class="logo-img"> 
-                    </a>
-                </div>
+<header class="fixed-header-custom">  
+    <div class="header-principal-unificado">
+        <div class="container">
+            
+            <div class="logo">
+                <a href="{% url 'home' %}">
+                    <img src="{% static 'img/logo.png' %}" alt="Logo Doce & Bella" class="logo-img"> 
+                </a>
+            </div>
 
-                <div class="menu-nav-unificado">
-                    <ul>
-                        <li><a href="{% url 'home' %}">Início</a></li>
-                        <li><a href="{% url 'listar_categoria' 'perfumes' %}">Perfumes</a></li>
-                        <li><a href="{% url 'home' %}">Todos os Produtos</a></li>
-                    </ul>
-                </div>
-                
-                <!-- 🔍 BARRA DE BUSCA -->
-                <div class="search-bar">
-                    <form method="GET" action="{% url 'home' %}">
-                        <input type="search" 
-                               name="q" 
-                               placeholder="Buscar produtos..." 
-                               aria-label="Buscar" 
-                               value="{{ request.GET.q }}">
-                        <button type="submit" style="display:none;"></button>
+            <div class="menu-nav-unificado">
+                <ul>
+                    <li><a href="{% url 'home' %}">Início</a></li>
+                    <li><a href="{% url 'listar_categoria' 'perfumes' %}">Perfumes</a></li>
+                    <li><a href="{% url 'home' %}">Todos os Produtos</a></li>
+                </ul>
+            </div>
+            
+            <!-- 🔍 BARRA DE BUSCA -->
+            <div class="search-bar">
+                <form method="GET" action="{% url 'home' %}">
+                    <input type="search" name="q" placeholder="Buscar produtos..." aria-label="Buscar" value="{{ request.GET.q }}">
+                    <button type="submit" style="display:none;"></button>
+                </form>
+            </div>
+            
+            <div class="icones-acao">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'usuarios:painel_cliente' %}" title="Meu Painel"><i class="fas fa-user"></i></a>
+                    <form method="post" action="{% url 'usuarios:logout' %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="link-like-button" title="Sair">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
                     </form>
-                </div>
-                
-                <div class="icones-acao">
-                    {% if user.is_authenticated %}
-                        <a href="{% url 'usuarios:painel_cliente' %}" title="Meu Painel"><i class="fas fa-user"></i></a>
-                        <form method="post" action="{% url 'usuarios:logout' %}" style="display: inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="link-like-button" title="Sair">
-                                <i class="fas fa-sign-out-alt"></i>
-                            </button>
-                        </form>
-                    {% else %}
-                        <a href="{% url 'usuarios:login' %}" title="Iniciar sessão / Criar conta">
-                            <i class="fas fa-user"></i>
-                        </a>
-                    {% endif %}
-                    
-                    <a href="{% url 'carrinho:ver_carrinho' %}" title="Carrinho de Compras">
-                        <i class="fas fa-shopping-bag"></i> 
-                        <span style="font-size: 0.8rem; font-weight: bold;">({{ CARRINHO_TOTAL_ITENS }})</span>
+                {% else %}
+                    <a href="{% url 'usuarios:login' %}" title="Iniciar sessão / Criar conta">
+                        <i class="fas fa-user"></i>
                     </a>
-                </div>
+                {% endif %}
+                
+                <a href="{% url 'carrinho:ver_carrinho' %}" title="Carrinho de Compras">
+                    <i class="fas fa-shopping-bag"></i> 
+                    <span style="font-size: 0.8rem; font-weight: bold;">({{ CARRINHO_TOTAL_ITENS }})</span>
+                </a>
             </div>
         </div>
-    </header>
-
-    {% block hero_banner %}{% endblock %}
-
-    <main class="container" style="padding-bottom: 50px;"> 
-        {% block content %}{% endblock %}
-    </main>
-
-    <footer style="background-color: #f8f8f8; margin-top: 40px;">
-
-    <!-- SEÇÃO CADASTRE-SE -->
-    <div style="background-color: #f45ca5; color: white; text-align: center; padding: 30px 20px;">
-        <img src="https://d1a9qnv764bsoo.cloudfront.net/stores/002/838/949/rte/bot-email.png" 
-             alt="Ícone Cadastre-se" 
-             style="width: 60px; margin-bottom: 10px;">
-
-        <h2 style="font-size: 1.6rem; margin-bottom: 8px;">cadastre-se!</h2>
-        <p style="margin-bottom: 20px; font-size: 1rem;">Receba novidades e promoções no seu WhatsApp 💕</p>
-
-        <form method="post" action="#" 
-              style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; max-width: 500px; margin: 0 auto;">
-            {% csrf_token %}
-            <input type="text" name="nome" placeholder="Seu nome..." 
-                   style="padding: 10px; border-radius: 8px; border: none; width: 45%; max-width: 220px;">
-            <input type="tel" name="whatsapp" placeholder="Seu WhatsApp..." 
-                   style="padding: 10px; border-radius: 8px; border: none; width: 45%; max-width: 220px;">
-            <button type="submit"
-                    style="background-color: #fff; color: #f45ca5; border: none; border-radius: 8px; padding: 10px 20px; font-weight: bold; cursor: pointer;">
-                ENVIAR
-            </button>
-        </form>
     </div>
+</header>
 
-    <!-- SEÇÃO INFERIOR -->
-    <div style="display: flex; flex-wrap: wrap; justify-content: space-around; align-items: flex-start; 
-                padding: 40px 20px; background-color: #fff; text-align: left;">
+{% block hero_banner %}{% endblock %}
 
-        <!-- 📞 CENTRAL DE ATENDIMENTO -->
-        <div style="flex: 1 1 220px; margin: 10px;">
-            <h4 style="color: #f45ca5; font-weight: 600; margin-bottom: 10px;">Central de Atendimento</h4>
-            <p style="margin: 4px 0;">
-                <i class="fab fa-whatsapp" style="color:#25D366; margin-right:6px;"></i>
-                <a href="https://wa.me/5541987876191" target="_blank" style="color:#333; text-decoration:none;">
-                    (41) 98787-6191
-                </a>
-            </p>
+<main class="container" style="padding-bottom: 50px;"> 
+    {% block content %}{% endblock %}
+</main>
 
-            <p style="margin: 8px 0;">
-                <i class="fab fa-instagram" style="color:#E4405F; margin-right:6px;"></i>
-                <a href="https://www.instagram.com/docebellacosmetico" target="_blank" style="color:#333; text-decoration:none;">
-                    @docebellacosmetico
-                </a>
-            </p>
-        </div>
+<footer style="background-color: #f8f8f8; margin-top: 40px;">
 
-        <!-- 🏪 INSTITUCIONAL -->
-        <div style="flex: 1 1 180px; margin: 10px;">
-            <h4 style="color: #f45ca5; font-weight: 600; margin-bottom: 10px;">Institucional</h4>
-            <ul style="list-style: none; padding: 0;">
-                <li><a href="#" style="color: #555; text-decoration: none;">Quem Somos</a></li>
-                <li><a href="#" style="color: #555; text-decoration: none;">Política de Privacidade</a></li>
-                <li><a href="#" style="color: #555; text-decoration: none;">Contato</a></li>
-            </ul>
-        </div>
+  <!-- SEÇÃO CADASTRE-SE -->
+  <div style="background-color: #f45ca5; color: white; text-align: center; padding: 30px 20px;">
+      <img src="https://d1a9qnv764bsoo.cloudfront.net/stores/002/838/949/rte/bot-email.png" 
+           alt="Ícone Cadastre-se" style="width: 60px; margin-bottom: 10px;">
 
-        <!-- 💬 MINHA CONTA -->
-        <div style="flex: 1 1 180px; margin: 10px;">
-            <h4 style="color: #f45ca5; font-weight: 600; margin-bottom: 10px;">Minha Conta</h4>
-            <ul style="list-style: none; padding: 0;">
-                <li><a href="{% url 'usuarios:login' %}" style="color: #555; text-decoration: none;">Login</a></li>
-                <li><a href="{% url 'usuarios:cadastro' %}" style="color: #555; text-decoration: none;">Criar Conta</a></li>
-                <li><a href="{% url 'usuarios:painel_cliente' %}" style="color: #555; text-decoration: none;">Meus Pedidos</a></li>
-            </ul>
-        </div>
+      <h2 style="font-size: 1.6rem; margin-bottom: 8px;">cadastre-se!</h2>
+      <p style="margin-bottom: 20px; font-size: 1rem;">Receba novidades e promoções no seu WhatsApp 💕</p>
 
-        <!-- 💳 MEIOS DE PAGAMENTO -->
-        <div style="flex: 1 1 220px; margin: 10px;">
-            <h4 style="color: #f45ca5; font-weight: 600; margin-bottom: 10px;">Meios de Pagamento</h4>
-            <img src="https://cdn-icons-png.flaticon.com/512/349/349221.png" alt="Visa" style="width:40px; margin:5px;">
-            <img src="https://cdn-icons-png.flaticon.com/512/349/349230.png" alt="Mastercard" style="width:40px; margin:5px;">
-            <img src="https://cdn-icons-png.flaticon.com/512/196/196566.png" alt="Pix" style="width:40px; margin:5px;">
-            <img src="https://cdn-icons-png.flaticon.com/512/825/825454.png" alt="Boleto" style="width:40px; margin:5px;">
-        </div>
-    </div>
+      <form id="whatsappForm"
+            style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; max-width: 500px; margin: 0 auto;">
+          <input type="text" id="nome" placeholder="Seu nome..." required
+                 style="padding: 10px; border-radius: 8px; border: none; width: 45%; max-width: 220px;">
+          <input type="tel" id="whatsapp" placeholder="Seu WhatsApp..." required
+                 style="padding: 10px; border-radius: 8px; border: none; width: 45%; max-width: 220px;">
+          <button type="submit"
+                  style="background-color: #fff; color: #f45ca5; border: none; border-radius: 8px; padding: 10px 20px; font-weight: bold; cursor: pointer;">
+              ENVIAR
+          </button>
+      </form>
+  </div>
 
-    <!-- RODAPÉ FINAL -->
-    <div style="text-align: center; padding: 12px; background-color: #f45ca5; color: white; font-size: 0.9rem;">
-        &copy; 2025 Doce & Bella Cosméticos. Todos os direitos reservados 💖
-    </div>
+  <!-- SEÇÃO INFERIOR -->
+  <div class="footer-info">
+      <div class="footer-col">
+          <h4>Central de Atendimento</h4>
+          <p class="footer-line"><i class="fab fa-whatsapp"></i>
+              <a href="https://wa.me/5541987876191" target="_blank">(41) 98787-6191</a></p>
+          <p class="footer-line"><i class="fab fa-instagram"></i>
+              <a href="https://www.instagram.com/docebellacosmetico" target="_blank">@docebellacosmetico</a></p>
+          <p class="footer-line">
+              <i class="fa-solid fa-location-dot"></i>
+              <a href="https://www.google.com/maps/place/Ilha+do+Mel+-+Encantadas/@-25.578,-48.323,15z"
+                 target="_blank" style="color:#333; text-decoration:none;">Ilha do Mel – Encantadas (📍Como chegar)</a>
+          </p>
+      </div>
 
+      <div class="footer-col">
+          <h4>Institucional</h4>
+          <ul class="footer-list">
+              <li><a href="#">Quem Somos</a></li>
+              <li><a href="#">Política de Privacidade</a></li>
+              <li><a href="#">Contato</a></li>
+          </ul>
+      </div>
+
+      <div class="footer-col">
+          <h4>Minha Conta</h4>
+          <ul class="footer-list">
+              <li><a href="{% url 'usuarios:login' %}">Login</a></li>
+              <li><a href="{% url 'usuarios:cadastro' %}">Criar Conta</a></li>
+              <li><a href="{% url 'usuarios:painel_cliente' %}">Meus Pedidos</a></li>
+          </ul>
+      </div>
+
+      <div class="footer-col">
+          <h4>Meios de Pagamento</h4>
+          <div class="payments">
+              <img src="https://cdn-icons-png.flaticon.com/512/349/349221.png" alt="Visa" class="payment-logo">
+              <img src="https://cdn-icons-png.flaticon.com/512/349/349230.png" alt="Mastercard" class="payment-logo">
+              <img src="https://cdn-icons-png.flaticon.com/512/196/196566.png" alt="Pix" class="payment-logo">
+              <img src="https://cdn-icons-png.flaticon.com/512/825/825454.png" alt="Boleto" class="payment-logo">
+          </div>
+      </div>
+  </div>
+
+  <div style="text-align: center; padding: 12px; background-color: #f45ca5; color: white; font-size: 0.9rem;">
+      &copy; 2025 Doce & Bella Cosméticos. Todos os direitos reservados 💖
+  </div>
 </footer>
 
+<!-- BOTÃO FLUTUANTE WHATSAPP -->
+<a href="https://wa.me/5541987876191?text=Olá!%20Gostaria%20de%20ajuda%20com%20um%20produto%20da%20Doce%20%26%20Bella."
+   class="whatsapp-float" target="_blank" title="Fale conosco pelo WhatsApp">
+   <i class="fab fa-whatsapp"></i>
+</a>
 
-    <!-- 💬 BOTÃO FLUTUANTE WHATSAPP -->
-    <a href="https://wa.me/5541987876191?text=Olá!%20Gostaria%20de%20ajuda%20com%20um%20produto%20da%20Doce%20%26%20Bella."
-       class="whatsapp-float"
-       target="_blank"
-       title="Fale conosco pelo WhatsApp">
-        <i class="fab fa-whatsapp"></i>
-    </a>
+<div class="whatsapp-popup" id="whatsapp-popup">💬 Precisa de ajuda?</div>
 
-    <!-- 💬 BALÃO DE MENSAGEM -->
-    <div class="whatsapp-popup" id="whatsapp-popup">
-        💬 Precisa de ajuda?
-    </div>
+<style>
+.footer-info {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-items: flex-start;
+  padding: 40px 20px;
+  background-color: #fff;
+  text-align: left;
+  max-width: 1100px;
+  margin: 0 auto;
+}
 
-    <style>
-    /* ===== Botão WhatsApp Flutuante ===== */
-    .whatsapp-float {
-        position: fixed;
-        width: 60px;
-        height: 60px;
-        bottom: 25px;
-        right: 25px;
-        background-color: #25d366;
-        color: white;
-        border-radius: 50%;
-        text-align: center;
-        font-size: 32px;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-        z-index: 9999;
-        transition: all 0.3s ease;
-        animation: pulse 2s infinite;
-    }
+.footer-col h4 {
+  color: #f45ca5;
+  font-weight: 600;
+  margin-bottom: 10px;
+  font-size: 1.05rem;
+}
 
-    .whatsapp-float i {
-        margin-top: 14px;
-    }
+.footer-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
 
-    .whatsapp-float:hover {
-        background-color: #1ebe5b;
-        transform: scale(1.1);
-    }
+.footer-list li { margin: 6px 0; }
 
-    /* 🔄 Efeito pulsante suave */
-    @keyframes pulse {
-        0% { box-shadow: 0 0 0 0 rgba(37,211,102,0.5); }
-        70% { box-shadow: 0 0 0 10px rgba(37,211,102,0); }
-        100% { box-shadow: 0 0 0 0 rgba(37,211,102,0); }
-    }
+.footer-list a {
+  color: #555;
+  text-decoration: none;
+}
 
-    /* ===== Popup de mensagem ===== */
-    .whatsapp-popup {
-        position: fixed;
-        bottom: 100px;
-        right: 95px;
-        background-color: #fff;
-        color: #333;
-        border-radius: 10px;
-        padding: 10px 14px;
-        font-size: 0.95rem;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        z-index: 9998;
-        opacity: 0;
-        transform: translateY(20px);
-        transition: opacity 0.4s ease, transform 0.4s ease;
-        font-weight: 500;
-    }
+.footer-list a:hover { color: #f45ca5; }
 
-    .whatsapp-popup.show {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.footer-line {
+  margin: 6px 0;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-    /* Responsivo */
-    @media (max-width: 600px) {
-        .whatsapp-float {
-            width: 52px;
-            height: 52px;
-            font-size: 28px;
-            bottom: 20px;
-            right: 20px;
-        }
-        .whatsapp-float i { margin-top: 12px; }
-        .whatsapp-popup {
-            right: 80px;
-            bottom: 85px;
-            font-size: 0.9rem;
-        }
-    }
-    </style>
+.footer-line i.fa-whatsapp { color: #25D366; }
+.footer-line i.fa-instagram { color: #E4405F; }
+.footer-line i.fa-location-dot { color: #f45ca5; }
 
-    <script>
-    // Exibe a mensagem de ajuda após alguns segundos e depois some
-    document.addEventListener("DOMContentLoaded", function() {
-        const popup = document.getElementById("whatsapp-popup");
-        setTimeout(() => popup.classList.add("show"), 2000);   // aparece após 2s
-        setTimeout(() => popup.classList.remove("show"), 8000); // desaparece após 8s
-    });
-    </script>
-    
-    <script>
-// ======== Notificação local de carrinho esquecido ========
+.footer-line a:hover { color: #f45ca5; }
+
+.payments {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.payment-logo {
+  height: 32px;
+  width: auto;
+  filter: saturate(0.95) contrast(1.05);
+}
+
+@media (max-width: 768px) {
+  .footer-info {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+    padding: 20px 10px;
+  }
+  .footer-col { margin: 4px 0; }
+  .payments { justify-content: center; }
+}
+
+/* ===== Botão WhatsApp Flutuante ===== */
+.whatsapp-float {
+  position: fixed; width: 60px; height: 60px; bottom: 25px; right: 25px;
+  background-color: #25d366; color: white; border-radius: 50%; text-align: center;
+  font-size: 32px; box-shadow: 0 3px 10px rgba(0,0,0,0.2); z-index: 9999;
+  transition: all 0.3s ease; animation: pulse 2s infinite;
+}
+.whatsapp-float i { margin-top: 14px; }
+.whatsapp-float:hover { background-color: #1ebe5b; transform: scale(1.1); }
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(37,211,102,0.5); }
+  70% { box-shadow: 0 0 0 10px rgba(37,211,102,0); }
+  100% { box-shadow: 0 0 0 0 rgba(37,211,102,0); }
+}
+
+/* ===== Balão popup ===== */
+.whatsapp-popup {
+  position: fixed; bottom: 100px; right: 95px;
+  background-color: #fff; color: #333; border-radius: 10px;
+  padding: 10px 14px; font-size: 0.95rem; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  z-index: 9998; opacity: 0; transform: translateY(20px);
+  transition: opacity 0.4s ease, transform 0.4s ease; font-weight: 500;
+}
+.whatsapp-popup.show { opacity: 1; transform: translateY(0); }
+@media (max-width: 600px){
+  .whatsapp-float{width:52px;height:52px;font-size:28px;bottom:20px;right:20px;}
+  .whatsapp-popup{right:80px;bottom:85px;font-size:0.9rem;}
+}
+</style>
+
+<script>
+document.getElementById("whatsappForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+  const nome = document.getElementById("nome").value.trim();
+  const numero = document.getElementById("whatsapp").value.replace(/\D/g, "");
+  if (!nome || !numero) {
+      alert("Por favor, preencha seu nome e número.");
+      return;
+  }
+  const msg = `Olá! Me chamo ${nome} e quero receber novidades e promoções da Doce & Bella 💖. Meu WhatsApp é ${numero}.`;
+  const link = `https://wa.me/5541987876191?text=${encodeURIComponent(msg)}`;
+  window.open(link, "_blank");
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+  const popup = document.getElementById("whatsapp-popup");
+  setTimeout(() => popup.classList.add("show"), 2000);
+  setTimeout(() => popup.classList.remove("show"), 8000);
+});
+
 document.addEventListener("DOMContentLoaded", function() {
   if (!("Notification" in window)) return;
-
   if (Notification.permission !== "granted" && Notification.permission !== "denied") {
     Notification.requestPermission();
   }
-
   const totalItensCarrinho = parseInt("{{ CARRINHO_TOTAL_ITENS|default:0 }}");
-
-  // Evita repetir notificações na mesma sessão
   const jaMostrou = sessionStorage.getItem("notificacao_carrinho");
-  
   if (totalItensCarrinho > 0 && !jaMostrou) {
     setTimeout(() => {
       if (Notification.permission === "granted") {
@@ -278,18 +287,16 @@ document.addEventListener("DOMContentLoaded", function() {
           body: "Você ainda tem produtos esperando por você na Doce & Bella 💖",
           icon: "{% static 'img/logo.png' %}",
         });
-
         notification.onclick = function() {
           window.open("{% url 'carrinho:ver_carrinho' %}", "_blank");
         };
-
-        // Marca como exibida nesta sessão
         sessionStorage.setItem("notificacao_carrinho", "true");
       }
     }, 120000);
   }
 });
 </script>
-    {% block extra_js %}{% endblock %}
+
+{% block extra_js %}{% endblock %}
 </body>
 </html>
