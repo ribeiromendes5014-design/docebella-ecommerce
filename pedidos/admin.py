@@ -147,3 +147,9 @@ class CupomAdmin(admin.ModelAdmin):
     list_filter = ('ativo', 'tipo', 'data_inicio', 'data_fim')
     search_fields = ('codigo',)
     readonly_fields = ('usos_atuais',)
+from django.contrib import admin
+
+# 🌸 Personalização visual do painel
+admin.site.site_header = "Doce & Bella - Painel Administrativo 💅"
+admin.site.site_title = "Administração Doce & Bella"
+admin.site.index_title = "Bem-vinda ao Painel de Gestão, Bella!"
