@@ -275,3 +275,9 @@ JAZZMIN_SETTINGS = {
     },
     "footer_text": "Desenvolvido com Django e 💖"
 }
+# ----------------------------------------------------
+# REDIRECIONAMENTO APÓS LOGIN
+# ----------------------------------------------------
+LOGIN_REDIRECT_URL = 'home'
+LOGOUT_REDIRECT_URL = 'home'
+LOGIN_URL = '/conta/login/'
