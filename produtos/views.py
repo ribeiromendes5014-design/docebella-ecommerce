@@ -2,6 +2,8 @@
 from django.shortcuts import render
 from produtos.models import Produto
 from django.core.paginator import Paginator
+from django.shortcuts import render, get_object_or_404
+
 
 def home(request):
     query = request.GET.get('q', '')
@@ -12,7 +14,7 @@ def home(request):
 
     produtos_list = produtos_list.order_by('-id')
 
-    paginator = Paginator(produtos_list, 12)
+    paginator = Paginator(produtos_list, 40)
     page = request.GET.get('page')
     produtos = paginator.get_page(page)
 
