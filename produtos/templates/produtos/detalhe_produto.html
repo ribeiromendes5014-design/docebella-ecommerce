@@ -156,7 +156,13 @@
     {% endif %}
 
     <div class="acoes-compra">
-      <input type="number" name="quantidade" id="quantidade" value="1" min="1" max="99">
+      <input type="number" 
+       name="quantidade" 
+       id="quantidade" 
+       value="1" 
+       min="1" 
+       max="{{ produto.get_estoque_total }}">
+
       {% if produto.get_estoque_total > 0 %}
         <button type="submit" class="btn-principal btn-comprar">Comprar</button>
       {% else %}
