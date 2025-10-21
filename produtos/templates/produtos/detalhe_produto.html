@@ -133,22 +133,39 @@
 
     /* Quantidade e Botão Comprar - REFORÇO CRÍTICO */
 .acoes-compra {
-    display: flex !important; /* Força o Flexbox para que fiquem lado a lado */
-    gap: 20px;
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
+    justify-content: flex-start;
+    gap: 15px;
     margin-top: 20px;
 }
-/* Seção adicionada ao seu código anterior */
+
 .acoes-compra input[type="number"] {
-    flex-shrink: 0; /* Impede que o campo de quantidade encolha */
     width: 80px;
+    padding: 8px;
     text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
-/* Força o botão a ocupar o espaço restante, garantindo que ele seja grande */
+
 .acoes-compra .btn-comprar {
-    flex-grow: 1; 
-    max-width: 300px; /* Limita o botão a um tamanho razoável */
+    flex: 1;
+    min-width: 160px;
+    padding: 12px 20px;
+    background-color: var(--cor-principal, #ff69b4);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
 }
+
+.acoes-compra .btn-comprar:hover {
+    background-color: #e05c9a;
+}
+
     
     .btn-comprar {
         font-size: 1.1rem;
