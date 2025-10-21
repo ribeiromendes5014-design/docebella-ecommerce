@@ -3,6 +3,7 @@
 from django.contrib import admin
 # 🚨 1. Importar todos os novos modelos (incluindo ImagemProduto) 🚨
 from .models import Categoria, Produto, Variacao, ImagemProduto 
+from .models import Promocao
 
 
 # -----------------------------------------------------------------
@@ -78,3 +79,18 @@ class ProdutoAdmin(admin.ModelAdmin):
         fieldsets[1][1]['fields'] = tuple(controle_fieldset)
         
         return fieldsets
+    
+
+
+@admin.register(Promocao)
+class PromocaoAdmin(admin.ModelAdmin):
+    list_display = ("nome", "desconto_percentual", "ativa", "data_inicio", "data_fim")
+    list_filter = ("ativa", "data_inicio", "data_fim")
+    search_fields = ("nome", "descricao")
+    filter_horizontal = ("produtos",)
+    fieldsets = (
+        (None, {"fields": ("nome", "descricao", "desconto_percentual", "ativa")}),
+        ("Período da promoção", {"fields": ("data_inicio", "data_fim")}),
+        ("Produtos incluídos", {"fields": ("produtos",)}),
+    )
+
