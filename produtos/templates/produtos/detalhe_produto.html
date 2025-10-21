@@ -177,7 +177,7 @@
     {% for item in produtos_relacionados %}
       <div style="flex: 1 1 200px; max-width: 220px; text-align: center;">
         <a href="{% url 'produto_detalhe' item.slug %}" style="text-decoration: none; color: inherit;">
-          <img src="{{ item.imagem.url|default:'{% static 'img/placeholder.png' %}' }}"
+          <img src="{{ item.imagem.url|default:static('img/placeholder.png') }}"
                alt="{{ item.nome }}"
                style="width:100%; border-radius:8px; border:1px solid #eee; object-fit:cover; margin-bottom:10px;">
           <p style="font-size:1rem; font-weight:500;">{{ item.nome }}</p>
