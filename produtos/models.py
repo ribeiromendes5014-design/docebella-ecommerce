@@ -1,10 +1,13 @@
-# produtos/models.py (CORRIGIDO)
 from django.db import models
-from django.utils.text import slugify # Importar para slugs (útil no admin)
+from django.utils import timezone
+from django.utils.text import slugify  # Para slugs (útil no admin)
 
+# ======================
+# CATEGORIA
+# ======================
 class Categoria(models.Model):
     nome = models.CharField(max_length=100, unique=True)
-    slug = models.SlugField(unique=True) 
+    slug = models.SlugField(unique=True)
 
     class Meta:
         verbose_name_plural = "Categorias"
@@ -12,42 +15,56 @@ class Categoria(models.Model):
     def __str__(self):
         return self.nome
 
+
+# ======================
+# PRODUTO
+# ======================
 class Produto(models.Model):
-    # Relação com Categoria
-    # 🚨 TROCAR POR models.CASCADE 🚨
     categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
-    
-    # Informações básicas
     nome = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
     descricao = models.TextField()
-    preco = models.DecimalField(max_digits=10, decimal_places=2) 
-    
-    # NOVO CAMPO: Indica se o produto usa estoque de Variacao
-    usa_variacoes = models.BooleanField(default=False, help_text="Marque se este produto tiver variações (tamanho, cor) com estoque próprio.") 
-    
-    # Estoque mantido apenas para produtos SEM variação
-    estoque = models.IntegerField(default=0) 
-    
-    # Imagem
+    preco = models.DecimalField(max_digits=10, decimal_places=2)
+
+    usa_variacoes = models.BooleanField(
+        default=False,
+        help_text="Marque se este produto tiver variações (tamanho, cor) com estoque próprio."
+    )
+    estoque = models.IntegerField(default=0)
+
     imagem = models.ImageField(upload_to='produtos/', null=True, blank=True)
-    
-    # Status
     disponivel = models.BooleanField(default=True)
-    
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.nome
-        
+
+    # ======================
+    # 🔹 PREÇO (com promoção)
+    # ======================
     def get_display_price(self):
-        # Proteção contra preco ser None, embora seja improvável no seu setup
+        """
+        Retorna o preço considerando promoções ativas.
+        Se houver uma promoção vigente, aplica o desconto automaticamente.
+        """
         preco = self.preco if self.preco is not None else 0.00
+
+        # Verifica promoções ativas associadas
+        promo = self.promocoes.filter(
+            ativa=True,
+            data_inicio__lte=timezone.now()
+        ).filter(
+            models.Q(data_fim__gte=timezone.now()) | models.Q(data_fim__isnull=True)
+        ).first()
+
+        if promo:
+            desconto = (preco * promo.desconto_percentual) / 100
+            preco_final = preco - desconto
+            return f"R$ {preco_final:.2f}".replace('.', ',') + " 🔥"
         return f"R$ {preco:.2f}".replace('.', ',')
-        
+
     def get_estoque_total(self):
-        # Se usar variações, soma o estoque de todas as variações
         if self.usa_variacoes:
             return sum(v.estoque for v in self.variacoes.all())
         return self.estoque
@@ -61,37 +78,38 @@ class Produto(models.Model):
         return "Disponível"
 
 
-# NOVO MODELO: Variação de Produto
+# ======================
+# VARIAÇÃO
+# ======================
 class Variacao(models.Model):
     TIPO_VARIACOES = (
         ('Tamanho', 'Tamanho'),
         ('Cor', 'Cor'),
         ('Outro', 'Outro'),
     )
-    
+
     produto = models.ForeignKey(Produto, on_delete=models.CASCADE, related_name='variacoes')
     tipo = models.CharField(max_length=50, choices=TIPO_VARIACOES, default='Tamanho')
     valor = models.CharField(max_length=100)
     preco_adicional = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     estoque = models.IntegerField(default=0)
-    
-    # 🚨 NOVO CAMPO: Imagem de capa para esta variação 🚨
+
     imagem = models.ImageField(
-        upload_to='produtos/variacoes/', 
-        null=True, 
+        upload_to='produtos/variacoes/',
+        null=True,
         blank=True,
         help_text="Opcional. Se preenchido, esta imagem será exibida quando esta variação for selecionada na loja."
     )
-    
+
     class Meta:
         verbose_name = "Variação"
         verbose_name_plural = "Variações"
-        unique_together = (('produto', 'tipo', 'valor'))  # Garante unicidade
+        unique_together = (('produto', 'tipo', 'valor'))
 
     def __str__(self):
         nome_produto = self.produto.nome if self.produto else f"ID {self.id} (Produto Sem Nome)"
         return f'{nome_produto} - {self.tipo}: {self.valor}'
-        
+
     def get_preco_final(self):
         preco_base = self.produto.preco if self.produto else 0.00
         return preco_base + self.preco_adicional
@@ -99,14 +117,17 @@ class Variacao(models.Model):
     def get_display_preco_final(self):
         return f"R$ {self.get_preco_final():.2f}".replace('.', ',')
 
+
+# ======================
+# GALERIA DE IMAGENS
+# ======================
 class ImagemProduto(models.Model):
     produto = models.ForeignKey(
-        Produto, 
-        related_name='galeria_imagens', # Usaremos este nome na view
+        Produto,
+        related_name='galeria_imagens',
         on_delete=models.CASCADE,
         verbose_name='Produto Principal'
     )
-    # 🚨 Link para a variação (para fotos específicas, ex: Cor Azul) 🚨
     variacao = models.ForeignKey(
         'Variacao',
         related_name='imagens',
@@ -126,3 +147,37 @@ class ImagemProduto(models.Model):
 
     def __str__(self):
         return f"Imagem de {self.produto.nome} - Ordem {self.ordem}"
+
+
+# ======================
+# PROMOÇÃO (NOVO MODELO)
+# ======================
+class Promocao(models.Model):
+    nome = models.CharField("Nome da promoção", max_length=100)
+    descricao = models.TextField(blank=True, null=True)
+    desconto_percentual = models.DecimalField(
+        "Desconto (%)", max_digits=5, decimal_places=2, help_text="Ex: 10.00 = 10%"
+    )
+    produtos = models.ManyToManyField(Produto, related_name='promocoes', blank=True)
+    data_inicio = models.DateTimeField("Início da promoção", default=timezone.now)
+    data_fim = models.DateTimeField("Fim da promoção", blank=True, null=True)
+    ativa = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Promoção"
+        verbose_name_plural = "Promoções"
+        ordering = ["-data_inicio"]
+
+    def __str__(self):
+        return f"{self.nome} ({self.desconto_percentual}% off)"
+
+    def esta_vigente(self):
+        """Retorna True se a promoção estiver ativa e dentro do prazo"""
+        agora = timezone.now()
+        if not self.ativa:
+            return False
+        if self.data_inicio and self.data_inicio > agora:
+            return False
+        if self.data_fim and self.data_fim < agora:
+            return False
+        return True
