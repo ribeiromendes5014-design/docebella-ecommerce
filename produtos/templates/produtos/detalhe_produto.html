@@ -122,72 +122,87 @@
   </div>
 
   <!-- Coluna direita: informações -->
-  <div class="produto-info">
-    <h1>{{ produto.nome }}</h1>
-    <p class="preco-principal">{{ produto.get_display_price }}</p>
-    <p style="font-size: 1rem; color: #777;">ou 3x de R$ {{ produto.preco|floatformat:2 }} sem juros</p>
-    <p class="status-estoque" style="color: {% if produto.get_estoque_total == 0 %}#d32f2f{% else %}#2e7d32{% endif %};">
-      {{ produto.get_status_estoque }}
+<div class="produto-info">
+  <h1>{{ produto.nome }}</h1>
+  <p class="preco-principal">{{ produto.get_display_price }}</p>
+
+  {% with parcela=(produto.preco|floatformat:2) %}
+    {% with valor_parcela=produto.preco|divisibleby:0.8872 %}
+    {% endwith %}
+  {% endwith %}
+
+  <p style="font-size: 1rem; color: #777;">
+    ou 3x de R$ {{ ((produto.preco|floatformat:2)|floatformat:2)|default_if_none:"0" }} sem juros
+  </p>
+
+  <!-- ✅ CORRETO: cálculo em template -->
+  {% with valor_parcela=((produto.preco|floatformat:2|floatval)/0.8872)/3 %}
+    <p style="font-size: 1rem; color: #777;">
+      ou 3x de R$ {{ valor_parcela|floatformat:2 }} sem juros
     </p>
+  {% endwith %}
 
-    <form id="form-adicionar-carrinho" action="{% url 'carrinho:adicionar_ao_carrinho' produto.slug %}" method="POST">
-      {% csrf_token %}
-      {% if produto.usa_variacoes %}
-        {% for tipo, variacoes in variacoes_por_tipo.items %}
-          <div class="variacao-selector" data-tipo="{{ tipo }}">
-            <h4>Selecione o {{ tipo }}:</h4>
-            {% for variacao in variacoes %}
-              <button type="button"
-                      data-id="{{ variacao.id }}"
-                      data-estoque="{{ variacao.estoque }}"
-                      class="btn-variacao"
-                      {% if variacao.estoque == 0 %}disabled{% endif %}>
-                {{ variacao.valor }}
-              </button>
-            {% endfor %}
-          </div>
-        {% endfor %}
-        <input type="hidden" name="variacao_id" id="variacao-input" value="">
-      {% endif %}
+  <p class="status-estoque" style="color: {% if produto.get_estoque_total == 0 %}#d32f2f{% else %}#2e7d32{% endif %};">
+    {{ produto.get_status_estoque }}
+  </p>
 
-      <div class="acoes-compra">
-        <input type="number" name="quantidade" id="quantidade" value="1" min="1" max="99">
-        {% if produto.get_estoque_total > 0 %}
-          <button type="submit" class="btn-principal btn-comprar">Comprar</button>
-        {% else %}
-          <button class="btn-principal btn-comprar" disabled style="opacity: 0.5;">Esgotado</button>
-        {% endif %}
-      </div>
-    </form>
-
-    <div class="descricao-completa">
-      <h3>Descrição do Produto</h3>
-      <p>{{ produto.descricao|linebreaksbr }}</p>
-    </div>
-
-    {% if produtos_relacionados %}
-    <div class="produtos-relacionados" style="margin-top:50px; border-top:1px solid #eee; padding-top:30px;">
-      <h3 style="font-size:1.4rem; font-weight:600; margin-bottom:20px; color:#222;">Produtos Relacionados</h3>
-      <div style="display:flex; flex-wrap:wrap; gap:20px;">
-        {% for item in produtos_relacionados %}
-          <div style="flex:1 1 200px; max-width:220px; text-align:center;">
-            <a href="{% url 'detalhe_produto' item.slug %}" style="text-decoration:none; color:inherit;">
-              {% if item.imagem %}
-                <img src="{{ item.imagem.url }}" alt="{{ item.nome }}"
-                     style="width:100%; border-radius:8px; border:1px solid #eee; object-fit:cover; margin-bottom:10px;">
-              {% else %}
-                <img src="{% static 'img/placeholder.png' %}" alt="{{ item.nome }}"
-                     style="width:100%; border-radius:8px; border:1px solid #eee; object-fit:cover; margin-bottom:10px;">
-              {% endif %}
-              <p style="font-size:1rem; font-weight:500;">{{ item.nome }}</p>
-              <p style="color:#111; font-weight:600;">{{ item.get_display_price }}</p>
-            </a>
-          </div>
-        {% endfor %}
-      </div>
-    </div>
+  <form id="form-adicionar-carrinho" action="{% url 'carrinho:adicionar_ao_carrinho' produto.slug %}" method="POST">
+    {% csrf_token %}
+    {% if produto.usa_variacoes %}
+      {% for tipo, variacoes in variacoes_por_tipo.items %}
+        <div class="variacao-selector" data-tipo="{{ tipo }}">
+          <h4>Selecione o {{ tipo }}:</h4>
+          {% for variacao in variacoes %}
+            <button type="button"
+                    data-id="{{ variacao.id }}"
+                    data-estoque="{{ variacao.estoque }}"
+                    class="btn-variacao"
+                    {% if variacao.estoque == 0 %}disabled{% endif %}>
+              {{ variacao.valor }}
+            </button>
+          {% endfor %}
+        </div>
+      {% endfor %}
+      <input type="hidden" name="variacao_id" id="variacao-input" value="">
     {% endif %}
+
+    <div class="acoes-compra">
+      <input type="number" name="quantidade" id="quantidade" value="1" min="1" max="99">
+      {% if produto.get_estoque_total > 0 %}
+        <button type="submit" class="btn-principal btn-comprar">Comprar</button>
+      {% else %}
+        <button class="btn-principal btn-comprar" disabled style="opacity: 0.5;">Esgotado</button>
+      {% endif %}
+    </div>
+  </form>
+
+  <div class="descricao-completa">
+    <h3>Descrição do Produto</h3>
+    <p>{{ produto.descricao|linebreaksbr }}</p>
   </div>
+
+  {% if produtos_relacionados %}
+  <div class="produtos-relacionados" style="margin-top:50px; border-top:1px solid #eee; padding-top:30px;">
+    <h3 style="font-size:1.4rem; font-weight:600; margin-bottom:20px; color:#222;">Produtos Relacionados</h3>
+    <div style="display:flex; flex-wrap:wrap; gap:20px;">
+      {% for item in produtos_relacionados %}
+        <div style="flex:1 1 200px; max-width:220px; text-align:center;">
+          <a href="{% url 'detalhe_produto' item.slug %}" style="text-decoration:none; color:inherit;">
+            {% if item.imagem %}
+              <img src="{{ item.imagem.url }}" alt="{{ item.nome }}"
+                   style="width:100%; border-radius:8px; border:1px solid #eee; object-fit:cover; margin-bottom:10px;">
+            {% else %}
+              <img src="{% static 'img/placeholder.png' %}" alt="{{ item.nome }}"
+                   style="width:100%; border-radius:8px; border:1px solid #eee; object-fit:cover; margin-bottom:10px;">
+            {% endif %}
+            <p style="font-size:1rem; font-weight:500;">{{ item.nome }}</p>
+            <p style="color:#111; font-weight:600;">{{ item.get_display_price }}</p>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
 </div>
 {% endblock content %}
 
