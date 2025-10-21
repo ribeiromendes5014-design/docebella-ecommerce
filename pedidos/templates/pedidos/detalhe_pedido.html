@@ -1,52 +1,111 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block title %}Detalhes do Pedido #{{ pedido.id }}{% endblock %}
+
 {% block content %}
-<div class="container" style="max-width: 800px; margin: 50px auto; padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+<div class="container" style="max-width: 850px; margin: 60px auto; background-color: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
     
-    <h1 style="color: #28a745; border-bottom: 2px solid #28a745; padding-bottom: 10px;">
-        <i class="fas fa-check-circle"></i> Pedido Criado com Sucesso!
-    </h1>
-
     {% if pedido %}
-        <p style="font-size: 1.1rem; margin-top: 20px;">
-            {# CORRIGIDO: Usa nome_completo em vez de username #}
-            Obrigado por sua compra, <strong>{{ pedido.cliente.nome_completo }}</strong>!
-            Seu pedido foi registrado.
-        </p>
-
-        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 4px; margin-top: 20px;">
-            <h3 style="margin-top: 0; color: #343a40;">Resumo do Pedido #{{ pedido.id }}</h3>
-            
-            {# NOTE: get_status_display é o método correto para mostrar a label do status #}
-            <p><strong>Status:</strong> {{ pedido.get_status_display }}</p>
-            <p><strong>Método de Envio:</strong> {{ pedido.metodo_envio }}</p>
-            
-            <p><strong>Total (Produtos + Frete):</strong> R$ {{ pedido.valor_total|floatformat:2 }}</p>
+        <!-- Cabeçalho de sucesso -->
+        <div class="text-center mb-4">
+            <img src="{% static 'img/logo.png' %}" alt="Logo Doce & Bella" style="height:70px; margin-bottom:10px;">
+            <h2 style="color:#f45ca5; font-weight:700;">💖 Pedido Criado com Sucesso!</h2>
+            <p style="font-size:1.1rem;">Obrigada por sua compra, <strong>{{ pedido.cliente.nome_completo }}</strong>!</p>
         </div>
 
-        <h4 style="margin-top: 30px;">Itens Comprados:</h4>
-        <ul style="list-style-type: none; padding: 0;">
+        <!-- Mensagem de status -->
+        <div class="alert text-center 
+            {% if pedido.status == 'Pendente' %}alert-warning
+            {% elif pedido.status == 'Processando' %}alert-primary
+            {% elif pedido.status == 'Concluído' %}alert-success
+            {% elif pedido.status == 'Cancelado' %}alert-danger
+            {% else %}alert-secondary{% endif %}">
+            {% if pedido.status == 'Pendente' %}
+                🩷 Seu pedido foi registrado e aguarda separação.
+            {% elif pedido.status == 'Processando' %}
+                💝 Seu pedido está sendo separado com muito carinho!
+            {% elif pedido.status == 'Concluído' %}
+                🎀 Seu pedido está pronto para retirada ou foi entregue!
+            {% elif pedido.status == 'Cancelado' %}
+                💔 Seu pedido foi cancelado.
+            {% else %}
+                📦 Status: {{ pedido.get_status_display }}
+            {% endif %}
+        </div>
+
+        <!-- Barra de progresso -->
+        <div class="progress mt-4 mb-2" style="height: 10px; border-radius: 20px; background:#ffe6f0;">
+            {% if pedido.status == 'Pendente' %}
+                <div class="progress-bar" style="width:33%; background:#f45ca5;"></div>
+            {% elif pedido.status == 'Processando' %}
+                <div class="progress-bar" style="width:66%; background:#f45ca5;"></div>
+            {% elif pedido.status == 'Concluído' %}
+                <div class="progress-bar" style="width:100%; background:#f45ca5;"></div>
+            {% elif pedido.status == 'Cancelado' %}
+                <div class="progress-bar bg-danger" style="width:100%;"></div>
+            {% endif %}
+        </div>
+        <div class="d-flex justify-content-between text-muted small mb-4">
+            <span>Pedido Realizado</span>
+            <span>Em Separação</span>
+            <span>Pronto p/ Retirada</span>
+        </div>
+
+        <!-- Resumo -->
+        <div style="background:#fff6fa; padding:20px; border-radius:10px;">
+            <h4 style="color:#f45ca5; font-weight:600;">Resumo do Pedido #{{ pedido.id }}</h4>
+            <p><strong>Status:</strong> {{ pedido.get_status_display }}</p>
+            <p><strong>Método de Envio:</strong> {{ pedido.metodo_envio }}</p>
+            <p><strong>Total (Produtos + Frete):</strong> 
+                <span style="color:#28a745; font-weight:600;">R$ {{ pedido.valor_total|floatformat:2 }}</span>
+            </p>
+        </div>
+
+        <!-- Itens -->
+        <h4 class="mt-4" style="color:#333;">Itens Comprados</h4>
+        <ul class="list-group mt-3">
             {% for item in pedido.itens.all %}
-                <li style="border-bottom: 1px dashed #eee; padding: 10px 0;">
-                    {{ item.quantidade }}x {{ item.produto.nome }} 
-                    {% if item.variacao %}({{ item.variacao.valor }}){% endif %} 
-                    
-                    <span style="float: right; font-weight: bold;">R$ {{ item.get_subtotal|floatformat:2 }}</span>
+                <li class="list-group-item d-flex justify-content-between align-items-center" 
+                    style="border:none; border-bottom:1px dashed #f0bcd3;">
+                    <div>
+                        {{ item.quantidade }}x {{ item.produto.nome }} 
+                        {% if item.variacao %}<small>({{ item.variacao.valor }})</small>{% endif %}
+                    </div>
+                    <span class="fw-bold text-dark">R$ {{ item.get_subtotal|floatformat:2 }}</span>
                 </li>
             {% endfor %}
         </ul>
-        
-        <div style="text-align: center; margin-top: 40px;">
-            {# CORREÇÃO CRÍTICA: 'pedidos:lista_pedidos' mudado para 'pedidos:lista' #}
-            <a href="{% url 'pedidos:lista' %}" class="btn-principal" style="text-decoration: none; padding: 10px 20px;">
-                Ver Todos os Meus Pedidos
+
+        <!-- Botões -->
+        <div class="text-center mt-5">
+            <a href="{% url 'pedidos:lista' %}" 
+               class="btn btn-lg px-4" 
+               style="background-color:#f45ca5; color:white; border:none; border-radius:8px;">
+                🛍️ Ver Todos os Meus Pedidos
             </a>
         </div>
-        
-    {% else %}
-        <p class="text-danger">Não foi possível carregar os detalhes do pedido.</p>
-    {% endif %}
 
+    {% else %}
+        <div class="alert alert-danger text-center">
+            Não foi possível carregar os detalhes do pedido 😢
+        </div>
+    {% endif %}
 </div>
+
+<!-- 💅 Estilos extras -->
+<style>
+.progress {
+    background-color: #ffe0f0 !important;
+}
+.list-group-item {
+    background: transparent;
+}
+.list-group-item:last-child {
+    border-bottom: none;
+}
+.btn:hover {
+    background-color: #e23e8a !important;
+}
+</style>
 {% endblock %}
