@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'usuarios', 
     'pedidos',  
 ]
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
