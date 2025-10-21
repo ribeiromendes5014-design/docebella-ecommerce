@@ -98,3 +98,10 @@ class PromocaoAdmin(admin.ModelAdmin):
         """Exibe um ícone ou texto para status de validade."""
         return "✅ Vigente" if obj.esta_vigente() else "⛔ Expirada"
     esta_vigente.short_description = "Status"
+    from django.contrib import admin
+
+# 🌸 Personalização visual do painel
+admin.site.site_header = "Doce & Bella - Painel Administrativo 💅"
+admin.site.site_title = "Administração Doce & Bella"
+admin.site.index_title = "Bem-vinda ao Painel de Gestão, Bella!"
+
