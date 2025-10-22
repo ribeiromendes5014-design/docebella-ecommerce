@@ -60,7 +60,7 @@ def adicionar_ao_carrinho(request, produto_slug):
         return redirect('detalhe_produto', slug=produto_slug)
 
     # 💰 Define o preço correto (promocional ou normal)
-    preco_base = produto.preco_promocional or produto.preco
+    preco_base = produto.get_preco_final()
     preco_unitario = preco_base
     if variacao:
         preco_unitario += variacao.preco_adicional or 0
