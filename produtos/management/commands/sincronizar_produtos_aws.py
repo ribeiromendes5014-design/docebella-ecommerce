@@ -1,7 +1,56 @@
 from django.core.management.base import BaseCommand
+from django.conf import settings
+import boto3
+import os
+from datetime import timezone
 
 class Command(BaseCommand):
-    help = 'Sincronização desativada — produtos são armazenados no banco PostgreSQL do Render.'
+    help = "Baixa imagens do S3 e mantém cache local atualizado em /media/produtos/"
 
     def handle(self, *args, **options):
-        self.stdout.write("ℹ️ Nenhuma sincronização necessária: produtos já estão no banco de dados do Render.")
+        self.stdout.write("🔄 Iniciando sincronização de imagens S3 → cache local...")
+
+        s3 = boto3.client(
+            "s3",
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            region_name=settings.AWS_S3_REGION_NAME,
+        )
+
+        bucket = settings.AWS_STORAGE_BUCKET_NAME
+        prefix = "media/produtos/"
+        local_dir = os.path.join(settings.MEDIA_ROOT, "produtos")
+
+        os.makedirs(local_dir, exist_ok=True)
+        atualizados = 0
+        mantidos = 0
+
+        response = s3.list_objects_v2(Bucket=bucket, Prefix=prefix)
+        for obj in response.get("Contents", []):
+            key = obj["Key"]
+            if key.endswith("/"):
+                continue  # pula diretórios virtuais
+
+            filename = os.path.basename(key)
+            local_path = os.path.join(local_dir, filename)
+            s3_time = obj["LastModified"].astimezone(timezone.utc)
+
+            if os.path.exists(local_path):
+                local_mtime = os.path.getmtime(local_path)
+                local_dt = timezone.utc.localize(
+                    datetime.fromtimestamp(local_mtime)
+                )
+
+                if s3_time <= local_dt:
+                    mantidos += 1
+                    continue
+
+            s3.download_file(bucket, key, local_path)
+            atualizados += 1
+            self.stdout.write(f"⬇️ Atualizado: {filename}")
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"✅ Cache sincronizado! {atualizados} arquivos baixados, {mantidos} mantidos."
+            )
+        )
