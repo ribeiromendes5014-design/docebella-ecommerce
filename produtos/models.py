@@ -149,3 +149,48 @@ class ImagemProduto(models.Model):
 
     def __str__(self):
         return f"Imagem de {self.produto.nome} - Ordem {self.ordem}"
+# ======================
+# PROMOÇÃO
+# ======================
+class Promocao(models.Model):
+    produto = models.ForeignKey(
+        'Produto',
+        on_delete=models.CASCADE,
+        related_name='promocoes'
+    )
+    titulo = models.CharField(max_length=150)
+    desconto_percentual = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        help_text="Percentual de desconto (ex: 10 para 10%)",
+        null=True,
+        blank=True
+    )
+    valor_desconto = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Desconto fixo em reais (opcional)",
+        null=True,
+        blank=True
+    )
+    data_inicio = models.DateTimeField(default=timezone.now)
+    data_fim = models.DateTimeField(null=True, blank=True)
+    ativo = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Promoção"
+        verbose_name_plural = "Promoções"
+        ordering = ['-data_inicio']
+
+    def __str__(self):
+        return f"{self.titulo} ({self.produto.nome})"
+
+    def esta_vigente(self):
+        """Retorna True se a promoção está ativa e dentro do período de validade."""
+        agora = timezone.now()
+        if not self.ativo:
+            return False
+        if self.data_fim:
+            return self.data_inicio <= agora <= self.data_fim
+        return self.data_inicio <= agora
+
