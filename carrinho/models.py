@@ -46,3 +46,40 @@ class ItemCarrinho(models.Model):
 
     def get_subtotal(self):
         return self.get_preco_unitario() * self.quantidade
+from django.utils import timezone
+from decimal import Decimal
+
+class CupomDesconto(models.Model):
+    codigo = models.CharField(max_length=50, unique=True)
+    desconto_percentual = models.DecimalField(
+        max_digits=5, decimal_places=2, null=True, blank=True,
+        help_text="Percentual de desconto, ex: 10 para 10%"
+    )
+    desconto_fixo = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text="Valor fixo de desconto em reais"
+    )
+    ativo = models.BooleanField(default=True)
+    data_inicio = models.DateTimeField(default=timezone.now)
+    data_fim = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return self.codigo
+
+    def valido(self):
+        agora = timezone.now()
+        if not self.ativo:
+            return False
+        if self.data_fim and agora > self.data_fim:
+            return False
+        return True
+
+    def aplicar_desconto(self, total):
+        """Aplica o desconto (percentual ou fixo) e retorna o novo total."""
+        total = Decimal(total)
+        if self.desconto_percentual:
+            total -= total * (self.desconto_percentual / Decimal('100'))
+        elif self.desconto_fixo:
+            total -= self.desconto_fixo
+        return max(total, Decimal('0.00'))
+
