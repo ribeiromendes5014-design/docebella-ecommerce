@@ -6,8 +6,28 @@
 <style>
 /* ===== Layout principal ===== */
 .produto-detalhe-container {
-  display: flex; flex-wrap: wrap; align-items: flex-start; gap: 56px;
-  padding: 40px 20px; max-width: 1100px; margin: 0 auto; background: #fff;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 56px;
+  padding: 40px 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+/* 💖 Destaque visual se o produto estiver em promoção */
+.produto-detalhe-container.promo-ativo {
+  border: 3px solid #ff4da6;
+  box-shadow: 0 0 18px rgba(255, 77, 166, 0.6);
+  animation: brilhoPromo 1.5s infinite alternate;
+}
+
+@keyframes brilhoPromo {
+  from { box-shadow: 0 0 10px rgba(255, 77, 166, 0.4); }
+  to { box-shadow: 0 0 20px rgba(255, 77, 166, 0.9); }
 }
 
 /* ===== Coluna da imagem ===== */
@@ -16,22 +36,20 @@
   width: 100%; border: 1px solid #e9e9e9; border-radius: 10px; overflow: hidden;
 }
 #main-image { display: block; width: 100%; height: auto; object-fit: contain; cursor: pointer; }
+
+/* ===== Timer de promoção ===== */
 .timer-container {
-  background: #fff3f3;
-  border: 1px solid #ff7675;
+  background: #fff3f9;
+  border: 1px solid #ff4da6;
   border-radius: 8px;
   padding: 6px 10px;
   display: inline-block;
   margin-top: 5px;
-  color: #d63031;
+  color: #d81b60;
   font-weight: 600;
   font-size: 0.9rem;
 }
-
-.timer {
-  display: inline-block;
-  margin-left: 5px;
-}
+.timer { display: inline-block; margin-left: 5px; }
 
 /* ===== Modal Zoom ===== */
 .modal {
@@ -135,7 +153,8 @@
   {{ produto.nome }}
 </p>
 
-<div class="produto-detalhe-container">
+<!-- Adiciona destaque se estiver em promoção -->
+<div class="produto-detalhe-container {% if produto.preco_promocional %}promo-ativo{% endif %}">
 
   <!-- Coluna esquerda: imagem principal + miniaturas -->
   <div class="produto-galeria">
@@ -179,18 +198,17 @@
     <p style="font-size: 1rem; color: #777;">
       ou 3x de R$ {{ valor_parcela|floatformat:2|intcomma }} sem juros
     </p>
-     {% if produto.promocoes.first and produto.promocoes.first.esta_vigente %}
-  {% with promo=produto.promocoes.first %}
-    <div class="timer-container">
-      <strong>🔥 Promoção até:</strong>
-      <div class="timer"
-           data-end="{{ promo.data_fim|date:'c' }}"
-           id="timer-{{ produto.id }}">
-        Carregando contador...
-      </div>
-    </div>
-  {% endwith %}
-{% endif %}
+
+    {% if produto.promocoes.first and produto.promocoes.first.esta_vigente %}
+      {% with promo=produto.promocoes.first %}
+        <div class="timer-container">
+          <strong>🔥 Promoção até:</strong>
+          <div class="timer" data-end="{{ promo.data_fim|date:'c' }}" id="timer-{{ produto.id }}">
+            Carregando contador...
+          </div>
+        </div>
+      {% endwith %}
+    {% endif %}
 
     <p class="status-estoque" style="color: {% if produto.get_estoque_total == 0 %}#d32f2f{% else %}#2e7d32{% endif %};">
       {{ produto.get_status_estoque }}
@@ -253,146 +271,5 @@
 {% endblock content %}
 
 {% block extra_js %}
-<script>
-/* Modal Zoom */
-const modal = document.getElementById("modalZoom");
-const mainImg = document.getElementById("main-image");
-const modalImg = document.getElementById("imgZoomed");
-const span = document.getElementsByClassName("close")[0];
-
-if (mainImg) {
-  mainImg.onclick = function() {
-    modal.style.display = "block";
-    modalImg.src = this.src;
-  }
-}
-if (span) {
-  span.onclick = function() { modal.style.display = "none"; }
-}
-if (modal) {
-  modal.onclick = function(e) { if (e.target === modal) modal.style.display = "none"; }
-}
-
-/* Miniaturas e variações */
-function handleVariacaoSelection(button) {
-  const variacaoInput = document.getElementById('variacao-input');
-  const mainImage = document.getElementById('main-image');
-  const miniaturas = document.querySelectorAll('.miniatura');
-  const tipo = button.closest('.variacao-selector').dataset.tipo;
-  const variacaoId = button.dataset.id;
-  const variacaoImageMap = window.variacaoImageMap || {};
-  const defaultImageUrl = mainImage ? mainImage.src : "{% static 'img/placeholder.png' %}";
-
-  document.querySelectorAll(`.variacao-selector[data-tipo="${tipo}"] .btn-variacao`)
-    .forEach(btn => btn.classList.remove('selecionado'));
-  button.classList.add('selecionado');
-
-  if (variacaoImageMap[variacaoId]) {
-    mainImage.src = variacaoImageMap[variacaoId];
-  } else {
-    mainImage.src = defaultImageUrl;
-  }
-
-  miniaturas.forEach(m => m.classList.remove('selecionado'));
-  variacaoInput.value = variacaoId;
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-  const botoesVariacao = document.querySelectorAll('.btn-variacao');
-  const form = document.getElementById('form-adicionar-carrinho');
-  const mainImage = document.getElementById('main-image');
-  const miniaturas = document.querySelectorAll('.miniatura');
-  const requiredTypes = document.querySelectorAll('.variacao-selector');
-  const variacaoInput = document.getElementById('variacao-input');
-  const produtoUsaVariacoes = {{ produto.usa_variacoes|yesno:"true,false" }};
-  const estoqueTotal = {{ produto.get_estoque_total }};
-  const defaultImageUrl = mainImage ? mainImage.src : "{% static 'img/placeholder.png' %}";
-
-  window.variacaoImageMap = {
-    {% for variacao in produto.variacoes.all %}
-      {% if variacao.imagem %}
-        "{{ variacao.id }}": "{{ variacao.imagem.url }}",
-      {% endif %}
-    {% endfor %}
-  };
-
-  miniaturas.forEach(miniatura => {
-    const trocarImagem = (e) => {
-      e.preventDefault();
-      mainImage.src = miniatura.dataset.fullUrl;
-      miniaturas.forEach(m => m.classList.remove('selecionado'));
-      miniatura.classList.add('selecionado');
-      botoesVariacao.forEach(btn => btn.classList.remove('selecionado'));
-    };
-    miniatura.addEventListener('click', trocarImagem);
-  });
-
-  if (produtoUsaVariacoes) {
-    botoesVariacao.forEach(button => {
-      button.addEventListener('click', e => {
-        e.preventDefault();
-        handleVariacaoSelection(button);
-      });
-    });
-
-    form.addEventListener('submit', function(e) {
-      const selecoesFeitas = form.querySelectorAll('.variacao-selector .btn-variacao.selecionado').length;
-      if (requiredTypes.length > 0 && selecoesFeitas < requiredTypes.length) {
-        e.preventDefault();
-        alert("Por favor, selecione uma opção para cada tipo de variação.");
-      }
-      if (!variacaoInput.value) {
-        e.preventDefault();
-        alert("Por favor, selecione pelo menos uma variação.");
-      }
-    });
-  }
-
-    if (!produtoUsaVariacoes && estoqueTotal <= 0) {
-    document.querySelector('.btn-comprar').disabled = true;
-  }
-});
-
-/* === Timer da promoção === */
-document.addEventListener("DOMContentLoaded", function() {
-  document.querySelectorAll(".timer").forEach(function(timer) {
-    const endDateStr = timer.dataset.end;
-
-    if (!endDateStr) {
-      timer.textContent = "Sem data definida";
-      timer.style.color = "gray";
-      return;
-    }
-
-    const endDate = new Date(endDateStr);
-
-    function updateTimer() {
-      const now = new Date();
-      const diff = endDate - now;
-
-      if (diff <= 0) {
-        timer.textContent = "Promoção encerrada 🚫";
-        timer.style.color = "red";
-        return;
-      }
-
-      const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const horas = Math.floor((diff / (1000 * 60 * 60)) % 24);
-      const minutos = Math.floor((diff / (1000 * 60)) % 60);
-      const segundos = Math.floor((diff / 1000) % 60);
-
-      let texto = "";
-      if (dias > 0) texto += dias + "d ";
-      texto += horas.toString().padStart(2, "0") + "h ";
-      texto += minutos.toString().padStart(2, "0") + "m ";
-      texto += segundos.toString().padStart(2, "0") + "s";
-
-      timer.textContent = texto;
-      setTimeout(updateTimer, 1000);
-    }
-
-    updateTimer();
-  });
-});
-</script>
+{{ block.super }}
 {% endblock %}
