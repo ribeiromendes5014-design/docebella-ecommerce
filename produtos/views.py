@@ -7,14 +7,12 @@ from django.db.models import Q, Exists, OuterRef
 from produtos.models import Produto, Variacao
 from decimal import Decimal
 from produtos.models import Produto, Categoria
+from django.utils import timezone
 
 
 def home(request):
     query = request.GET.get('q', '')
 
-    # Mostra produtos disponíveis que:
-    # - têm estoque > 0 direto OU
-    # - possuem variações com estoque > 0
     produtos_list = Produto.objects.filter(
         disponivel=True
     ).filter(
@@ -30,6 +28,13 @@ def home(request):
     paginator = Paginator(produtos_list, 12)
     page = request.GET.get('page')
     produtos = paginator.get_page(page)
+
+    # 🔹 Novo: adiciona flag "tem_promocao" para destacar no template
+    agora = timezone.now()
+    for p in produtos:
+        p.tem_promocao = any(
+            promo.esta_vigente() for promo in p.promocoes.all()
+        )
 
     return render(request, 'produtos/home.html', {
         'produtos': produtos,
