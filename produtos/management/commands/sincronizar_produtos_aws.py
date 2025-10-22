@@ -20,7 +20,9 @@ class Command(BaseCommand):
             )
 
             bucket_name = settings.AWS_STORAGE_BUCKET_NAME
-            file_key = 'produtos.json'
+            file_key = 'media/produtos/produtos.json'
+            
+            print(f"Tentando baixar de S3: s3://{bucket_name}/{file_key}")
 
             response = s3.get_object(Bucket=bucket_name, Key=file_key)
             conteudo = response['Body'].read().decode('utf-8')
