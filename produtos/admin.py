@@ -1,13 +1,12 @@
-# produtos/admin.py (VERSÃO AJUSTADA E CORRIGIDA)
+# produtos/admin.py (VERSÃO FINAL E FUNCIONAL)
 
 from django.contrib import admin
-from .models import Categoria, Produto, Variacao, ImagemProduto
+from .models import Categoria, Produto, Variacao, ImagemProduto, Promocao
 
 
 # -----------------------------------------------------------------
 # 1. Inlines (Imagens e Variações)
 # -----------------------------------------------------------------
-
 class ImagemProdutoInline(admin.TabularInline):
     """Permite adicionar várias fotos por produto na mesma página."""
     model = ImagemProduto
@@ -25,7 +24,6 @@ class VariacaoInline(admin.TabularInline):
 # -----------------------------------------------------------------
 # 2. Categoria
 # -----------------------------------------------------------------
-
 @admin.register(Categoria)
 class CategoriaAdmin(admin.ModelAdmin):
     list_display = ('nome', 'slug')
@@ -35,7 +33,6 @@ class CategoriaAdmin(admin.ModelAdmin):
 # -----------------------------------------------------------------
 # 3. Produto
 # -----------------------------------------------------------------
-
 @admin.register(Produto)
 class ProdutoAdmin(admin.ModelAdmin):
     list_display = ('nome', 'categoria', 'preco', 'estoque', 'disponivel', 'usa_variacoes')
@@ -67,34 +64,25 @@ class ProdutoAdmin(admin.ModelAdmin):
 
 
 # -----------------------------------------------------------------
-# 4. Promoção (CORRIGIDO)
+# 4. Promoção
 # -----------------------------------------------------------------
-
 @admin.register(Promocao)
 class PromocaoAdmin(admin.ModelAdmin):
-    list_display = ("nome", "desconto_percentual", "ativa", "data_inicio", "data_fim")
-    list_filter = ("ativa", "data_inicio", "data_fim")
-    search_fields = ("nome", "descricao", "produtos__nome")
-    filter_horizontal = ("produtos",)
+    list_display = ("titulo", "produto", "desconto_percentual", "valor_desconto", "ativo", "data_inicio", "data_fim")
+    list_filter = ("ativo", "data_inicio", "data_fim")
+    search_fields = ("titulo", "produto__nome")
 
     fieldsets = (
         (None, {
-            "fields": ("nome", "descricao", "desconto_percentual", "ativa")
+            "fields": ("titulo", "produto", "desconto_percentual", "valor_desconto", "ativo"),
         }),
         ("Período da promoção", {
-            "fields": ("data_inicio", "data_fim")
-        }),
-        ("Produtos incluídos", {
-            "fields": ("produtos",),
-            "description": "Selecione um ou mais produtos para aplicar esta promoção."
+            "fields": ("data_inicio", "data_fim"),
         }),
     )
-
-    def get_queryset(self, request):
-        """Retorna o queryset padrão sem usar select_related (pois é ManyToMany)."""
-        return super().get_queryset(request)
 
     def esta_vigente(self, obj):
         """Exibe um ícone ou texto para status de validade."""
         return "✅ Vigente" if obj.esta_vigente() else "⛔ Expirada"
+
     esta_vigente.short_description = "Status"
