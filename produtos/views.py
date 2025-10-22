@@ -63,25 +63,34 @@ def detalhe_produto(request, slug):
             variacoes_por_tipo[nome_tipo] = produto.variacoes.filter(tipo=nome_tipo).order_by('valor')
 
     # 🔹 Cálculo da simulação de parcelamento
-    preco = produto.preco or Decimal('0')
+    preco = produto.get_preco_final() or Decimal('0')
     valor_final = preco / Decimal('0.8872')  # Corrige o valor com base na sua fórmula
     valor_parcela = valor_final / Decimal('3')  # Divide em 3x
 
+    # 🔹 Busca promoção ativa (para o cronômetro)
+    promo_ativa = None
+    for promo in produto.promocoes.all():
+        if promo.esta_vigente():
+            promo_ativa = promo
+            break
+
     # >> NOVO: Lógica para Produtos Relacionados <<
     produtos_relacionados = Produto.objects.filter(
-        categoria=produto.categoria,  # Busca produtos da mesma categoria
+        categoria=produto.categoria,
         disponivel=True,
-        estoque__gt=0                 # Com estoque
+        estoque__gt=0
     ).exclude(
-        id=produto.id                 # Exclui o produto atual
-    ).order_by('?')[:4]               # Pega 4 produtos aleatórios
+        id=produto.id
+    ).order_by('?')[:4]
     
     # 🔹 Contexto enviado ao template
     context = {
         'produto': produto,
         'variacoes_por_tipo': variacoes_por_tipo,
         'produtos_relacionados': produtos_relacionados,
-        'valor_parcela': valor_parcela,  # Adicionado aqui
+        'valor_parcela': valor_parcela,
+        'promo_ativa': promo_ativa,  # ✅ importante: envia a promoção ativa para o template
         'titulo': f'{produto.nome} | Doce & Bella',
     }
+
     return render(request, 'produtos/detalhe_produto.html', context)
