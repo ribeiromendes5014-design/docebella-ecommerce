@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pedidos', '0002_ultimo_nome_da_migracao'),  # ⚠️ Substitua com o nome exato da última migração existente
+        ('pedidos', '0002_initial'),
     ]
 
     operations = [
