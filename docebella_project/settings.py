@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_crontab',
 
     # Extras Django
     'django.contrib.humanize',
@@ -45,6 +46,10 @@ INSTALLED_APPS = [
     'produtos',   # <-- precisa vir antes de carrinho e pedidos
     'carrinho',
     'pedidos',
+]
+
+CRONJOBS = [
+    ('*/10 * * * *', 'produtos.management.commands.sincronizar_produtos_aws.Command.handle')
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
