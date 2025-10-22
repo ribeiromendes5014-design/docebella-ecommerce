@@ -11,6 +11,7 @@ class Categoria(models.Model):
     slug = models.SlugField(unique=True)
 
     class Meta:
+        verbose_name = "Categoria"
         verbose_name_plural = "Categorias"
 
     def __str__(self):
@@ -21,7 +22,7 @@ class Categoria(models.Model):
 # PRODUTO
 # ======================
 class Produto(models.Model):
-    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
+    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, related_name='produtos')
     nome = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
     descricao = models.TextField()
@@ -75,6 +76,9 @@ class Produto(models.Model):
 
         return f"R$ {preco_final:.2f}"
 
+    # ======================
+    # 🔹 ESTOQUE
+    # ======================
     def get_estoque_total(self):
         if self.usa_variacoes:
             return sum(v.estoque for v in self.variacoes.all())
