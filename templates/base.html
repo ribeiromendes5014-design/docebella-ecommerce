@@ -429,6 +429,11 @@
       window.open(link, '_blank');
     });
   </script>
+    <script>
+  setTimeout(() => {
+    document.querySelectorAll('.messages .alert').forEach(el => el.style.display = 'none');
+  }, 4000); // some depois de 4 segundos
+</script>
 
   {% block extra_js %}{% endblock %}
 </body>
