@@ -91,11 +91,12 @@ WSGI_APPLICATION = 'docebella_project.wsgi.application'
 POSTGRES_URL = 'postgresql://catalagobase_user:yCprqleHZ162Ns5rThnnx0Om60TZTa9C@dpg-d3pv0sogjchc73aucffg-a.oregon-postgres.render.com/catalagobase'
 
 
+import dj_database_url
+
 DATABASES = {
-    'default': dj_database_url.parse(
-        # Tenta ler a variável de ambiente (padrão do Render), senão usa a URL fixa
-        os.environ.get('DATABASE_URL', POSTGRES_URL),
-        conn_max_age=600   # Mantém a conexão ativa
+    'default': dj_database_url.config(
+        default='postgresql://postgres_ysv1_user:vQqFme7kHwGUssrtu4YiUNaUogwc0Ncy@dpg-d3s6g7q4d50c738ilvhg-a.oregon-postgres.render.com/postgres_ysv1',
+        conn_max_age=600,
     )
 }
 
