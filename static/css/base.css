@@ -25,6 +25,94 @@ body {
     padding-top: 70px; /* Apenas uma faixa, 70px deve ser suficiente */
 }
 
+/* ========================== MINHA CONTA ========================== */
+.conta-section {
+  display: flex;
+  justify-content: center;
+  padding: 60px 20px;
+  background: #fffafc;
+}
+
+.conta-card {
+  background: #fff;
+  padding: 40px 50px;
+  border-radius: 16px;
+  max-width: 550px;
+  width: 100%;
+  box-shadow: 0 6px 14px rgba(244, 92, 165, 0.1);
+  text-align: center;
+}
+
+.conta-title {
+  color: #333;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.conta-form label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.conta-form input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.btn-salvar {
+  width: 100%;
+  background-color: #f45ca5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* ========================== MEUS PEDIDOS ========================== */
+.pedidos-container {
+  max-width: 900px;
+  margin: 50px auto;
+  padding: 20px;
+}
+
+.pedidos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 20px;
+}
+
+.pedido-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 20px;
+  border-top: 5px solid #f45ca5;
+}
+
+.pedido-status.em-separacao { background-color: #f59e0b; }
+.pedido-status.entregue { background-color: #22c55e; }
+.pedido-status.cancelado { background-color: #ef4444; }
+.pedido-status.aberto { background-color: #3b82f6; }
+
+/* ========================== DETALHE PEDIDO ========================== */
+.pedido-card-detalhe {
+  background: #fff;
+  max-width: 600px;
+  margin: 40px auto;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+}
+
 /* Container de Largura Fixa */
 .container {
     max-width: 1200px;
