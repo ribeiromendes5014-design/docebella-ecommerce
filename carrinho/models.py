@@ -1,7 +1,8 @@
 # carrinho/models.py
 from django.db import models
 from produtos.models import Produto, Variacao
-
+from django.utils import timezone
+from decimal import Decimal
 class ItemCarrinho(models.Model):
     # Vincula o item à sessão do usuário (para quem não está logado)
     session_key = models.CharField(max_length=40, db_index=True)
