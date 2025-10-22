@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
-from django.utils.text import slugify  # Para slugs (útil no admin)
-
+from django.utils.text import slugify
+from decimal import Decimal
 
 # ======================
 # CATEGORIA
@@ -200,6 +200,7 @@ class Promocao(models.Model):
     def __str__(self):
         return f"{self.titulo} ({self.produto.nome})"
 
+    # 💡 Verifica se está dentro do prazo e ativa
     def esta_vigente(self):
         """Retorna True se a promoção está ativa e dentro do período de validade."""
         agora = timezone.now()
@@ -208,3 +209,23 @@ class Promocao(models.Model):
         if self.data_fim:
             return self.data_inicio <= agora <= self.data_fim
         return self.data_inicio <= agora
+
+    # 💰 Calcula o preço com desconto aplicado
+    def aplicar_desconto(self, preco_original):
+        """Retorna o preço com desconto aplicado."""
+        preco = Decimal(preco_original)
+        if self.desconto_percentual:
+            desconto = preco * (self.desconto_percentual / Decimal('100'))
+            preco -= desconto
+        elif self.valor_desconto:
+            preco -= self.valor_desconto
+        return max(preco, Decimal('0.00'))
+
+    # ⏳ Tempo restante em segundos (útil pra admin ou API)
+    def tempo_restante(self):
+        """Retorna o tempo restante em segundos (ou None se não houver data_fim)."""
+        if not self.data_fim:
+            return None
+        agora = timezone.now()
+        diff = self.data_fim - agora
+        return max(int(diff.total_seconds()), 0)
