@@ -1,9 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-<section class="pedidos-section">
-  <div class="breadcrumb">Início . Minha Conta . Meus Pedidos</div>
 
+<section class="pedidos-container">
   <h2 class="titulo-pedidos">📦 Meus Pedidos</h2>
 
   {% if pedidos %}
@@ -11,24 +10,24 @@
       {% for pedido in pedidos %}
         <div class="pedido-card">
           <div class="pedido-header">
-            <span class="pedido-id">#{{ pedido.id }}</span>
-            <span class="pedido-status {{ pedido.status|slugify }}">
-              {% if pedido.status == "Aberto" %}
-                <i class="fa fa-hourglass-half"></i> Aberto
-              {% elif pedido.status == "Em Separação" %}
+            <div class="pedido-id">Pedido #{{ pedido.id }}</div>
+            <div class="pedido-status {{ pedido.status|slugify }}">
+              {% if pedido.status == "Em Separação" %}
                 <i class="fa fa-box-open"></i> Em Separação
-              {% elif pedido.status == "Pronto para Retirada" %}
-                <i class="fa fa-store"></i> Pronto p/ Retirada
+              {% elif pedido.status == "Entregue" %}
+                <i class="fa fa-truck"></i> Entregue
+              {% elif pedido.status == "Cancelado" %}
+                <i class="fa fa-times-circle"></i> Cancelado
               {% else %}
-                <i class="fa fa-truck"></i> {{ pedido.status }}
+                <i class="fa fa-hourglass-half"></i> {{ pedido.status }}
               {% endif %}
-            </span>
+            </div>
           </div>
 
           <div class="pedido-body">
             <p><strong>Data:</strong> {{ pedido.data|date:"d/m/Y H:i" }}</p>
             <p><strong>Total:</strong> R$ {{ pedido.total }}</p>
-            <a href="{% url 'pedidos:detalhes_pedido' pedido.id %}" class="btn-detalhes">
+            <a href="{% url 'pedidos:detalhe_pedido' pedido.id %}" class="btn-detalhes">
               <i class="fa fa-eye"></i> Ver Detalhes
             </a>
           </div>
@@ -39,4 +38,5 @@
     <p class="sem-pedidos">Você ainda não realizou nenhum pedido 💕</p>
   {% endif %}
 </section>
+
 {% endblock %}
