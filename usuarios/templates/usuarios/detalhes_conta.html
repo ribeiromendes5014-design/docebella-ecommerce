@@ -7,8 +7,9 @@
         <h2 class="titulo-conta"><i class="fa-solid fa-user"></i> Detalhes da Conta</h2>
         <p class="subtitulo">Aqui você pode ver ou editar suas informações pessoais.</p>
 
+        <!-- 🔹 Seção de visualização -->
         <div id="info-section">
-            <p><strong>Nome de Usuário:</strong> {{ request.user.username }}</p>
+            <p><strong>Nome Completo:</strong> {{ request.user.nome_completo }}</p>
             <p><strong>E-mail:</strong> {{ request.user.email }}</p>
             <p><strong>Data de Cadastro:</strong> {{ request.user.date_joined|date:"d/m/Y H:i" }}</p>
 
@@ -17,16 +18,17 @@
             </button>
         </div>
 
+        <!-- 🔹 Seção de edição -->
         <form id="form-section" method="post" style="display:none;">
             {% csrf_token %}
             <div class="campo-form">
-                <label><i class="fa-solid fa-user"></i> Nome de Usuário</label>
-                <input type="text" name="username" value="{{ request.user.username }}" />
+                <label><i class="fa-solid fa-user"></i> Nome Completo</label>
+                <input type="text" name="nome_completo" value="{{ request.user.nome_completo }}" required />
             </div>
 
             <div class="campo-form">
                 <label><i class="fa-solid fa-envelope"></i> E-mail</label>
-                <input type="email" name="email" value="{{ request.user.email }}" />
+                <input type="email" name="email" value="{{ request.user.email }}" required />
             </div>
 
             <div class="campo-form">
