@@ -1,27 +1,39 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-<div class="conta-container">
+<section class="conta-section">
   <div class="breadcrumb">Início . Minha Conta . Detalhes</div>
-  <h2 class="form-title-custom">{{ titulo }}</h2>
 
-  <p>Aqui você pode ver ou editar suas informações pessoais.</p>
+  <div class="conta-card">
+    <h2 class="conta-title">{{ titulo }}</h2>
+    <p class="conta-subtext">Aqui você pode ver ou editar suas informações pessoais.</p>
 
-  <form method="POST" class="conta-form">
-    {% csrf_token %}
-    
-    <label for="username">Nome de Usuário:</label>
-    <input type="text" id="username" name="username" value="{{ request.user.username }}" required>
+    <form method="POST" class="conta-form">
+      {% csrf_token %}
 
-    <label for="email">E-mail:</label>
-    <input type="email" id="email" value="{{ request.user.email }}" readonly>
+      <div class="form-group">
+        <label for="username"><i class="fa fa-user"></i> Nome de Usuário</label>
+        <input type="text" id="username" name="username" value="{{ request.user.username }}" required>
+      </div>
 
-    <label for="password">Nova Senha:</label>
-    <input type="password" id="password" name="password" placeholder="Digite uma nova senha (opcional)">
+      <div class="form-group">
+        <label for="email"><i class="fa fa-envelope"></i> E-mail</label>
+        <input type="email" id="email" value="{{ request.user.email }}" readonly>
+      </div>
 
-    <button type="submit">Salvar Alterações</button>
-  </form>
+      <div class="form-group">
+        <label for="password"><i class="fa fa-lock"></i> Nova Senha</label>
+        <input type="password" id="password" name="password" placeholder="Digite uma nova senha (opcional)">
+      </div>
 
-  <p><a href="{% url 'usuarios:painel_cliente' %}" class="voltar-link">← Voltar para o Painel</a></p>
-</div>
+      <button type="submit" class="btn-salvar">
+        <i class="fa fa-save"></i> Salvar Alterações
+      </button>
+    </form>
+
+    <a href="{% url 'usuarios:painel_cliente' %}" class="voltar-link">
+      <i class="fa fa-arrow-left"></i> Voltar para o Painel
+    </a>
+  </div>
+</section>
 {% endblock %}
