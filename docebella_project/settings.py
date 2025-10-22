@@ -275,6 +275,26 @@ JAZZMIN_SETTINGS = {
     },
     "footer_text": "Desenvolvido com Django e 💖"
 }
+# === Personalização do Admin ===
+from django.contrib import admin
+admin.site.site_header = "Painel Administrativo - Doce & Bella 💖"
+admin.site.site_title = "Doce & Bella | Admin"
+admin.site.index_title = "Bem-vinda ao Painel de Controle ✨"
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
+# Adiciona o CSS personalizado do admin
+def custom_admin_css():
+    from django.contrib.staticfiles.storage import staticfiles_storage
+    return [staticfiles_storage.url('css/admin_custom.css')]
+
+admin.site.get_urls = lambda: admin.site.get_urls()
+admin.site.each_context = lambda request: {
+    **admin.site.each_context(request),
+    "admin_css": custom_admin_css(),
+}
 # ----------------------------------------------------
 # REDIRECIONAMENTO APÓS LOGIN
 # ----------------------------------------------------
