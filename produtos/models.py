@@ -153,30 +153,23 @@ class ImagemProduto(models.Model):
 # ======================
 # PROMOÇÃO (CORRIGIDO)
 # ======================
-class Promocao(models.Model):
-    nome = models.CharField("Nome da promoção", max_length=100)
-    descricao = models.TextField(blank=True, null=True)
-    desconto_percentual = models.DecimalField(
-        "Desconto (%)", max_digits=5, decimal_places=2,
-        help_text="Ex: 10.00 = 10%"
-    )
-    produtos = models.ManyToManyField('Produto', related_name='promocoes', blank=True)
-    data_inicio = models.DateTimeField("Início da promoção", default=timezone.now)
-    data_fim = models.DateTimeField("Fim da promoção", blank=True, null=True)
-    ativa = models.BooleanField(default=True)
+def get_display_price(self):
+    """
+    Retorna o preço formatado considerando a promoção vigente, se houver.
+    """
+    preco = self.preco
 
-    class Meta:
-        verbose_name = "Promoção"
-        verbose_name_plural = "Promoções"
-        ordering = ["-data_inicio"]
+    # Verifica se há alguma promoção ativa e vigente
+    promo_ativa = None
+    for promo in self.promocoes.all():
+        if promo.esta_vigente():
+            promo_ativa = promo
+            break
 
-    def __str__(self):
-        return f"{self.nome} ({self.desconto_percentual}% off)"
+    if promo_ativa:
+        desconto = promo_ativa.desconto_percentual or 0
+        preco_final = preco * (1 - (desconto / 100))
+    else:
+        preco_final = preco
 
-    def esta_vigente(self):
-        agora = timezone.now()
-        return (
-            self.ativa
-            and self.data_inicio <= agora
-            and (self.data_fim is None or self.data_fim >= agora)
-        )
+    return f"R$ {preco_final:.2f}"
