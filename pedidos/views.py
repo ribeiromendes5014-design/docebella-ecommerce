@@ -138,6 +138,19 @@ def checkout(request):
     }
     return render(request, 'pedidos/checkout.html', context)
 
+@login_required
+def cancelar_pedido(request, pedido_id):
+    pedido = get_object_or_404(Pedido, id=pedido_id, cliente=request.user)
+
+    if pedido.status not in ["Pronto para Retirada", "Cancelado"]:
+        pedido.status = "Cancelado"
+        pedido.save()
+        messages.success(request, f"O pedido #{pedido.id} foi cancelado com sucesso.")
+    else:
+        messages.warning(request, "Este pedido não pode mais ser cancelado.")
+
+    return redirect('pedidos:meus_pedidos')
+
 
 # -------------------------------------------------------------
 ## Detalhe do Pedido (MANTIDO)
