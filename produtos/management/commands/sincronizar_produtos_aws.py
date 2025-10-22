@@ -4,6 +4,7 @@ import boto3
 import json
 from django.conf import settings
 
+
 class Command(BaseCommand):
     help = 'Sincroniza produtos da AWS S3 para o cache local (Render).'
 
