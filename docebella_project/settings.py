@@ -94,12 +94,16 @@ POSTGRES_URL = 'postgresql://catalagobase_user:yCprqleHZ162Ns5rThnnx0Om60TZTa9C@
 import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+import dj_database_url
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default='postgresql://postgres_ysv1_user:vQqFme7kHwGUssrtu4YiUNaUogwc0Ncy@dpg-d3s6g7q4d50c738ilvhg-a.oregon-postgres.render.com/postgres_ysv1',
+        conn_max_age=600,
+        ssl_require=True,
+    )
 }
+
 
 
 # Password validation
