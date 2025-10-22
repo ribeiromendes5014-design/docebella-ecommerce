@@ -199,16 +199,48 @@
       ou 3x de R$ {{ valor_parcela|floatformat:2|intcomma }} sem juros
     </p>
 
-    {% if produto.promocoes.first and produto.promocoes.first.esta_vigente %}
-      {% with promo=produto.promocoes.first %}
-        <div class="timer-container">
-          <strong>🔥 Promoção até:</strong>
-          <div class="timer" data-end="{{ promo.data_fim|date:'c' }}" id="timer-{{ produto.id }}">
-            Carregando contador...
-          </div>
-        </div>
-      {% endwith %}
-    {% endif %}
+    {% if promo_ativa %}
+  <div class="timer-container">
+    <strong>🔥 Promoção até:</strong>
+    <div class="timer" id="contador-promocao" data-fim="{{ promo_ativa.data_fim|date:'Y-m-d H:i:s' }}">
+      Carregando contador...
+    </div>
+  </div>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const contador = document.getElementById('contador-promocao');
+    if (!contador) return;
+
+    const dataFimStr = contador.getAttribute('data-fim');
+    if (!dataFimStr) return;
+
+    const dataFim = new Date(dataFimStr.replace(' ', 'T'));
+
+    function atualizarContador() {
+      const agora = new Date();
+      const diff = dataFim - agora;
+
+      if (diff <= 0) {
+        contador.innerHTML = "🔥 Promoção encerrada!";
+        clearInterval(intervalo);
+        return;
+      }
+
+      const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const horas = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutos = Math.floor((diff / (1000 * 60)) % 60);
+      const segundos = Math.floor((diff / 1000) % 60);
+
+      contador.textContent = `${dias}d ${horas}h ${minutos}m ${segundos}s`;
+    }
+
+    atualizarContador();
+    const intervalo = setInterval(atualizarContador, 1000);
+  });
+  </script>
+{% endif %}
+
 
     <p class="status-estoque" style="color: {% if produto.get_estoque_total == 0 %}#d32f2f{% else %}#2e7d32{% endif %};">
       {{ produto.get_status_estoque }}
