@@ -1,6 +1,5 @@
 from django.db import models
 from django.utils import timezone
-from django.utils.text import slugify
 from decimal import Decimal
 
 # ======================
@@ -49,32 +48,31 @@ class Produto(models.Model):
         return self.nome
 
     # ======================
-    # 🔹 PREÇO (com promoção)
+    # 🔹 PREÇO (cálculo com promoção)
     # ======================
-    def get_display_price(self):
+    def get_preco_final(self):
         """
-        Retorna o preço formatado considerando promoção vigente, se houver.
+        Retorna o preço numérico considerando promoção vigente, se houver.
         """
-        preco = self.preco
+        preco = Decimal(self.preco)
         promo_ativa = None
 
-        # Verifica se há alguma promoção ativa e vigente
+        # Busca uma promoção ativa e vigente
         for promo in self.promocoes.all():
             if promo.esta_vigente():
                 promo_ativa = promo
                 break
 
+        # Aplica desconto, se houver
         if promo_ativa:
-            if promo_ativa.valor_desconto:
-                preco_final = preco - promo_ativa.valor_desconto
-            elif promo_ativa.desconto_percentual:
-                preco_final = preco * (1 - (promo_ativa.desconto_percentual / 100))
-            else:
-                preco_final = preco
-        else:
-            preco_final = preco
+            preco = promo_ativa.aplicar_desconto(preco)
 
-        return f"R$ {preco_final:.2f}"
+        return preco
+
+    def get_display_price(self):
+        """Retorna o preço formatado (string) considerando promoção vigente."""
+        preco_final = self.get_preco_final()
+        return f"R$ {preco_final:.2f}".replace('.', ',')
 
     # ======================
     # 🔹 ESTOQUE
@@ -126,7 +124,7 @@ class Variacao(models.Model):
         return f'{nome_produto} - {self.tipo}: {self.valor}'
 
     def get_preco_final(self):
-        preco_base = self.produto.preco if self.produto else 0.00
+        preco_base = self.produto.get_preco_final() if self.produto else Decimal('0.00')
         return preco_base + self.preco_adicional
 
     def get_display_preco_final(self):
@@ -200,7 +198,6 @@ class Promocao(models.Model):
     def __str__(self):
         return f"{self.titulo} ({self.produto.nome})"
 
-    # 💡 Verifica se está dentro do prazo e ativa
     def esta_vigente(self):
         """Retorna True se a promoção está ativa e dentro do período de validade."""
         agora = timezone.now()
@@ -210,7 +207,6 @@ class Promocao(models.Model):
             return self.data_inicio <= agora <= self.data_fim
         return self.data_inicio <= agora
 
-    # 💰 Calcula o preço com desconto aplicado
     def aplicar_desconto(self, preco_original):
         """Retorna o preço com desconto aplicado."""
         preco = Decimal(preco_original)
@@ -221,7 +217,6 @@ class Promocao(models.Model):
             preco -= self.valor_desconto
         return max(preco, Decimal('0.00'))
 
-    # ⏳ Tempo restante em segundos (útil pra admin ou API)
     def tempo_restante(self):
         """Retorna o tempo restante em segundos (ou None se não houver data_fim)."""
         if not self.data_fim:
