@@ -194,6 +194,55 @@ class Variacao(models.Model):
     def get_display_preco_final(self):
         return f"R$ {self.get_preco_final():.2f}".replace('.', ',')
 
+    def save(self, *args, **kwargs):
+        import os
+        import boto3
+        from django.conf import settings
+        from django.core.files.storage import default_storage
+
+        # Nome base para o arquivo (ex: vestido-floral-verde)
+        base_name = f"{self.produto.slug}-{self.valor.lower().replace(' ', '-')}"
+
+        # --- CASO 1: imagem foi enviada manualmente ---
+        if self.imagem and hasattr(self.imagem, "name"):
+            ext = os.path.splitext(self.imagem.name)[1].lower()  # ex: .jpg, .png
+            novo_nome = f"produtos/variacoes/{base_name}{ext}"
+
+            if self.imagem.name != novo_nome:
+                # Evita duplicação se o nome já existir
+                if default_storage.exists(novo_nome):
+                    default_storage.delete(novo_nome)
+                self.imagem.name = novo_nome
+                print(f"🎨 Imagem de variação renomeada automaticamente: {novo_nome}")
+
+        # --- CASO 2: imagem não enviada → tenta achar no S3 ---
+        elif not self.imagem:
+            s3 = boto3.client(
+                's3',
+                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+                region_name=settings.AWS_S3_REGION_NAME,
+            )
+
+            bucket = settings.AWS_STORAGE_BUCKET_NAME
+            possible_keys = [
+                f"media/produtos/variacoes/{base_name}.jpg",
+                f"media/produtos/variacoes/{base_name}.png",
+                f"media/produtos/variacoes/{base_name}.jpeg",
+            ]
+
+            for key in possible_keys:
+                try:
+                    s3.head_object(Bucket=bucket, Key=key)
+                    self.imagem.name = key.replace("media/", "")
+                    print(f"🖼️ Imagem de variação encontrada e vinculada automaticamente: {key}")
+                    break
+                except s3.exceptions.ClientError:
+                    continue
+
+        super().save(*args, **kwargs)
+
+
 
 # ======================
 # GALERIA DE IMAGENS
