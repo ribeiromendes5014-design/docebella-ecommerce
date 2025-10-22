@@ -1,14 +1,27 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block content %}
-<div class="form-wrapper">
-    <div class="breadcrumb">Início . Minha Conta . Detalhes</div>
-    <h2 class="form-title-custom">{{ titulo }}</h2>
-    
-    <p>Aqui você pode ver ou editar suas informações pessoais.</p>
-    
-    <p>Usuário: {{ request.user.username }}</p>
-    <p>E-mail: {{ request.user.email }}</p>
+<div class="conta-container">
+  <div class="breadcrumb">Início . Minha Conta . Detalhes</div>
+  <h2 class="form-title-custom">{{ titulo }}</h2>
 
-    <p><a href="{% url 'usuarios:painel_cliente' %}">Voltar para o Painel</a></p>
+  <p>Aqui você pode ver ou editar suas informações pessoais.</p>
+
+  <form method="POST" class="conta-form">
+    {% csrf_token %}
+    
+    <label for="username">Nome de Usuário:</label>
+    <input type="text" id="username" name="username" value="{{ request.user.username }}" required>
+
+    <label for="email">E-mail:</label>
+    <input type="email" id="email" value="{{ request.user.email }}" readonly>
+
+    <label for="password">Nova Senha:</label>
+    <input type="password" id="password" name="password" placeholder="Digite uma nova senha (opcional)">
+
+    <button type="submit">Salvar Alterações</button>
+  </form>
+
+  <p><a href="{% url 'usuarios:painel_cliente' %}" class="voltar-link">← Voltar para o Painel</a></p>
 </div>
 {% endblock %}
