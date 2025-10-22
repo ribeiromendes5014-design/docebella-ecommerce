@@ -91,13 +91,14 @@ WSGI_APPLICATION = 'docebella_project.wsgi.application'
 POSTGRES_URL = 'postgresql://catalagobase_user:yCprqleHZ162Ns5rThnnx0Om60TZTa9C@dpg-d3pv0sogjchc73aucffg-a.oregon-postgres.render.com/catalagobase'
 
 
-import dj_database_url
+import os
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default='postgresql://postgres_ysv1_user:vQqFme7kHwGUssrtu4YiUNaUogwc0Ncy@dpg-d3s6g7q4d50c738ilvhg-a.oregon-postgres.render.com/postgres_ysv1',
-        conn_max_age=600,
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
 
