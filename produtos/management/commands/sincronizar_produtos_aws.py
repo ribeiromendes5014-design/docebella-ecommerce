@@ -4,11 +4,19 @@ import boto3
 import os
 from datetime import datetime, timezone
 
-
 class Command(BaseCommand):
     help = "Baixa imagens do S3 e mantém cache local atualizado em /media/produtos/"
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--force",
+            action="store_true",
+            help="Força re-download de todos os arquivos, ignorando cache local"
+        )
+
     def handle(self, *args, **options):
+        force = options["force"]
+
         self.stdout.write("🔄 Iniciando sincronização de imagens S3 → cache local...")
 
         s3 = boto3.client(
@@ -35,6 +43,13 @@ class Command(BaseCommand):
 
             filename = os.path.basename(key)
             local_path = os.path.join(local_dir, filename)
+
+            # Se o modo --force está ativo, baixa tudo novamente
+            if force:
+                s3.download_file(bucket, key, local_path)
+                atualizados += 1
+                self.stdout.write(f"⬇️ (forçado) Atualizado: {filename}")
+                continue
 
             # Data de modificação no S3 em UTC
             s3_time = obj["LastModified"].astimezone(timezone.utc)
