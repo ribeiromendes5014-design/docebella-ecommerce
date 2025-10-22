@@ -5,6 +5,10 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.db.models import Sum, F
 from django.contrib import messages
+from django.shortcuts import redirect
+from .models import CupomDesconto, ItemCarrinho
+from decimal import Decimal
+from django.utils import timezone
 
 from produtos.models import Produto, Variacao
 from .models import ItemCarrinho
@@ -158,7 +162,54 @@ def remover_item(request, item_id):
 # ---------------------- CUPOM ----------------------
 @require_POST
 def aplicar_cupom(request):
-    codigo_cupom = request.POST.get('cupom_codigo')
-    print(f"Usuário tentou aplicar o cupom: {codigo_cupom}")
-    messages.info(request, f"Lógica para o cupom '{codigo_cupom}' ainda não implementada.")
+    codigo_cupom = request.POST.get('cupom_codigo', '').strip()
+    session_key = request.session.session_key
+
+    if not session_key:
+        request.session.create()
+        session_key = request.session.session_key
+
+    # Busca os itens do carrinho
+    itens = ItemCarrinho.objects.filter(session_key=session_key)
+    total = sum(item.get_subtotal() for item in itens)
+    total_descontado = total
+
+    if not codigo_cupom:
+        messages.error(request, "Por favor, insira um código de cupom.")
+        return redirect('carrinho:ver_carrinho')
+
+    try:
+        cupom = CupomDesconto.objects.get(codigo__iexact=codigo_cupom)
+        agora = timezone.now()
+
+        # Verifica validade
+        if not cupom.ativo:
+            messages.error(request, "Este cupom está inativo.")
+        elif cupom.data_fim and cupom.data_fim < agora:
+            messages.error(request, "Este cupom expirou.")
+        else:
+            # Calcula o desconto
+            desconto = Decimal('0.00')
+            if cupom.desconto_percentual:
+                desconto = total * (cupom.desconto_percentual / Decimal('100'))
+            elif cupom.desconto_fixo:
+                desconto = cupom.desconto_fixo
+
+            total_descontado = total - desconto
+            if total_descontado < 0:
+                total_descontado = Decimal('0.00')
+
+            # Guarda os dados na sessão
+            request.session['cupom_codigo'] = cupom.codigo
+            request.session['desconto_valor'] = float(desconto)
+            request.session['total_com_desconto'] = float(total_descontado)
+
+            messages.success(
+                request,
+                f"Cupom '{cupom.codigo}' aplicado com sucesso! Desconto de R$ {desconto:.2f}."
+            )
+
+    except CupomDesconto.DoesNotExist:
+        messages.error(request, "Cupom inválido.")
+
     return redirect('carrinho:ver_carrinho')
