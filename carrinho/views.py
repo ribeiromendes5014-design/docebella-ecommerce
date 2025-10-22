@@ -52,10 +52,16 @@ def adicionar_ao_carrinho(request, produto_slug):
         messages.error(request, "A quantidade deve ser maior que zero.")
         return redirect('detalhe_produto', slug=produto_slug)
 
-    # 🔒 Aqui está o novo bloqueio: impede adicionar acima do estoque
+    # 🔒 Impede adicionar acima do estoque
     if quantidade > estoque_disponivel:
         messages.error(request, f"Quantidade solicitada ({quantidade}) excede o estoque disponível ({estoque_disponivel}).")
         return redirect('detalhe_produto', slug=produto_slug)
+
+    # 💰 Define o preço correto (promocional ou normal)
+    preco_base = produto.preco_promocional or produto.preco
+    preco_unitario = preco_base
+    if variacao:
+        preco_unitario += variacao.preco_adicional or 0
 
     # --- Buscar item existente no carrinho ---
     item_query = ItemCarrinho.objects.filter(
@@ -77,6 +83,7 @@ def adicionar_ao_carrinho(request, produto_slug):
             return redirect('detalhe_produto', slug=produto_slug)
 
         item.quantidade = nova_quantidade
+        item.preco = preco_unitario  # 🔄 Atualiza preço se produto entrou em promoção
         item.save()
         messages.success(request, f"Quantidade de {produto.nome} atualizada no carrinho.")
     else:
@@ -84,7 +91,8 @@ def adicionar_ao_carrinho(request, produto_slug):
             session_key=session_key,
             produto=produto,
             variacao=variacao,
-            quantidade=quantidade
+            quantidade=quantidade,
+            preco=preco_unitario  # ✅ Salva o preço certo no momento da adição
         )
         messages.success(request, f"{produto.nome} adicionado ao carrinho!")
 
@@ -94,13 +102,11 @@ def adicionar_ao_carrinho(request, produto_slug):
 # ---------------------- VER CARRINHO ----------------------
 def ver_carrinho(request):
     session_key = _get_session_key(request)
-
     itens_carrinho = ItemCarrinho.objects.filter(session_key=session_key)
 
-    carrinho_data = itens_carrinho.annotate(
-        preco_unitario_final=F('produto__preco') + Coalesce(F('variacao__preco_adicional'), Value(0, output_field=DecimalField()))
-    ).aggregate(
-        subtotal=Sum(F('quantidade') * F('preco_unitario_final')),
+    # 💰 Agora o subtotal é calculado com base no campo preco do carrinho (fixo)
+    carrinho_data = itens_carrinho.aggregate(
+        subtotal=Sum(F('quantidade') * F('preco')),
         total_itens=Sum('quantidade')
     )
 
