@@ -198,12 +198,19 @@ AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', default='us-east-2')
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
 # Configuração que pode ajudar a resolver conflitos de caminho
-AWS_LOCATION = 'media' # O Django S3Boto3Storage adiciona isso como prefixo
+AWS_LOCATION = 'media'  # O Django S3Boto3Storage adiciona isso como prefixo
+
+# 🔧 Parâmetros padrão do S3
 AWS_S3_OBJECT_PARAMETERS = {
-    'CacheControl': 'max-age=86400', # Cache de 1 dia
+    'CacheControl': 'max-age=86400',  # Cache de 1 dia
 }
-AWS_DEFAULT_ACL = 'public-read'
+
+# 🚫 NOVO PADRÃO DA AWS → Buckets "ACL desativadas" (Bucket owner enforced)
+# Portanto, não podemos usar 'public-read' ou qualquer ACL explícita.
+AWS_DEFAULT_ACL = None
+
 # 🚨 CORREÇÃO CRÍTICA AQUI 🚨
 # Ativa o S3 se o nome do bucket ESTIVER configurado E o access key TAMBÉM estiver.
 if AWS_STORAGE_BUCKET_NAME and AWS_ACCESS_KEY_ID:
@@ -221,6 +228,7 @@ if AWS_STORAGE_BUCKET_NAME and AWS_ACCESS_KEY_ID:
 print(f"DEBUG: DEFAULT_FILE_STORAGE está usando: {DEFAULT_FILE_STORAGE}")
 print(f"DEBUG: MEDIA_URL está usando: {MEDIA_URL}")
 # 🚨 REMOVA DEPOIS DE TESTAR 🚨
+
 
 # ----------------------------------------------------
 # BLOCO STORAGES (Nível de topo)
