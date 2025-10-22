@@ -1,6 +1,11 @@
 from django.db import models
 from django.utils import timezone
+from django.conf import settings
+from django.core.files.storage import default_storage
 from decimal import Decimal
+import boto3
+import os
+
 
 # ======================
 # CATEGORIA
@@ -26,27 +31,6 @@ class Produto(models.Model):
     slug = models.SlugField(unique=True)
     descricao = models.TextField()
     preco = models.DecimalField(max_digits=10, decimal_places=2)
-
-    usa_variacoes = models.BooleanField(
-        default=False,
-        help_text="Marque se este produto tiver variações (tamanho, cor) com estoque próprio."
-    )
-    estoque = models.IntegerField(default=0)
-
-    imagem = models.ImageField(upload_to='produtos/', null=True, blank=True)
-    disponivel = models.BooleanField(default=True)
-    criado_em = models.DateTimeField(auto_now_add=True)
-    atualizado_em = models.DateTimeField(auto_now=True)
-    import boto3
-from django.conf import settings
-import os
-
-class Produto(models.Model):
-    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, related_name='produtos')
-    nome = models.CharField(max_length=200)
-    slug = models.SlugField(unique=True)
-    descricao = models.TextField()
-    preco = models.DecimalField(max_digits=10, decimal_places=2)
     usa_variacoes = models.BooleanField(default=False)
     estoque = models.IntegerField(default=0)
     imagem = models.ImageField(upload_to='produtos/', null=True, blank=True)
@@ -55,52 +39,43 @@ class Produto(models.Model):
     atualizado_em = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-    import os
-    import boto3
-    from django.conf import settings
-    from django.core.files.storage import default_storage
+        # --- CASO 1: Enviou imagem manualmente ---
+        if self.imagem and hasattr(self.imagem, "name"):
+            ext = os.path.splitext(self.imagem.name)[1].lower()  # ex: .jpg, .png
+            novo_nome = f"produtos/{self.slug}{ext}"
 
-    # --- CASO 1: Enviou imagem manualmente ---
-    if self.imagem and hasattr(self.imagem, "name"):
-        ext = os.path.splitext(self.imagem.name)[1].lower()  # ex: .jpg, .png
-        novo_nome = f"produtos/{self.slug}{ext}"
+            if self.imagem.name != novo_nome:
+                if default_storage.exists(novo_nome):
+                    default_storage.delete(novo_nome)
+                self.imagem.name = novo_nome
+                print(f"🖼️ Imagem renomeada automaticamente para: {novo_nome}")
 
-        if self.imagem.name != novo_nome:
-            # Evita duplicação se já existir uma imagem antiga
-            if default_storage.exists(novo_nome):
-                default_storage.delete(novo_nome)
-            self.imagem.name = novo_nome
-            print(f"🖼️ Imagem renomeada automaticamente para: {novo_nome}")
+        # --- CASO 2: Nenhuma imagem enviada → tenta buscar no S3 ---
+        elif not self.imagem:
+            s3 = boto3.client(
+                's3',
+                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+                region_name=settings.AWS_S3_REGION_NAME,
+            )
 
-    # --- CASO 2: Nenhuma imagem enviada → tenta buscar no S3 ---
-    elif not self.imagem:
-        s3 = boto3.client(
-            's3',
-            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-            region_name=settings.AWS_S3_REGION_NAME,
-        )
+            bucket = settings.AWS_STORAGE_BUCKET_NAME
+            possible_keys = [
+                f"media/produtos/{self.slug}.jpg",
+                f"media/produtos/{self.slug}.png",
+                f"media/produtos/{self.slug}.jpeg",
+            ]
 
-        bucket = settings.AWS_STORAGE_BUCKET_NAME
-        possible_keys = [
-            f"media/produtos/{self.slug}.jpg",
-            f"media/produtos/{self.slug}.png",
-            f"media/produtos/{self.slug}.jpeg",
-        ]
+            for key in possible_keys:
+                try:
+                    s3.head_object(Bucket=bucket, Key=key)
+                    self.imagem.name = key.replace("media/", "")
+                    print(f"📸 Imagem encontrada e vinculada automaticamente: {key}")
+                    break
+                except s3.exceptions.ClientError:
+                    continue
 
-        for key in possible_keys:
-            try:
-                s3.head_object(Bucket=bucket, Key=key)
-                self.imagem.name = key.replace("media/", "")
-                print(f"📸 Imagem encontrada e vinculada automaticamente: {key}")
-                break
-            except s3.exceptions.ClientError:
-                continue
-
-    # Salva normalmente
-    super().save(*args, **kwargs)
-
-
+        super().save(*args, **kwargs)
 
     def valor_parcela_3x(self):
         """Retorna o valor da parcela em 3x com ajuste de 0.8872."""
@@ -111,36 +86,21 @@ class Produto(models.Model):
     def __str__(self):
         return self.nome
 
-    # ======================
-    # 🔹 PREÇO (cálculo com promoção)
-    # ======================
     def get_preco_final(self):
-        """
-        Retorna o preço numérico considerando promoção vigente, se houver.
-        """
         preco = Decimal(self.preco)
         promo_ativa = None
-
-        # Busca uma promoção ativa e vigente
         for promo in self.promocoes.all():
             if promo.esta_vigente():
                 promo_ativa = promo
                 break
-
-        # Aplica desconto, se houver
         if promo_ativa:
             preco = promo_ativa.aplicar_desconto(preco)
-
         return preco
 
     def get_display_price(self):
-        """Retorna o preço formatado (string) considerando promoção vigente."""
         preco_final = self.get_preco_final()
         return f"R$ {preco_final:.2f}".replace('.', ',')
 
-    # ======================
-    # 🔹 ESTOQUE
-    # ======================
     def get_estoque_total(self):
         if self.usa_variacoes:
             return sum(v.estoque for v in self.variacoes.all())
@@ -195,27 +155,20 @@ class Variacao(models.Model):
         return f"R$ {self.get_preco_final():.2f}".replace('.', ',')
 
     def save(self, *args, **kwargs):
-        import os
-        import boto3
-        from django.conf import settings
-        from django.core.files.storage import default_storage
-
-        # Nome base para o arquivo (ex: vestido-floral-verde)
         base_name = f"{self.produto.slug}-{self.valor.lower().replace(' ', '-')}"
 
-        # --- CASO 1: imagem foi enviada manualmente ---
+        # CASO 1: imagem enviada manualmente
         if self.imagem and hasattr(self.imagem, "name"):
-            ext = os.path.splitext(self.imagem.name)[1].lower()  # ex: .jpg, .png
+            ext = os.path.splitext(self.imagem.name)[1].lower()
             novo_nome = f"produtos/variacoes/{base_name}{ext}"
 
             if self.imagem.name != novo_nome:
-                # Evita duplicação se o nome já existir
                 if default_storage.exists(novo_nome):
                     default_storage.delete(novo_nome)
                 self.imagem.name = novo_nome
                 print(f"🎨 Imagem de variação renomeada automaticamente: {novo_nome}")
 
-        # --- CASO 2: imagem não enviada → tenta achar no S3 ---
+        # CASO 2: sem imagem → tenta achar no S3
         elif not self.imagem:
             s3 = boto3.client(
                 's3',
@@ -223,14 +176,12 @@ class Variacao(models.Model):
                 aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
                 region_name=settings.AWS_S3_REGION_NAME,
             )
-
             bucket = settings.AWS_STORAGE_BUCKET_NAME
             possible_keys = [
                 f"media/produtos/variacoes/{base_name}.jpg",
                 f"media/produtos/variacoes/{base_name}.png",
                 f"media/produtos/variacoes/{base_name}.jpeg",
             ]
-
             for key in possible_keys:
                 try:
                     s3.head_object(Bucket=bucket, Key=key)
@@ -241,7 +192,6 @@ class Variacao(models.Model):
                     continue
 
         super().save(*args, **kwargs)
-
 
 
 # ======================
@@ -312,7 +262,6 @@ class Promocao(models.Model):
         return f"{self.titulo} ({self.produto.nome})"
 
     def esta_vigente(self):
-        """Retorna True se a promoção está ativa e dentro do período de validade."""
         agora = timezone.now()
         if not self.ativo:
             return False
@@ -321,7 +270,6 @@ class Promocao(models.Model):
         return self.data_inicio <= agora
 
     def aplicar_desconto(self, preco_original):
-        """Retorna o preço com desconto aplicado."""
         preco = Decimal(preco_original)
         if self.desconto_percentual:
             desconto = preco * (self.desconto_percentual / Decimal('100'))
@@ -331,7 +279,6 @@ class Promocao(models.Model):
         return max(preco, Decimal('0.00'))
 
     def tempo_restante(self):
-        """Retorna o tempo restante em segundos (ou None se não houver data_fim)."""
         if not self.data_fim:
             return None
         agora = timezone.now()
