@@ -96,6 +96,7 @@
   display: block; width: 72px; aspect-ratio: 1/1; object-fit: cover;
   border: 1px solid #ddd; border-radius: 6px;
   flex-shrink: 0;
+  cursor: pointer;
 }
 .galeria-miniaturas .miniatura.selecionado { border: 2px solid #111; }
 
@@ -304,4 +305,51 @@
 
 {% block extra_js %}
 {{ block.super }}
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const modal = document.getElementById("modalZoom");
+  const modalImg = document.getElementById("imgZoomed");
+  const mainImg = document.getElementById("main-image");
+  const closeBtn = document.querySelector(".close");
+  const thumbs = document.querySelectorAll(".miniatura");
+
+  // Função para abrir o modal com a imagem especificada
+  function abrirZoom(src) {
+    if (!modal || !modalImg) return;
+    modal.style.display = "block";
+    modalImg.src = src;
+  }
+
+  // Clicar na imagem principal
+  if (mainImg) {
+    mainImg.addEventListener("click", function() {
+      abrirZoom(this.src);
+    });
+  }
+
+  // Clicar em qualquer miniatura
+  thumbs.forEach(thumb => {
+    thumb.addEventListener("click", function() {
+      const src = this.getAttribute("data-full-url") || this.src;
+      abrirZoom(src);
+    });
+  });
+
+  // Fechar modal
+  if (closeBtn) {
+    closeBtn.addEventListener("click", function() {
+      modal.style.display = "none";
+    });
+  }
+
+  // Fechar ao clicar fora da imagem
+  window.addEventListener("click", function(event) {
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
+  });
+});
+</script>
+
 {% endblock %}
