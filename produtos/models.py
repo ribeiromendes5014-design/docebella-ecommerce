@@ -49,24 +49,21 @@ class Produto(models.Model):
     # 🔹 PREÇO (com promoção)
     # ======================
     def get_display_price(self):
-        """
-        Retorna o preço considerando promoções ativas.
-        Se houver uma promoção vigente, aplica o desconto automaticamente.
-        """
-        preco = self.preco or 0.00
+    """
+    Retorna o preço formatado considerando promoção, se houver.
+    """
+    promo = getattr(self, 'promocao', None)
 
-        promo = self.promocoes.filter(
-            ativa=True,
-            data_inicio__lte=timezone.now()
-        ).filter(
-            models.Q(data_fim__gte=timezone.now()) | models.Q(data_fim__isnull=True)
-        ).first()
+    # Se existe uma promoção associada e ela tem o atributo de preço
+    if promo and hasattr(promo, 'valor_desconto'):
+        preco_final = self.preco - promo.valor_desconto
+    elif promo and hasattr(promo, 'percentual_desconto'):
+        preco_final = self.preco * (1 - (promo.percentual_desconto / 100))
+    else:
+        preco_final = self.preco
 
-        if promo:
-            preco_final = promo.preco_promocional
-            return f"R$ {preco_final:.2f}".replace('.', ',') + " 🔥"
+    return f"R$ {preco_final:.2f}"
 
-        return f"R$ {preco:.2f}".replace('.', ',')
 
     def get_estoque_total(self):
         if self.usa_variacoes:
