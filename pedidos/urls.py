@@ -13,4 +13,5 @@ urlpatterns = [
 
     # ✅ Detalhe do Pedido
     path('<int:pedido_id>/', views.detalhe_pedido, name='detalhe_pedido'),
+    path('<int:pedido_id>/cancelar/', views.cancelar_pedido, name='cancelar_pedido'),
 ]
