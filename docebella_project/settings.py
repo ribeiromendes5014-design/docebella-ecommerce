@@ -190,9 +190,9 @@ CSRF_TRUSTED_ORIGINS = [
 # #######################################################################
 
 # Sua configuração de chaves (AJUSTADA: Default é agora uma string vazia para facilitar a checagem)
-AWS_ACCESS_KEY_ID = 'AKIAQGI66E5UD5MGBJWW' # <- CHAVE REAL
-AWS_SECRET_ACCESS_KEY = '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' # <- CHAVE REAL
-AWS_STORAGE_BUCKET_NAME = 'ocebella-ecommerce-media-2025' # <- NOME DO BUCKET REAL
+AWS_ACCESS_KEY_ID = '' # <- CHAVE REAL
+AWS_SECRET_ACCESS_KEY = '' # <- CHAVE REAL
+AWS_STORAGE_BUCKET_NAME = '' # <- NOME DO BUCKET REAL
 AWS_S3_REGION_NAME = 'us-east-2'
 
 # Inicializa o storage local para fallback
