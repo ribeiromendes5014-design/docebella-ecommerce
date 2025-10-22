@@ -189,11 +189,10 @@ CSRF_TRUSTED_ORIGINS = [
 # # Bloco de CONFIGURAÇÕES DE ARQUIVOS (Mídia/S3) - CORREÇÃO DE ATIVAÇÃO
 # #######################################################################
 
-# Sua configuração de chaves (AJUSTADA: Default é agora uma string vazia para facilitar a checagem)
-AWS_ACCESS_KEY_ID = '' # <- CHAVE REAL
-AWS_SECRET_ACCESS_KEY = '' # <- CHAVE REAL
-AWS_STORAGE_BUCKET_NAME = '' # <- NOME DO BUCKET REAL
-AWS_S3_REGION_NAME = 'us-east-2'
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default='')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default='')
+AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default='')
+AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', default='us-east-2')
 
 # Inicializa o storage local para fallback
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
