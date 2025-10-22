@@ -3,11 +3,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from django.db.models import Sum, F, Value, DecimalField 
-from django.db.models.functions import Coalesce
+from django.db.models import Sum, F
 from django.contrib import messages
 
-from produtos.models import Produto, Variacao 
+from produtos.models import Produto, Variacao
 from .models import ItemCarrinho
 
 
@@ -54,7 +53,10 @@ def adicionar_ao_carrinho(request, produto_slug):
 
     # 🔒 Impede adicionar acima do estoque
     if quantidade > estoque_disponivel:
-        messages.error(request, f"Quantidade solicitada ({quantidade}) excede o estoque disponível ({estoque_disponivel}).")
+        messages.error(
+            request,
+            f"Quantidade solicitada ({quantidade}) excede o estoque disponível ({estoque_disponivel})."
+        )
         return redirect('detalhe_produto', slug=produto_slug)
 
     # 💰 Define o preço correto (promocional ou normal)
@@ -78,7 +80,8 @@ def adicionar_ao_carrinho(request, produto_slug):
         if nova_quantidade > estoque_disponivel:
             messages.error(
                 request,
-                f"Estoque insuficiente! Você já possui {item.quantidade} no carrinho. Máximo permitido: {estoque_disponivel}."
+                f"Estoque insuficiente! Você já possui {item.quantidade} no carrinho. "
+                f"Máximo permitido: {estoque_disponivel}."
             )
             return redirect('detalhe_produto', slug=produto_slug)
 
@@ -104,7 +107,7 @@ def ver_carrinho(request):
     session_key = _get_session_key(request)
     itens_carrinho = ItemCarrinho.objects.filter(session_key=session_key)
 
-    # 💰 Agora o subtotal é calculado com base no campo preco do carrinho (fixo)
+    # 💰 Subtotal baseado no preço fixo salvo no carrinho
     carrinho_data = itens_carrinho.aggregate(
         subtotal=Sum(F('quantidade') * F('preco')),
         total_itens=Sum('quantidade')
@@ -159,19 +162,3 @@ def aplicar_cupom(request):
     print(f"Usuário tentou aplicar o cupom: {codigo_cupom}")
     messages.info(request, f"Lógica para o cupom '{codigo_cupom}' ainda não implementada.")
     return redirect('carrinho:ver_carrinho')
-from django.db import models
-from produtos.models import Produto, Variacao
-
-class ItemCarrinho(models.Model):
-    session_key = models.CharField(max_length=40)
-    produto = models.ForeignKey(Produto, on_delete=models.CASCADE)
-    variacao = models.ForeignKey(Variacao, on_delete=models.SET_NULL, null=True, blank=True)
-    quantidade = models.PositiveIntegerField(default=1)
-    preco = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # ✅ Adicione isto!
-    adicionado_em = models.DateTimeField(auto_now_add=True)
-
-    def subtotal(self):
-        return self.quantidade * self.preco
-
-    def __str__(self):
-        return f"{self.produto.nome} ({self.quantidade}x)"
