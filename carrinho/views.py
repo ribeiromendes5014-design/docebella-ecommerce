@@ -159,3 +159,19 @@ def aplicar_cupom(request):
     print(f"Usuário tentou aplicar o cupom: {codigo_cupom}")
     messages.info(request, f"Lógica para o cupom '{codigo_cupom}' ainda não implementada.")
     return redirect('carrinho:ver_carrinho')
+from django.db import models
+from produtos.models import Produto, Variacao
+
+class ItemCarrinho(models.Model):
+    session_key = models.CharField(max_length=40)
+    produto = models.ForeignKey(Produto, on_delete=models.CASCADE)
+    variacao = models.ForeignKey(Variacao, on_delete=models.SET_NULL, null=True, blank=True)
+    quantidade = models.PositiveIntegerField(default=1)
+    preco = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # ✅ Adicione isto!
+    adicionado_em = models.DateTimeField(auto_now_add=True)
+
+    def subtotal(self):
+        return self.quantidade * self.preco
+
+    def __str__(self):
+        return f"{self.produto.nome} ({self.quantidade}x)"
