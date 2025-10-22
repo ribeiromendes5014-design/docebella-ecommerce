@@ -165,7 +165,7 @@ def detalhe_pedido(request, pedido_id):
 # -------------------------------------------------------------
 
 @login_required 
-def lista_pedidos(request):
+def meus_pedidos(request):
     pedidos = Pedido.objects.filter(cliente=request.user).order_by('-data_criacao')
     
     context = {
@@ -173,5 +173,6 @@ def lista_pedidos(request):
         'pedidos': pedidos,
     }
     
-    # 🚨 CORREÇÃO CRÍTICA 3: Renderizar o template 'pedidos/lista_pedidos.html'
-    return render(request, 'pedidos/lista_pedidos.html', context)
+    # 👉 Aqui está o segredo:
+    # Agora ele renderiza o template certo: 'pedidos/meus_pedidos.html'
+    return render(request, 'pedidos/meus_pedidos.html', context)
