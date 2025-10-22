@@ -52,17 +52,26 @@ class Produto(models.Model):
     # ======================
     def get_display_price(self):
         """
-        Retorna o preço formatado considerando promoção, se houver.
+        Retorna o preço formatado considerando promoção vigente, se houver.
         """
-        promo = getattr(self, 'promocao', None)
+        preco = self.preco
+        promo_ativa = None
 
-        # Se existe uma promoção associada e ela tem o atributo de preço
-        if promo and hasattr(promo, 'valor_desconto'):
-            preco_final = self.preco - promo.valor_desconto
-        elif promo and hasattr(promo, 'percentual_desconto'):
-            preco_final = self.preco * (1 - (promo.percentual_desconto / 100))
+        # Verifica se há alguma promoção ativa e vigente
+        for promo in self.promocoes.all():
+            if promo.esta_vigente():
+                promo_ativa = promo
+                break
+
+        if promo_ativa:
+            if promo_ativa.valor_desconto:
+                preco_final = preco - promo_ativa.valor_desconto
+            elif promo_ativa.desconto_percentual:
+                preco_final = preco * (1 - (promo_ativa.desconto_percentual / 100))
+            else:
+                preco_final = preco
         else:
-            preco_final = self.preco
+            preco_final = preco
 
         return f"R$ {preco_final:.2f}"
 
@@ -149,6 +158,8 @@ class ImagemProduto(models.Model):
 
     def __str__(self):
         return f"Imagem de {self.produto.nome} - Ordem {self.ordem}"
+
+
 # ======================
 # PROMOÇÃO
 # ======================
@@ -193,4 +204,3 @@ class Promocao(models.Model):
         if self.data_fim:
             return self.data_inicio <= agora <= self.data_fim
         return self.data_inicio <= agora
-
