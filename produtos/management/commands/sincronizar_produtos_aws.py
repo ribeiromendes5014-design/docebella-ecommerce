@@ -2,7 +2,8 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 import boto3
 import os
-from datetime import timezone
+from datetime import datetime, timezone
+
 
 class Command(BaseCommand):
     help = "Baixa imagens do S3 e mantém cache local atualizado em /media/produtos/"
@@ -26,6 +27,7 @@ class Command(BaseCommand):
         mantidos = 0
 
         response = s3.list_objects_v2(Bucket=bucket, Prefix=prefix)
+
         for obj in response.get("Contents", []):
             key = obj["Key"]
             if key.endswith("/"):
@@ -33,18 +35,20 @@ class Command(BaseCommand):
 
             filename = os.path.basename(key)
             local_path = os.path.join(local_dir, filename)
+
+            # Data de modificação no S3 em UTC
             s3_time = obj["LastModified"].astimezone(timezone.utc)
 
+            # Se o arquivo local já existe, compara timestamps
             if os.path.exists(local_path):
                 local_mtime = os.path.getmtime(local_path)
-                local_dt = timezone.utc.localize(
-                    datetime.fromtimestamp(local_mtime)
-                )
+                local_dt = datetime.fromtimestamp(local_mtime, tz=timezone.utc)
 
                 if s3_time <= local_dt:
                     mantidos += 1
-                    continue
+                    continue  # já está atualizado
 
+            # Baixa o arquivo atualizado
             s3.download_file(bucket, key, local_path)
             atualizados += 1
             self.stdout.write(f"⬇️ Atualizado: {filename}")
