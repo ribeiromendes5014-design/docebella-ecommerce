@@ -5,7 +5,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', martins.site.urls),
+    path('painel-loja/', admin.site.urls),
     
     # 1. Rotas do App PRODUTOS (Home Page)
     path('', include('produtos.urls')), 
