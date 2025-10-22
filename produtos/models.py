@@ -55,37 +55,51 @@ class Produto(models.Model):
     atualizado_em = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        """
-        Se o produto não tiver imagem, tenta localizar uma imagem já existente no S3.
-        Exemplo: media/produtos/<slug>.jpg, .png, .jpeg
-        """
-        if not self.imagem:
-            s3 = boto3.client(
-                's3',
-                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-                region_name=settings.AWS_S3_REGION_NAME,
-            )
+    import os
+    import boto3
+    from django.conf import settings
+    from django.core.files.storage import default_storage
 
-            bucket = settings.AWS_STORAGE_BUCKET_NAME
-            # Caminhos possíveis (você pode ajustar se quiser usar SKU em vez de slug)
-            possible_keys = [
-                f"media/produtos/{self.slug}.jpg",
-                f"media/produtos/{self.slug}.png",
-                f"media/produtos/{self.slug}.jpeg",
-            ]
+    # --- CASO 1: Enviou imagem manualmente ---
+    if self.imagem and hasattr(self.imagem, "name"):
+        ext = os.path.splitext(self.imagem.name)[1].lower()  # ex: .jpg, .png
+        novo_nome = f"produtos/{self.slug}{ext}"
 
-            for key in possible_keys:
-                try:
-                    s3.head_object(Bucket=bucket, Key=key)
-                    # Se achou, vincula automaticamente
-                    self.imagem.name = key.replace("media/", "")
-                    print(f"📸 Imagem encontrada e vinculada automaticamente: {key}")
-                    break
-                except s3.exceptions.ClientError:
-                    continue
+        if self.imagem.name != novo_nome:
+            # Evita duplicação se já existir uma imagem antiga
+            if default_storage.exists(novo_nome):
+                default_storage.delete(novo_nome)
+            self.imagem.name = novo_nome
+            print(f"🖼️ Imagem renomeada automaticamente para: {novo_nome}")
 
-        super().save(*args, **kwargs)
+    # --- CASO 2: Nenhuma imagem enviada → tenta buscar no S3 ---
+    elif not self.imagem:
+        s3 = boto3.client(
+            's3',
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            region_name=settings.AWS_S3_REGION_NAME,
+        )
+
+        bucket = settings.AWS_STORAGE_BUCKET_NAME
+        possible_keys = [
+            f"media/produtos/{self.slug}.jpg",
+            f"media/produtos/{self.slug}.png",
+            f"media/produtos/{self.slug}.jpeg",
+        ]
+
+        for key in possible_keys:
+            try:
+                s3.head_object(Bucket=bucket, Key=key)
+                self.imagem.name = key.replace("media/", "")
+                print(f"📸 Imagem encontrada e vinculada automaticamente: {key}")
+                break
+            except s3.exceptions.ClientError:
+                continue
+
+    # Salva normalmente
+    super().save(*args, **kwargs)
+
 
 
     def valor_parcela_3x(self):
