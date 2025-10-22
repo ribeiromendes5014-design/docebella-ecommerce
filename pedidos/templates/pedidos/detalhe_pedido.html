@@ -1,37 +1,31 @@
 {% extends 'base.html' %}
-{% load static %}
 {% block content %}
-<div class="perfil-container">
-  <div class="breadcrumb">Início . Minha Conta . Detalhes</div>
+<section class="detalhe-pedido-container">
+  <div class="pedido-card-detalhe">
+    <h2 class="pedido-titulo">{{ titulo }}</h2>
 
-  <div class="perfil-card">
-    <h2 class="perfil-title">{{ titulo }}</h2>
-    <p class="perfil-subtext">Aqui você pode ver ou editar suas informações pessoais.</p>
+    <div class="pedido-info">
+      <p><strong>Status:</strong> {{ pedido.status }}</p>
+      <p><strong>Data:</strong> {{ pedido.data|date:"d/m/Y H:i" }}</p>
+      <p><strong>Total:</strong> R$ {{ pedido.total }}</p>
+    </div>
 
-    <form method="POST" class="perfil-form">
-      {% csrf_token %}
-      
-      <div class="form-group">
-        <label for="username"><i class="fa fa-user"></i> Nome de Usuário</label>
-        <input type="text" id="username" name="username" value="{{ request.user.username }}" required>
-      </div>
+    <hr>
 
-      <div class="form-group">
-        <label for="email"><i class="fa fa-envelope"></i> E-mail</label>
-        <input type="email" id="email" value="{{ request.user.email }}" readonly>
-      </div>
+    <h3 class="subtitulo-itens">🛍 Itens do Pedido</h3>
+    <ul class="lista-itens">
+      {% for item in pedido.itens.all %}
+        <li>
+          <span>{{ item.produto.nome }}</span>
+          <span>{{ item.quantidade }}x</span>
+          <span>R$ {{ item.subtotal }}</span>
+        </li>
+      {% endfor %}
+    </ul>
 
-      <div class="form-group">
-        <label for="password"><i class="fa fa-lock"></i> Nova Senha</label>
-        <input type="password" id="password" name="password" placeholder="Digite uma nova senha (opcional)">
-      </div>
-
-      <button type="submit" class="btn-salvar"><i class="fa fa-save"></i> Salvar Alterações</button>
-    </form>
-
-    <a href="{% url 'usuarios:painel_cliente' %}" class="voltar-link">
-      <i class="fa fa-arrow-left"></i> Voltar para o Painel
+    <a href="{% url 'pedidos:meus_pedidos' %}" class="voltar-link">
+      <i class="fa fa-arrow-left"></i> Voltar para Meus Pedidos
     </a>
   </div>
-</div>
+</section>
 {% endblock %}
