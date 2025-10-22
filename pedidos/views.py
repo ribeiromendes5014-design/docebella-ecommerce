@@ -1,7 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from carrinho.models import ItemCarrinho
-# from pedidos.frete_service import calcular_frete_simulado, calcular_peso_carrinho # Não precisamos mais disso
 from .models import EnderecoEntrega, Pedido, ItemPedido
 from django.db import transaction
 from django import forms
@@ -10,32 +9,23 @@ from produtos.models import Produto, Variacao
 from django.contrib import messages
 
 
-# NOVO FORMULÁRIO SIMPLIFICADO PARA RETIRADA
+# ---------------------- FORMULÁRIO ----------------------
 class CheckoutFormSimplificado(forms.Form):
-    
-    # CAMPO 1: NOME (Obrigatório)
     nome = forms.CharField(max_length=255, label='Nome Completo')
-    
-    # O CAMPO E-MAIL FOI REMOVIDO CONFORME SUA SOLICITAÇÃO.
-    
-    # CAMPO 2: TELEFONE (Para contato)
     telefone = forms.CharField(
-        max_length=20, 
-        label='Telefone (WhatsApp)', 
+        max_length=20,
+        label='Telefone (WhatsApp)',
         help_text="Para entrarmos em contato sobre seu pedido."
     )
 
-    # Sobrescreve o __init__ para preencher os dados do usuário logado
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super(CheckoutFormSimplificado, self).__init__(*args, **kwargs)
-        
-        # Pré-preenche o campo 'nome' com o nome do usuário logado
         if user and user.is_authenticated:
             self.fields['nome'].initial = user.nome_completo
 
 
-# View Principal do Checkout (MODIFICADA)
+# ---------------------- CHECKOUT ----------------------
 @login_required
 def checkout(request):
     session_key = _get_session_key(request)
@@ -44,20 +34,19 @@ def checkout(request):
     if not itens_carrinho.exists():
         messages.warning(request, "Seu carrinho está vazio.")
         return redirect('carrinho:ver_carrinho')
-        
-    subtotal_carrinho = sum(item.get_subtotal() for item in itens_carrinho)
+
+    # 💰 Garante que o subtotal use o preço salvo no carrinho
+    subtotal_carrinho = sum(item.preco * item.quantidade for item in itens_carrinho)
 
     if request.method == 'POST':
-        # Usamos o novo formulário
         form = CheckoutFormSimplificado(request.POST, user=request.user)
-        
+
         if form.is_valid():
             cleaned_data = form.cleaned_data
-            
+
             try:
                 with transaction.atomic():
-                    
-                    # 1. Crie o Endereço Falso (Dummy)
+                    # 1️⃣ Endereço fictício (retirada)
                     endereco_retirada = EnderecoEntrega.objects.create(
                         nome=cleaned_data['nome'],
                         sobrenome="",
@@ -70,8 +59,8 @@ def checkout(request):
                         cidade="Doce&Bella",
                         estado="PR"
                     )
-                    
-                    # 2. Crie o Pedido
+
+                    # 2️⃣ Cria o pedido
                     pedido = Pedido.objects.create(
                         cliente=request.user,
                         endereco=endereco_retirada,
@@ -79,54 +68,51 @@ def checkout(request):
                         valor_frete=0.00,
                         metodo_envio="Retirada na Loja"
                     )
-                    
-                    # 3. Mova os itens do carrinho e atualize o estoque
+
+                    # 3️⃣ Move os itens do carrinho
                     for item_carrinho in itens_carrinho:
                         target = item_carrinho.variacao or item_carrinho.produto
-                        
+
                         if not target:
-                            raise Exception(f"Item do carrinho inválido: Produto ou Variação não encontrados.")
-                            
+                            raise Exception(f"Item inválido: Produto ou Variação não encontrados.")
+
                         if target.estoque < item_carrinho.quantidade:
                             raise Exception(f"Estoque insuficiente para {item_carrinho.produto.nome}.")
-                            
+
+                        # ✅ Salva o preço exato que estava no carrinho
                         ItemPedido.objects.create(
                             pedido=pedido,
                             produto=item_carrinho.produto,
                             variacao=item_carrinho.variacao,
-                            preco_unitario=item_carrinho.get_preco_unitario(),
+                            preco_unitario=item_carrinho.preco,
                             quantidade=item_carrinho.quantidade
                         )
+
+                        # Atualiza o estoque
                         target.estoque -= item_carrinho.quantidade
                         target.save()
-                        
+
+                    # Limpa o carrinho
                     itens_carrinho.delete()
+
                     messages.success(request, f"Pedido #{pedido.id} criado com sucesso! Aguardando pagamento.")
-                    
                     return redirect('pedidos:detalhe_pedido', pedido_id=pedido.id)
-                
+
             except Exception as e:
-                # 🚨 ESTE BLOCO ESTAVA MAL INDENTADO 🚨
-                print("\n=======================================================")
-                print("FALHA NA CRIAÇÃO DO PEDIDO (EXCEPTION DISPARADA):")
-                print("MOTIVO:", e)
-                print("=======================================================\n")
-                
+                print("\n=== ERRO AO FINALIZAR PEDIDO ===")
+                print("Motivo:", e)
+                print("=================================\n")
+
                 messages.error(request, f"Ocorreu um erro ao finalizar o pedido. Motivo: {e}")
                 return redirect('carrinho:ver_carrinho')
-        
+
         else:
-            # 🚨 ESTE BLOCO ESTAVA MAL INDENTADO 🚨
-            # Se o formulário for inválido, recarrega a página mostrando os erros
-            print("\n=======================================================")
-            print("ERRO DE VALIDAÇÃO DO FORMULÁRIO (IS_VALID() = False):")
+            print("\n=== ERRO DE VALIDAÇÃO DO FORMULÁRIO ===")
             print(form.errors)
-            print("=======================================================\n")
-            
+            print("======================================\n")
             messages.error(request, "Por favor, corrija os erros no formulário.")
 
     else:
-        # GET Request: Inicializa o form simplificado passando o usuário
         form = CheckoutFormSimplificado(user=request.user)
 
     context = {
@@ -138,6 +124,8 @@ def checkout(request):
     }
     return render(request, 'pedidos/checkout.html', context)
 
+
+# ---------------------- CANCELAR PEDIDO ----------------------
 @login_required
 def cancelar_pedido(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id, cliente=request.user)
@@ -152,40 +140,23 @@ def cancelar_pedido(request, pedido_id):
     return redirect('pedidos:meus_pedidos')
 
 
-# -------------------------------------------------------------
-## Detalhe do Pedido (MANTIDO)
-# -------------------------------------------------------------
-
+# ---------------------- DETALHE DO PEDIDO ----------------------
 @login_required 
 def detalhe_pedido(request, pedido_id):
-    pedido = get_object_or_404(
-        Pedido, 
-        id=pedido_id, 
-        cliente=request.user
-    )
-    
+    pedido = get_object_or_404(Pedido, id=pedido_id, cliente=request.user)
     context = {
         'titulo': f'Detalhes do Pedido #{pedido.id}',
         'pedido': pedido,
     }
-    
-    # 🚨 CORREÇÃO CRÍTICA 2: Renderizar o template 'pedidos/detalhe_pedido.html'
     return render(request, 'pedidos/detalhe_pedido.html', context)
 
 
-# -------------------------------------------------------------
-## Lista de Pedidos (MANTIDO)
-# -------------------------------------------------------------
-
+# ---------------------- MEUS PEDIDOS ----------------------
 @login_required 
 def meus_pedidos(request):
     pedidos = Pedido.objects.filter(cliente=request.user).order_by('-data_criacao')
-    
     context = {
         'titulo': 'Meus Pedidos',
         'pedidos': pedidos,
     }
-    
-    # 👉 Aqui está o segredo:
-    # Agora ele renderiza o template certo: 'pedidos/meus_pedidos.html'
     return render(request, 'pedidos/meus_pedidos.html', context)
