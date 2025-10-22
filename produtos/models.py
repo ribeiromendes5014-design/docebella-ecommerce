@@ -37,6 +37,56 @@ class Produto(models.Model):
     disponivel = models.BooleanField(default=True)
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)
+    import boto3
+from django.conf import settings
+import os
+
+class Produto(models.Model):
+    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, related_name='produtos')
+    nome = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True)
+    descricao = models.TextField()
+    preco = models.DecimalField(max_digits=10, decimal_places=2)
+    usa_variacoes = models.BooleanField(default=False)
+    estoque = models.IntegerField(default=0)
+    imagem = models.ImageField(upload_to='produtos/', null=True, blank=True)
+    disponivel = models.BooleanField(default=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        """
+        Se o produto não tiver imagem, tenta localizar uma imagem já existente no S3.
+        Exemplo: media/produtos/<slug>.jpg, .png, .jpeg
+        """
+        if not self.imagem:
+            s3 = boto3.client(
+                's3',
+                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+                region_name=settings.AWS_S3_REGION_NAME,
+            )
+
+            bucket = settings.AWS_STORAGE_BUCKET_NAME
+            # Caminhos possíveis (você pode ajustar se quiser usar SKU em vez de slug)
+            possible_keys = [
+                f"media/produtos/{self.slug}.jpg",
+                f"media/produtos/{self.slug}.png",
+                f"media/produtos/{self.slug}.jpeg",
+            ]
+
+            for key in possible_keys:
+                try:
+                    s3.head_object(Bucket=bucket, Key=key)
+                    # Se achou, vincula automaticamente
+                    self.imagem.name = key.replace("media/", "")
+                    print(f"📸 Imagem encontrada e vinculada automaticamente: {key}")
+                    break
+                except s3.exceptions.ClientError:
+                    continue
+
+        super().save(*args, **kwargs)
+
 
     def valor_parcela_3x(self):
         """Retorna o valor da parcela em 3x com ajuste de 0.8872."""
