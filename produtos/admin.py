@@ -1,7 +1,7 @@
 # produtos/admin.py (VERSÃO AJUSTADA E CORRIGIDA)
 
 from django.contrib import admin
-from .models import Categoria, Produto, Variacao, ImagemProduto, Promocao
+from .models import Categoria, Produto, Variacao, ImagemProduto
 
 
 # -----------------------------------------------------------------
