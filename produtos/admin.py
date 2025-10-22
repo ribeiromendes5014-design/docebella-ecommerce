@@ -1,7 +1,7 @@
 # produtos/admin.py (VERSÃO FINAL E FUNCIONAL)
 
 from django.contrib import admin
-from .models import Categoria, Produto, Variacao, ImagemProduto, Promocao
+from . import models
 
 
 # -----------------------------------------------------------------
