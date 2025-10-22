@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify  # Para slugs (útil no admin)
 
+
 # ======================
 # CATEGORIA
 # ======================
@@ -36,6 +37,7 @@ class Produto(models.Model):
     disponivel = models.BooleanField(default=True)
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)
+
     def valor_parcela_3x(self):
         """Retorna o valor da parcela em 3x com ajuste de 0.8872."""
         if not self.preco:
@@ -49,21 +51,20 @@ class Produto(models.Model):
     # 🔹 PREÇO (com promoção)
     # ======================
     def get_display_price(self):
-    """
-    Retorna o preço formatado considerando promoção, se houver.
-    """
-    promo = getattr(self, 'promocao', None)
+        """
+        Retorna o preço formatado considerando promoção, se houver.
+        """
+        promo = getattr(self, 'promocao', None)
 
-    # Se existe uma promoção associada e ela tem o atributo de preço
-    if promo and hasattr(promo, 'valor_desconto'):
-        preco_final = self.preco - promo.valor_desconto
-    elif promo and hasattr(promo, 'percentual_desconto'):
-        preco_final = self.preco * (1 - (promo.percentual_desconto / 100))
-    else:
-        preco_final = self.preco
+        # Se existe uma promoção associada e ela tem o atributo de preço
+        if promo and hasattr(promo, 'valor_desconto'):
+            preco_final = self.preco - promo.valor_desconto
+        elif promo and hasattr(promo, 'percentual_desconto'):
+            preco_final = self.preco * (1 - (promo.percentual_desconto / 100))
+        else:
+            preco_final = self.preco
 
-    return f"R$ {preco_final:.2f}"
-
+        return f"R$ {preco_final:.2f}"
 
     def get_estoque_total(self):
         if self.usa_variacoes:
@@ -105,7 +106,7 @@ class Variacao(models.Model):
     class Meta:
         verbose_name = "Variação"
         verbose_name_plural = "Variações"
-        unique_together = (('produto', 'tipo', 'valor'))
+        unique_together = (('produto', 'tipo', 'valor'),)
 
     def __str__(self):
         nome_produto = self.produto.nome if self.produto else f"ID {self.id} (Produto Sem Nome)"
@@ -148,28 +149,3 @@ class ImagemProduto(models.Model):
 
     def __str__(self):
         return f"Imagem de {self.produto.nome} - Ordem {self.ordem}"
-
-
-# ======================
-# PROMOÇÃO (CORRIGIDO)
-# ======================
-def get_display_price(self):
-    """
-    Retorna o preço formatado considerando a promoção vigente, se houver.
-    """
-    preco = self.preco
-
-    # Verifica se há alguma promoção ativa e vigente
-    promo_ativa = None
-    for promo in self.promocoes.all():
-        if promo.esta_vigente():
-            promo_ativa = promo
-            break
-
-    if promo_ativa:
-        desconto = promo_ativa.desconto_percentual or 0
-        preco_final = preco * (1 - (desconto / 100))
-    else:
-        preco_final = preco
-
-    return f"R$ {preco_final:.2f}"
