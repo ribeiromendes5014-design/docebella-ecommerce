@@ -27,30 +27,26 @@ ALLOWED_HOSTS = [] # Será sobrescrito no bloco CONFIGURAÇÕES DE PRODUÇÃO
 # Application definition
 
 INSTALLED_APPS = [
-    'jazzmin', # << PRIMEIRO: Tema de Admin Customizado
+    'jazzmin',  # Tema Admin
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
-    # 🚨 CORREÇÃO DE LOCALIZAÇÃO 🚨: Adicionar humanize para formatação pt-br
+
+    # Extras Django
     'django.contrib.humanize',
-    
-    # 🚨 ADICIONADO: Necessário para o S3/Cloud Storage 🚨
     'storages',
-    
-    # ⬇️ ADIÇÃO CORRETIVA: Widget Tweaks para estilizar formulários ⬇️
     'widget_tweaks',
-    # ⬆️ FIM DA ADIÇÃO ⬆️
-    
-    # Nossos Apps
-    'produtos',
-    'carrinho', 
-    'usuarios', 
-    'pedidos',  
+
+    # Apps do projeto (ordem importa!)
+    'usuarios',
+    'produtos',   # <-- precisa vir antes de carrinho e pedidos
+    'carrinho',
+    'pedidos',
 ]
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MIDDLEWARE = [
