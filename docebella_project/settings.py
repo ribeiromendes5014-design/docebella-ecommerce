@@ -93,17 +93,20 @@ TEMPLATES = [
 WSGI_APPLICATION = 'docebella_project.wsgi.application'
 
 
-POSTGRES_URL = 'postgresql://catalagobase_user:yCprqleHZ162Ns5rThnnx0Om60TZTa9C@dpg-d3pv0sogjchc73aucffg-a.oregon-postgres.render.com/catalagobase'
+from pathlib import Path
+import dj_database_url
 
-
-import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-import dj_database_url
+# 🔹 Use o novo banco (Render)
+POSTGRES_URL = os.getenv(
+    'DATABASE_URL',
+    'postgresql://postgres_0kff_user:bVYxGmhgXLh7HrbkPgVjcIQBr672h3x4@dpg-d3slosm3jp1c739slbv0-a.oregon-postgres.render.com/postgres_0kff'
+)
 
 DATABASES = {
     'default': dj_database_url.config(
-        default='postgresql://postgres_ysv1_user:vQqFme7kHwGUssrtu4YiUNaUogwc0Ncy@dpg-d3s6g7q4d50c738ilvhg-a.oregon-postgres.render.com/postgres_ysv1',
+        default=POSTGRES_URL,
         conn_max_age=600,
         ssl_require=True,
     )
@@ -185,7 +188,7 @@ ALLOWED_HOSTS = [
 
 # >>> CORREÇÃO CRÍTICA DO ERRO 403 (CSRF) <<<
 CSRF_TRUSTED_ORIGINS = [
-    'https://docebella-ecommerce-pu7j.onrender.com',
+    'https://docebella-ecommerce-ej9d.onrender.com',
     'https://*.onrender.com',
 ]
 
