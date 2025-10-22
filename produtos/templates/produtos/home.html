@@ -54,6 +54,8 @@
         padding: 15px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         text-align: center;
+        position: relative;
+        overflow: hidden;
     }
 
     .product-card img {
@@ -97,6 +99,44 @@
     .btn-principal:hover {
         background: #e3358b;
     }
+
+    /* === Timer de promoção === */
+    .timer-box {
+        background: #fff0f6;
+        border: 2px solid #ff66a3;
+        color: #ff3399;
+        border-radius: 8px;
+        padding: 8px 12px;
+        display: inline-block;
+        margin-top: 8px;
+        font-weight: bold;
+        text-align: center;
+        box-shadow: 0 0 6px rgba(255, 102, 163, 0.2);
+    }
+
+    .timer-title {
+        display: block;
+        font-size: 0.8rem;
+        color: #ff3399;
+    }
+
+    .countdown {
+        font-size: 1rem;
+        letter-spacing: 1px;
+    }
+
+    /* === Efeito visual quando a promoção está acabando === */
+    .timer-box.warning {
+        background: #ffeaea;
+        border-color: #ff0000;
+        color: #d60000;
+        animation: piscar 1s infinite alternate;
+    }
+
+    @keyframes piscar {
+        from { opacity: 1; }
+        to { opacity: 0.5; }
+    }
 </style>
 {% endblock %}
 
@@ -129,13 +169,21 @@
 
                     <h3>{{ produto.nome }}</h3>
                     
-                    {# Mostra preço com promoção se houver #}
                     {% with promo=produto.promocoes.first %}
                         {% if promo and promo.esta_vigente %}
                             <p class="price">
                                 <del>R$ {{ produto.preco }}</del>
                                 <strong>{{ produto.get_display_price }}</strong>
                             </p>
+
+                            {% if promo.data_fim %}
+                                <div class="timer" data-end-time="{{ promo.data_fim|date:'Y-m-d H:i:s' }}">
+                                    <div class="timer-box">
+                                        <span class="timer-title">TERMINA EM:</span>
+                                        <span class="countdown">00D 00:00:00</span>
+                                    </div>
+                                </div>
+                            {% endif %}
                         {% else %}
                             <p class="price"><strong>{{ produto.get_display_price }}</strong></p>
                         {% endif %}
@@ -158,4 +206,50 @@
     {% endif %}
 </div>
 
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    function atualizarTimers() {
+        const timers = document.querySelectorAll(".timer");
+        timers.forEach(timer => {
+            const endTime = new Date(timer.dataset.endTime).getTime();
+            const agora = new Date().getTime();
+            const diff = endTime - agora;
+
+            const box = timer.querySelector(".timer-box");
+            const countdown = timer.querySelector(".countdown");
+
+            if (diff <= 0) {
+                countdown.innerText = "ENCERRADA";
+                box.classList.add("warning");
+                return;
+            }
+
+            const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const horas = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const segundos = Math.floor((diff % (1000 * 60)) / 1000);
+
+            const formatado = 
+                (dias > 0 ? String(dias).padStart(2, '0') + "D " : "") +
+                String(horas).padStart(2, '0') + ":" +
+                String(minutos).padStart(2, '0') + ":" +
+                String(segundos).padStart(2, '0');
+
+            countdown.innerText = formatado;
+
+            // ⚠️ Se faltar menos de 2 horas, pisca em vermelho
+            if (diff < 2 * 60 * 60 * 1000) {
+                box.classList.add("warning");
+            }
+        });
+    }
+
+    atualizarTimers();
+    setInterval(atualizarTimers, 1000);
+});
+</script>
 {% endblock %}
