@@ -92,27 +92,31 @@ def painel_cliente(request):
 
 @login_required
 def detalhes_conta(request):
-    """ View para exibir e editar os detalhes da conta do usuário. """
+    """ View para exibir e editar os detalhes da conta do cliente. """
     user = request.user
 
     if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+        nome_completo = request.POST.get('nome_completo')
+        email = request.POST.get('email')
+        senha = request.POST.get('password')
 
-        # Atualiza o nome de usuário
-        if username and username != user.username:
-            user.username = username
+        # Atualiza o nome completo
+        if nome_completo and nome_completo != user.nome_completo:
+            user.nome_completo = nome_completo
 
-        # Atualiza a senha, se o campo não estiver vazio
-        if password:
-            user.set_password(password)
+        # Atualiza o e-mail
+        if email and email != user.email:
+            user.email = email
+
+        # Atualiza a senha (opcional)
+        if senha:
+            user.set_password(senha)
 
         user.save()
         messages.success(request, 'Informações atualizadas com sucesso!')
 
-        # ⚠️ Importante: se a senha foi alterada, o Django desconecta o usuário
-        # então redirecionamos para o login novamente
-        if password:
+        # Se a senha foi alterada, é necessário refazer login
+        if senha:
             return redirect('usuarios:login')
 
         return redirect('usuarios:detalhes_conta')
@@ -122,3 +126,4 @@ def detalhes_conta(request):
         'usuario': user
     }
     return render(request, 'usuarios/detalhes_conta.html', context)
+
