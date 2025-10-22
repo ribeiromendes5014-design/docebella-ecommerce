@@ -1,0 +1,275 @@
+/*
+ * Arquivo: G:\projeto\static\css\style.css
+ */
+
+/* Container Principal e Breadcrumb */
+.form-wrapper {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+/* ===== AJUSTE DE ESPAÇAMENTO DO RODAPÉ NO CELULAR ===== */
+@media (max-width: 768px) {
+  .footer-info {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 6px !important;              /* 🔹 diminui o espaço entre blocos */
+    padding: 15px 10px !important;    /* 🔹 reduz padding interno */
+  }
+
+  .footer-col {
+    margin: 5px 0 !important;         /* 🔹 tira o espaçamento extra entre colunas */
+  }
+
+  .footer-col h4 {
+    margin-bottom: 4px !important;    /* 🔹 título mais próximo dos links */
+  }
+
+  .footer-list li {
+    margin: 2px 0 !important;         /* 🔹 links mais juntos */
+  }
+
+  .payments {
+    gap: 6px !important;              /* 🔹 ícones de pagamento mais próximos */
+  }
+
+  .payment-logo {
+    height: 24px !important;          /* 🔹 levemente menores no mobile */
+  }
+
+.breadcrumb {
+    text-align: center;
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 25px;
+}
+
+/* Títulos */
+.form-title-custom {
+    text-align: center;
+    color: #333;
+    font-size: 1.8em;
+    font-weight: bold;
+    margin-bottom: 30px;
+}
+.form-subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+/* Campos de Formulário */
+.form-field {
+    margin-bottom: 20px;
+    position: relative;
+}
+.form-field label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 5px;
+    color: #333;
+}
+.custom-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 1em;
+    transition: border-color 0.3s;
+}
+.custom-input:focus {
+    border-color: #ff69b4; /* Pink */
+    outline: none;
+}
+
+/* Links (Esqueceu a senha, Rodapé) */
+.forgot-link {
+    display: block;
+    text-align: right;
+    font-size: 0.9em;
+    color: #666;
+    text-decoration: underline;
+    margin-top: 5px;
+}
+.link-rodape {
+    text-align: center;
+    margin-top: 25px;
+    font-size: 0.95em;
+    color: #333;
+}
+.pink-link {
+    color: #ff69b4;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+/* Botões */
+.btn-submit {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.1em;
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 30px;
+    transition: background-color 0.3s;
+}
+
+.dark-button {
+    background-color: #34495e; /* Cinza Escuro/Azul marinho (referência) */
+    color: white;
+}
+.dark-button:hover {
+    background-color: #2c3e50;
+}
+
+/* Mensagens de Erro */
+.error-message {
+    color: white;
+    background-color: #e74c3c;
+    padding: 10px;
+    border-radius: 4px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+/* Checkbox (Recaptcha - Apenas simulação de estilo) */
+.recaptcha-field {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+}
+.recaptcha-field input[type="checkbox"] {
+    margin-right: 10px;
+    width: 20px;
+    height: 20px;
+}
+.recaptcha-field label {
+    font-weight: normal;
+    color: #333;
+    margin-bottom: 0;
+}
+.recaptcha-field::after {
+    content: "reCAPTCHA\A Privacidade + Termos";
+    white-space: pre-wrap;
+    font-size: 0.7em;
+    color: #999;
+    margin-left: auto;
+    text-align: right;
+    line-height: 1.2;
+}
+/* =======================================================
+   MEDIA QUERIES: AJUSTES PARA TELAS PEQUENAS (CELULAR)
+   ======================================================= */
+@media (max-width: 768px) {
+
+    /* --- 1. CABEÇALHO (Obrigatório para Redução de Altura) --- */
+    
+    /* Força o header a não ser fixo e a ter altura automática no celular */
+    .fixed-header-custom {
+        position: static !important; /* CORREÇÃO CRÍTICA: Desativa o fixed */
+        height: auto !important;
+    }
+    
+    /* Zera o padding superior do BODY que compensava o header fixo */
+    body {
+        padding-top: 0 !important; /* CORREÇÃO CRÍTICA: Remove o padding superior de 70px */
+    }
+
+    /* Layout do Header (Empilhamento Vertical) */
+    .header-principal-unificado .container {
+        flex-direction: column !important; /* CORREÇÃO CRÍTICA: Força o empilhamento vertical */
+        align-items: flex-start;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    /* Logo (Garante que ocupe a largura e se ajuste) */
+    .logo, .icones-acao {
+        width: 100%;
+        text-align: left;
+    }
+    
+    .logo {
+        order: 1;
+        margin-bottom: 10px;
+    }
+
+    /* Barra de Busca (Ocupa toda a largura) */
+    .search-bar {
+        width: 100%;
+        order: 2;
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+
+    .search-bar input {
+        width: 100%;
+    }
+
+    /* Menu de Navegação */
+    .menu-nav-unificado {
+        width: 100%;
+        order: 3;
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+
+    .menu-nav-unificado ul {
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    .menu-nav-unificado ul li a {
+        padding: 5px 10px;
+        display: block;
+        text-align: center;
+    }
+    
+    /* Ícones de Ação */
+    .icones-acao {
+        order: 4;
+        text-align: right;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+    
+    /* --- 2. GRADE DE PRODUTOS (2 Colunas) --- */
+    .product-grid {
+        /* Força a exibição em 2 colunas iguais com espaçamento */
+        grid-template-columns: repeat(2, 1fr) !important; /* Força 2 colunas */
+        gap: 10px;
+    }
+
+    .product-card {
+        /* Garante que o item do grid não tenha largura fixa */
+        width: auto !important; 
+    }
+
+    /* Ajuste de tamanho da fonte do card para caber melhor */
+    .product-card h3 {
+        font-size: 1em;
+    }
+
+    .product-card .price {
+        font-size: 1.2rem;
+    }
+    
+    /* --- 3. Formulários (Ajuste Geral de Largura) --- */
+    .form-wrapper {
+        margin: 20px 10px;
+        padding: 15px;
+    }
+    
+    /* Ajuste de padding para o conteúdo principal */
+    main.container {
+        padding-top: 20px !important; 
+    }
+}

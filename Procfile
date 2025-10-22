@@ -1,0 +1,1 @@
+web: gunicorn docebella_project.wsgi:application

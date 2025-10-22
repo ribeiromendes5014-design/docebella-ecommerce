@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block extra_css %}
+<style>
+    /* Estilos (Mantidos iguais) */
+    .page-title {
+        text-align: center;
+        margin-bottom: 40px;
+        color: var(--cor-principal);
+    }
+    .checkout-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
+    }
+    .checkout-form {
+        flex: 2;
+        min-width: 400px;
+        background: #fff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: var(--sombra-card);
+    }
+    .checkout-summary {
+        flex: 1;
+        min-width: 300px;
+        background: #fcfcfc;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        height: fit-content;
+    }
+    .checkout-summary h2 {
+        border-bottom: 2px solid var(--cor-principal);
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        color: #555;
+        margin-bottom: 10px;
+    }
+    .form-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    .form-group {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .form-group label {
+        margin-bottom: 5px;
+        font-weight: 500;
+    }
+    .form-control {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .total-line-checkout {
+        border-top: 2px solid var(--cor-principal);
+        padding-top: 10px;
+        margin-top: 15px;
+        font-size: 1.5rem;
+        color: var(--cor-principal);
+    }
+    .form-error {
+        color: #dc3545;
+        font-size: 0.875em;
+        margin-top: 4px;
+    }
+    .help-text {
+        font-size: 0.9em;
+        color: #6c757d;
+        margin-top: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Finalizar Pedido (Retirada na Loja)</h1>
+
+<div class="checkout-container">
+
+    <div class="checkout-form">
+        <h2>1. Dados para Contato e Retirada</h2>
+        
+        {% if form.non_field_errors %}
+            <div class="error-message">
+                <p>Por favor, corrija os seguintes erros:</p>
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        {% if messages %}
+            {% for message in messages %}
+                {# Adiciona a classe 'alert-danger' se for erro de formulário #}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form action="{% url 'pedidos:checkout' %}" method="POST">
+            {% csrf_token %}
+            
+            {# BLOCO CORRIGIDO 1: CAMPO NOME #}
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label for="{{ form.nome.id_for_label }}">Nome Completo:</label>
+                {% render_field form.nome class="form-control" placeholder="Seu nome completo" %}
+                {% if form.nome.errors %}<div class="form-error">{{ form.nome.errors.as_text }}</div>{% endif %}
+            </div>
+
+            {# BLOCO CORRIGIDO 2: CAMPO TELEFONE (Resolve o erro 'obrigatório') #}
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label for="{{ form.telefone.id_for_label }}">Telefone (WhatsApp):</label>
+                {% render_field form.telefone class="form-control" placeholder="(00) 90000-0000" %}
+                {% if form.telefone.help_text %}<div class="help-text">{{ form.telefone.help_text }}</div>{% endif %}
+                {% if form.telefone.errors %}<div class="form-error">{{ form.telefone.errors.as_text }}</div>{% endif %}
+            </div>
+            
+            {# TODOS OS DEMAIS CAMPOS DE ENDEREÇO (SOBRENOME, CEP, RUA, ETC.) FORAM REMOVIDOS #}
+
+            <hr style="margin: 30px 0 20px 0;">
+
+            <h2>2. Método de Entrega</h2>
+            
+            <div style="border: 1px solid #ccc; border-radius: 4px; padding: 10px; background: #f9f9f9;">
+                <strong>Retirada na Loja</strong> (Sem Custo)
+                <p style="margin: 5px 0 0 0; font-size: 0.9rem;">Seu pedido será separado para retirada na loja.</p>
+            </div>
+
+            <hr style="margin: 30px 0 20px 0;">
+
+            <button type="submit" class="btn-principal" style="width: 100%; font-size: 1.1rem;">
+                Finalizar Pedido
+            </button>
+        </form>
+    </div>
+
+    <div class="checkout-summary">
+        <h2>Resumo do Pedido</h2>
+
+        {% for item in itens_carrinho %}
+        <div class="summary-item">
+            <span>{{ item.produto.nome }} (x{{ item.quantidade }}) 
+                {% if item.variacao %} - ({{ item.variacao.valor }}){% endif %}
+            </span>
+            <strong>R$ {{ item.get_subtotal|floatformat:2 }}</strong>
+        </div>
+        {% endfor %}
+
+        <hr style="margin: 20px 0;">
+
+        <div class="summary-item" style="font-weight: bold; color: #333; font-size: 1.1rem;">
+            <span>Subtotal</span>
+            <strong>R$ {{ subtotal_carrinho|floatformat:2 }}</strong>
+        </div>
+
+        <div class="summary-item" style="color: #666;">
+            <span>Frete (Retirada)</span>
+            <strong>R$ 0,00</strong>
+        </div>
+
+        <div class="total-line-checkout">
+            Total: <strong>R$ {{ subtotal_carrinho|floatformat:2 }}</strong>
+        </div>
+    </div>
+</div>
+{% endblock %}

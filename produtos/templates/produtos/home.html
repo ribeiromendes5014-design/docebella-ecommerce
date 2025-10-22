@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* CSS para o Banner de Largura Total (Corrigido para evitar classes duplicadas) */
+    .full-width-banner-wrapper {
+        width: 100vw; 
+        position: relative;
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw;
+        margin-right: -50vw;
+        padding: 0;
+        margin-bottom: 40px; /* Adiciona espaço abaixo do banner */
+    }
+    
+    .main-banner-image {
+    /* Usa a imagem de fundo que você salvou */
+    background-image: url("{% static 'img/banner_principal.png' %}"); 
+    
+    background-size: cover; 
+    background-repeat: no-repeat;
+    
+    /* A CORREÇÃO: Altera a posição do fundo e aumenta a altura */
+    background-position: center top 20%; /* Ancoragem ligeiramente acima do centro */
+    height: 550px; /* Aumenta a altura para caber o topo */
+    
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+    
+    .banner-text h1 {
+        font-size: 3rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Estilo da seção Destaques */
+    .secao-destaques h2 {
+        text-align: center;
+        font-size: 2rem;
+        margin-bottom: 30px;
+        color: var(--cor-secundaria);
+    }
+    
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+        gap: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block hero_banner %} 
+<div class="full-width-banner-wrapper">
+    <div class="main-banner-image">
+        <div class="banner-text">
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="secao-destaques">
+    <h2>Destaques</h2>
+    
+    {% if produtos %}
+        <div class="product-grid">
+            {% for produto in produtos %}
+                <div class="product-card">
+                    <a href="{% url 'detalhe_produto' slug=produto.slug %}">
+                        {% if produto.imagem %}
+                            <img src="{{ produto.imagem.url }}" alt="{{ produto.nome }}" loading="lazy">
+                        {% else %}
+                            <img src="{% static 'img/placeholder.png' %}" alt="Sem Imagem" loading="lazy">
+                        {% endif %}
+                    </a>
+
+                    <h3>{{ produto.nome }}</h3>
+                    
+                    <p class="price">{{ produto.get_display_price }}</p>
+
+                    <p style="font-size: 0.9em; color: {% if produto.get_estoque_total == 0 %}red{% else %}green{% endif %}; margin-bottom: 10px;">
+                        {{ produto.get_status_estoque }}
+                    </p>
+
+                    {% if produto.get_estoque_total > 0 %}
+                        <a href="{% url 'detalhe_produto' slug=produto.slug %}" class="btn-principal">Comprar</a>
+                    {% else %}
+                        <button class="btn-principal" disabled style="opacity: 0.5; background-color: #dc3545;">Esgotado</button>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p style="text-align: center;">Nenhum produto em destaque encontrado.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

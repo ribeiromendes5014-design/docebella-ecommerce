@@ -1,0 +1,137 @@
+/*
+ * Arquivo: G:\projeto\static\css\style.css
+ */
+
+/* Container Principal e Breadcrumb */
+.form-wrapper {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.breadcrumb {
+    text-align: center;
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 25px;
+}
+
+/* Títulos */
+.form-title-custom {
+    text-align: center;
+    color: #333;
+    font-size: 1.8em;
+    font-weight: bold;
+    margin-bottom: 30px;
+}
+.form-subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+/* Campos de Formulário */
+.form-field {
+    margin-bottom: 20px;
+    position: relative;
+}
+.form-field label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 5px;
+    color: #333;
+}
+.custom-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 1em;
+    transition: border-color 0.3s;
+}
+.custom-input:focus {
+    border-color: #ff69b4; /* Pink */
+    outline: none;
+}
+
+/* Links (Esqueceu a senha, Rodapé) */
+.forgot-link {
+    display: block;
+    text-align: right;
+    font-size: 0.9em;
+    color: #666;
+    text-decoration: underline;
+    margin-top: 5px;
+}
+.link-rodape {
+    text-align: center;
+    margin-top: 25px;
+    font-size: 0.95em;
+    color: #333;
+}
+.pink-link {
+    color: #ff69b4;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+/* Botões */
+.btn-submit {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.1em;
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 30px;
+    transition: background-color 0.3s;
+}
+
+.dark-button {
+    background-color: #34495e; /* Cinza Escuro/Azul marinho (referência) */
+    color: white;
+}
+.dark-button:hover {
+    background-color: #2c3e50;
+}
+
+/* Mensagens de Erro */
+.error-message {
+    color: white;
+    background-color: #e74c3c;
+    padding: 10px;
+    border-radius: 4px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+/* Checkbox (Recaptcha - Apenas simulação de estilo) */
+.recaptcha-field {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+}
+.recaptcha-field input[type="checkbox"] {
+    margin-right: 10px;
+    width: 20px;
+    height: 20px;
+}
+.recaptcha-field label {
+    font-weight: normal;
+    color: #333;
+    margin-bottom: 0;
+}
+.recaptcha-field::after {
+    content: "reCAPTCHA\A Privacidade + Termos";
+    white-space: pre-wrap;
+    font-size: 0.7em;
+    color: #999;
+    margin-left: auto;
+    text-align: right;
+    line-height: 1.2;
+}
