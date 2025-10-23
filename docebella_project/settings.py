@@ -211,7 +211,7 @@ AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', default='us-east-2')
 
 # Inicializa o storage local para fallback
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-MEDIA_URL = 'MEDIA_URL = 'https://docebella-ecommerce-media.s3.us-east-2.amazonaws.com/media/produtos/produtos/'
+MEDIA_URL = 'https://docebella-ecommerce-media.s3.us-east-2.amazonaws.com/media/produtos/produtos/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Configuração que pode ajudar a resolver conflitos de caminho
