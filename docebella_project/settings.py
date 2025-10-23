@@ -196,7 +196,7 @@ AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default='')
 AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', default='us-east-2')
 
 # Inicializa o storage local para fallback
-DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DEFAULT_FILE_STORAGE = 'core.storages.LocalCacheS3FallbackStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -217,7 +217,7 @@ AWS_DEFAULT_ACL = None
 if AWS_STORAGE_BUCKET_NAME and AWS_ACCESS_KEY_ID:
     
     # 1. Define o S3 como o backend padrão para todos os arquivos de MÍDIA
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    DEFAULT_FILE_STORAGE = 'core.storages.LocalCacheS3FallbackStorage'
     
     # 2. Define o Domínio Customizado do S3
     AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com'
