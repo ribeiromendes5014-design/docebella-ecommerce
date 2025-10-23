@@ -59,34 +59,37 @@
     </table>
 
     <div class="cart-summary">
-        <h2>Resumo do Pedido</h2>
-        
-        <div style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
-            <p style="font-weight: bold; margin-bottom: 10px;">Cupom de Desconto:</p>
-            
-             <form action="{% url 'carrinho:aplicar_cupom' %}" method="POST" style="display: flex; gap: 5px;">
-                {% csrf_token %}
-                <input type="text" name="cupom_codigo" placeholder="Digite o código" style="flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                <button type="submit" class="btn-sm" style="background-color: #28a745;">Aplicar</button>
-            </form>
-        </div>
+    <h2>Resumo do Pedido</h2>
 
-        <p>Subtotal: <strong>R$ {{ subtotal_carrinho|floatformat:2 }}</strong></p>
-        <p>Total de Itens: <strong>{{ total_itens }}</strong></p>
-        <p style="color: #dc3545;">Desconto: <strong>R$ 0,00</strong></p>
+    <div style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+        <p style="font-weight: bold; margin-bottom: 10px;">Cupom de Desconto:</p>
         
+        <form action="{% url 'carrinho:aplicar_cupom' %}" method="POST" style="display: flex; gap: 5px;">
+            {% csrf_token %}
+            <input type="text" name="cupom_codigo" placeholder="Digite o código"
+                   value="{{ cupom_codigo }}" style="flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            <button type="submit" class="btn-sm" style="background-color: #28a745;">Aplicar</button>
+        </form>
+    </div>
+
+    <p>Subtotal: <strong>R$ {{ subtotal_carrinho|floatformat:2 }}</strong></p>
+    <p>Total de Itens: <strong>{{ total_itens }}</strong></p>
+
+    {% if desconto > 0 %}
+        <p style="color: #28a745;">Desconto: <strong>R$ {{ desconto|floatformat:2 }}</strong></p>
+        <div class="total-line" style="border-top: 2px solid var(--cor-principal); padding-top: 10px; margin-top: 15px; font-size: 1.5rem; color: var(--cor-principal); margin-bottom: 30px;">
+            Total: <strong>R$ {{ total_com_desconto|floatformat:2 }}</strong>
+        </div>
+    {% else %}
+        <p style="color: #dc3545;">Desconto: <strong>R$ 0,00</strong></p>
         <div class="total-line" style="border-top: 2px solid var(--cor-principal); padding-top: 10px; margin-top: 15px; font-size: 1.5rem; color: var(--cor-principal); margin-bottom: 30px;">
             Total: <strong>R$ {{ subtotal_carrinho|floatformat:2 }}</strong>
         </div>
+    {% endif %}
 
-        <a href="{% url 'pedidos:checkout' %}" class="btn-principal" style="width: 100%; text-align: center; margin-top: 0; font-size: 1.1rem; padding: 12px;">Finalizar Compra</a>
-    </div>
+    <a href="{% url 'pedidos:checkout' %}" class="btn-principal" style="width: 100%; text-align: center; margin-top: 0; font-size: 1.1rem; padding: 12px;">Finalizar Compra</a>
 </div>
-{% else %}
-<p style="text-align: center; font-size: 1.2em;">Seu carrinho está vazio.</p>
-<div style="text-align: center; margin-top: 30px;">
-    <a href="{% url 'home' %}" class="btn-principal">Voltar às Compras</a>
-</div>
+
 {% endif %}
 
 {% endblock %}
