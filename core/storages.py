@@ -86,8 +86,9 @@ class LocalCacheS3FallbackStorage(FileSystemStorage):
         return self._download_from_s3(name)
 
     def url(self, name):
-        """Retorna URL local se em cache; senão, URL pública do S3."""
-        local_path = os.path.join(settings.MEDIA_ROOT, name)
-        if os.path.exists(local_path):
-            return settings.MEDIA_URL + name
-        return f"https://{self.bucket}.s3.{settings.AWS_S3_REGION_NAME}.amazonaws.com/media/{name}"
+        """
+        Sempre retorna a URL local (/media/...), 
+        garantindo que o site funcione mesmo se o S3 estiver offline.
+        """
+        return f"/media/{name}"
+
