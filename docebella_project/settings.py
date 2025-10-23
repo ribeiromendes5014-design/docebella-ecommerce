@@ -201,43 +201,38 @@ CSRF_TRUSTED_ORIGINS = [
 
 
 # #######################################################################
-# # Bloco de CONFIGURAÇÕES DE ARQUIVOS (Mídia/S3) - CORREÇÃO DE ATIVAÇÃO
+# # Bloco de CONFIGURAÇÕES DE ARQUIVOS (Mídia/S3) - Caminho com /media/produtos/
 # #######################################################################
 
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID") or env("AWS_ACCESS_KEY_ID", default=None)
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY") or env("AWS_SECRET_ACCESS_KEY", default=None)
 AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME") or env("AWS_STORAGE_BUCKET_NAME", default=None)
-AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", default="us-east-1")
+AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", default="us-east-2")
 
-# Inicializa o storage local para fallback
-# Inicializa o storage local para fallback
+# 🔧 Configuração padrão (local)
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-MEDIA_ROOT = BASE_DIR / 'media'
-MEDIA_URL = '/media/'  # padrão local; será substituído se o S3 for configurado
-
-# Configuração que pode ajudar a resolver conflitos de caminho
-AWS_LOCATION = ''  # O Django S3Boto3Storage adiciona isso como prefixo
 
 # 🔧 Parâmetros padrão do S3
 AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',  # Cache de 1 dia
 }
-
-# 🚫 NOVO PADRÃO DA AWS → Buckets "ACL desativadas" (Bucket owner enforced)
-# Portanto, não podemos usar 'public-read' ou qualquer ACL explícita.
 AWS_DEFAULT_ACL = None
 
-# 🚨 CORREÇÃO CRÍTICA AQUI 🚨
-# Ativa o S3 se o nome do bucket ESTIVER configurado E o access key TAMBÉM estiver.
+# 🚀 Ativa o S3 se houver credenciais
 if AWS_STORAGE_BUCKET_NAME and AWS_ACCESS_KEY_ID:
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+    # 🔹 Caminho correto do bucket (mantendo media/produtos/)
     AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com'
-    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
+    AWS_LOCATION = 'media/produtos'
 
+    # 🔹 URL final que baterá com o bucket
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'
 
-# 🚨 ADICIONE ESTAS DUAS LINHAS TEMPORARIAMENTE 🚨
+# Debug temporário
 print(f"DEBUG: DEFAULT_FILE_STORAGE está usando: {DEFAULT_FILE_STORAGE}")
 print(f"DEBUG: MEDIA_URL está usando: {MEDIA_URL}")
+
 # 🚨 REMOVA DEPOIS DE TESTAR 🚨
 
 
