@@ -42,7 +42,7 @@ class Produto(models.Model):
         # --- CASO 1: Enviou imagem manualmente ---
         if self.imagem and hasattr(self.imagem, "name"):
             ext = os.path.splitext(self.imagem.name)[1].lower()  # ex: .jpg, .png
-            novo_nome = f"produtos/{self.slug}{ext}"
+            novo_nome = f"media/produtos/produtos/{self.slug}{ext}"
 
             if self.imagem.name != novo_nome:
                 if default_storage.exists(novo_nome):
