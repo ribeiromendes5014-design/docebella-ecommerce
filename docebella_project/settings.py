@@ -166,70 +166,32 @@ USERNAME_FIELD = 'email'
 # 3. Define quais campos são solicitados quando você roda 'createsuperuser'.
 REQUIRED_FIELDS = ['nome_completo'] 
 
-# ----------------------------------------------------
-# CONFIGURAÇÕES DE ARQUIVOS (Static - Manter)
-# ----------------------------------------------------
-# Configurações de Estáticos são mantidas com os nomes de variáveis do bloco original.
+# ===============================================================
+# CONFIGURAÇÕES AWS S3
+# ===============================================================
 
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-
-# Removidas as configurações antigas de MEDIA_URL e MEDIA_ROOT aqui.
-
-
-# ----------------------------------------------------
-# CONFIGURAÇÕES DE PRODUÇÃO / DEPLOY
-# ----------------------------------------------------
-
-# Lê a chave secreta do ambiente (Render) ou usa o valor padrão
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-#3-c$i&#$#wx^n6^#0v4wvzo^1#^os5sd1ou)n%%0*j&0f0g1(') 
-
-# Hosts Permitidos em Produção
-ALLOWED_HOSTS = [
-    '127.0.0.1', 
-    'localhost', 
-    'catalagoloja-zn2u.onrender.com', 
-    '.onrender.com'               
-] 
-
-# >>> CORREÇÃO CRÍTICA DO ERRO 403 (CSRF) <<<
-CSRF_TRUSTED_ORIGINS = [
-    'https://docebella-ecommerce-ej9d.onrender.com',
-    'https://*.onrender.com',
-]
-
-
-# #######################################################################
-# # Bloco de CONFIGURAÇÕES DE ARQUIVOS (Mídia/S3) - CORREÇÃO DE ATIVAÇÃO
-# #######################################################################
-
-# 🔐 Credenciais AWS
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID") or env("AWS_ACCESS_KEY_ID", default=None)
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY") or env("AWS_SECRET_ACCESS_KEY", default=None)
 AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME") or env("AWS_STORAGE_BUCKET_NAME", default=None)
 AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", default="us-east-2")
 
-# ⚙️ Configurações padrão do S3
 AWS_DEFAULT_ACL = None
 AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
 
-# 📂 Caminho interno dentro do bucket (ajuste conforme a estrutura real)
+# 🔹 Caminho interno no bucket
 AWS_LOCATION = "media/produtos/produtos"
 
-# 🚀 Ativa o S3 se houver credenciais
-if AWS_STORAGE_BUCKET_NAME and AWS_ACCESS_KEY_ID:
-    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
-    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/"
-else:
-    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
-    MEDIA_URL = "/media/"
+# 🔹 Domínio personalizado
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
+
+# 🔹 URL base de mídia
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/"
+
+# 🔹 Storage backend
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
 MEDIA_ROOT = BASE_DIR / "media"
 
-# DEBUG temporário
-print(f"DEBUG: AWS_LOCATION = {AWS_LOCATION}")
 print(f"DEBUG: MEDIA_URL = {MEDIA_URL}")
 
 
