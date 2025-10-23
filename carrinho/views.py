@@ -161,55 +161,30 @@ def remover_item(request, item_id):
 
 # ---------------------- CUPOM ----------------------
 @require_POST
-def aplicar_cupom(request):
-    codigo_cupom = request.POST.get('cupom_codigo', '').strip()
-    session_key = request.session.session_key
+def ver_carrinho(request):
+    session_key = _get_session_key(request)
+    itens_carrinho = ItemCarrinho.objects.filter(session_key=session_key)
 
-    if not session_key:
-        request.session.create()
-        session_key = request.session.session_key
+    carrinho_data = itens_carrinho.aggregate(
+        subtotal=Sum(F('quantidade') * F('preco')),
+        total_itens=Sum('quantidade')
+    )
 
-    # Busca os itens do carrinho
-    itens = ItemCarrinho.objects.filter(session_key=session_key)
-    total = sum(item.get_subtotal() for item in itens)
-    total_descontado = total
+    subtotal = carrinho_data.get('subtotal') or Decimal('0.00')
+    desconto = Decimal(str(request.session.get('desconto_valor', 0.00)))
+    total_com_desconto = subtotal - desconto
+    if total_com_desconto < 0:
+        total_com_desconto = Decimal('0.00')
 
-    if not codigo_cupom:
-        messages.error(request, "Por favor, insira um código de cupom.")
-        return redirect('carrinho:ver_carrinho')
+    context = {
+        'itens_carrinho': itens_carrinho,
+        'subtotal_carrinho': subtotal,
+        'desconto': desconto,
+        'total_com_desconto': total_com_desconto,
+        'total_itens': carrinho_data.get('total_itens') or 0,
+        'cupom_codigo': request.session.get('cupom_codigo', ''),
+        'titulo': "Seu Carrinho de Compras"
+    }
 
-    try:
-        cupom = CupomDesconto.objects.get(codigo__iexact=codigo_cupom)
-        agora = timezone.now()
+    return render(request, 'carrinho/carrinho.html', context)
 
-        # Verifica validade
-        if not cupom.ativo:
-            messages.error(request, "Este cupom está inativo.")
-        elif cupom.data_fim and cupom.data_fim < agora:
-            messages.error(request, "Este cupom expirou.")
-        else:
-            # Calcula o desconto
-            desconto = Decimal('0.00')
-            if cupom.desconto_percentual:
-                desconto = total * (cupom.desconto_percentual / Decimal('100'))
-            elif cupom.desconto_fixo:
-                desconto = cupom.desconto_fixo
-
-            total_descontado = total - desconto
-            if total_descontado < 0:
-                total_descontado = Decimal('0.00')
-
-            # Guarda os dados na sessão
-            request.session['cupom_codigo'] = cupom.codigo
-            request.session['desconto_valor'] = float(desconto)
-            request.session['total_com_desconto'] = float(total_descontado)
-
-            messages.success(
-                request,
-                f"Cupom '{cupom.codigo}' aplicado com sucesso! Desconto de R$ {desconto:.2f}."
-            )
-
-    except CupomDesconto.DoesNotExist:
-        messages.error(request, "Cupom inválido.")
-
-    return redirect('carrinho:ver_carrinho')
