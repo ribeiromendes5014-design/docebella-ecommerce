@@ -211,11 +211,11 @@ AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", default="us-east-1")
 
 # Inicializa o storage local para fallback
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-MEDIA_URL = '/media/'
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Configuração que pode ajudar a resolver conflitos de caminho
-AWS_LOCATION = 'media'  # O Django S3Boto3Storage adiciona isso como prefixo
+AWS_LOCATION = ''  # O Django S3Boto3Storage adiciona isso como prefixo
 
 # 🔧 Parâmetros padrão do S3
 AWS_S3_OBJECT_PARAMETERS = {
