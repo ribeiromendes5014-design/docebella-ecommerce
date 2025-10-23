@@ -42,12 +42,12 @@ class Produto(models.Model):
         # --- CASO 1: Enviou imagem manualmente ---
         if self.imagem and hasattr(self.imagem, "name"):
             ext = os.path.splitext(self.imagem.name)[1].lower()  # ex: .jpg, .png
-            novo_nome = f"produtos/{self.slug}{ext}"
+            novo_nome = f"{self.slug}{ext}"
 
             if self.imagem.name != novo_nome:
                 if default_storage.exists(novo_nome):
                     default_storage.delete(novo_nome)
-                self.imagem.name = novo_nome
+                self.imagem.name = os.path.join('produtos', novo_nome)
                 print(f"🖼️ Imagem renomeada automaticamente para: {novo_nome}")
 
         # --- CASO 2: Nenhuma imagem enviada → tenta buscar no S3 ---
