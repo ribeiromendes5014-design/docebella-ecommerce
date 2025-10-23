@@ -165,13 +165,18 @@ def ver_carrinho(request):
     session_key = _get_session_key(request)
     itens_carrinho = ItemCarrinho.objects.filter(session_key=session_key)
 
+    # Calcula subtotal e total de itens
     carrinho_data = itens_carrinho.aggregate(
         subtotal=Sum(F('quantidade') * F('preco')),
         total_itens=Sum('quantidade')
     )
 
     subtotal = carrinho_data.get('subtotal') or Decimal('0.00')
+    total_itens = carrinho_data.get('total_itens') or 0
+
+    # 🔹 Lê desconto e total com desconto da sessão
     desconto = Decimal(str(request.session.get('desconto_valor', 0.00)))
+    cupom_codigo = request.session.get('cupom_codigo', '')
     total_com_desconto = subtotal - desconto
     if total_com_desconto < 0:
         total_com_desconto = Decimal('0.00')
@@ -179,12 +184,13 @@ def ver_carrinho(request):
     context = {
         'itens_carrinho': itens_carrinho,
         'subtotal_carrinho': subtotal,
+        'total_itens': total_itens,
         'desconto': desconto,
         'total_com_desconto': total_com_desconto,
-        'total_itens': carrinho_data.get('total_itens') or 0,
-        'cupom_codigo': request.session.get('cupom_codigo', ''),
-        'titulo': "Seu Carrinho de Compras"
+        'cupom_codigo': cupom_codigo,
+        'titulo': "Seu Carrinho de Compras",
     }
 
     return render(request, 'carrinho/carrinho.html', context)
+
 
