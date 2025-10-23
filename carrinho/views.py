@@ -5,13 +5,13 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.db.models import Sum, F
 from django.contrib import messages
-from django.shortcuts import redirect
-from .models import CupomDesconto, ItemCarrinho
-from decimal import Decimal
 from django.utils import timezone
+from decimal import Decimal
 
 from produtos.models import Produto, Variacao
-from .models import ItemCarrinho
+from pedidos.models import Cupom  # ✅ usa o modelo do admin (pedidos)
+from .models import ItemCarrinho  # mantém apenas o ItemCarrinho
+
 
 
 # ---------------------- FUNÇÃO AUXILIAR ----------------------
