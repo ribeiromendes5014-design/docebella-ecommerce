@@ -191,13 +191,11 @@ DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 print(f"DEBUG: MEDIA_URL = {MEDIA_URL}")
 
 
-# ===============================================================
-# CONFIGURAÇÕES DE ARQUIVOS ESTÁTICOS
-# ===============================================================
+# Caminho no sistema de arquivos (necessário para o collectstatic)
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
-# Local dos arquivos estáticos no bucket (diferente dos de mídia)
+# Local dos arquivos estáticos no bucket S3
 STATIC_LOCATION = "static"
-
 STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATIC_LOCATION}/"
 STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
