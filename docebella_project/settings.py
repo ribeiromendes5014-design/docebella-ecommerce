@@ -201,9 +201,6 @@ DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 print(f"DEBUG: STATIC_URL = {STATIC_URL}")
 print(f"DEBUG: MEDIA_URL = {MEDIA_URL}")
 print(f"DEBUG: DEFAULT_FILE_STORAGE = {DEFAULT_FILE_STORAGE}")
-�
-
-
 
 
 # ----------------------------------------------------
