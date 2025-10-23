@@ -211,11 +211,11 @@ AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', default='us-east-2')
 
 # Inicializa o storage local para fallback
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-MEDIA_URL = 'https://docebella-ecommerce-media.s3.us-east-2.amazonaws.com/media/produtos/produtos/'
+MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/{AWS_LOCATION}/"
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Configuração que pode ajudar a resolver conflitos de caminho
-AWS_LOCATION = 'media/produtos/produtos'  # O Django S3Boto3Storage adiciona isso como prefixo
+AWS_LOCATION = "media/produtos/produtos"  # O Django S3Boto3Storage adiciona isso como prefixo
 
 # 🔧 Parâmetros padrão do S3
 AWS_S3_OBJECT_PARAMETERS = {
