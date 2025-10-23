@@ -166,49 +166,42 @@ USERNAME_FIELD = 'email'
 # 3. Define quais campos são solicitados quando você roda 'createsuperuser'.
 REQUIRED_FIELDS = ['nome_completo'] 
 
-# #######################################################################
-# # Bloco de CONFIGURAÇÕES DE ARQUIVOS (Mídia/S3) - CORREÇÃO DE ATIVAÇÃO
-# #######################################################################
+# ===============================================================
+# AWS S3 - configurações completas
+# ===============================================================
+import os
+from pathlib import Path
 
-AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default='')
-AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default='')
-AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default='')
-AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', default='us-east-2')
+BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Inicializa o storage local para fallback
-DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
+AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "us-east-2")
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
 
-# Configuração que pode ajudar a resolver conflitos de caminho
-AWS_LOCATION = 'media/produtos/produtos'  # O Django S3Boto3Storage adiciona isso como prefixo
-
-# 🔧 Parâmetros padrão do S3
-AWS_S3_OBJECT_PARAMETERS = {
-    'CacheControl': 'max-age=86400',  # Cache de 1 dia
-}
-
-# 🚫 NOVO PADRÃO DA AWS → Buckets "ACL desativadas" (Bucket owner enforced)
-# Portanto, não podemos usar 'public-read' ou qualquer ACL explícita.
 AWS_DEFAULT_ACL = None
+AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
 
-# 🚨 CORREÇÃO CRÍTICA AQUI 🚨
-# Ativa o S3 se o nome do bucket ESTIVER configurado E o access key TAMBÉM estiver.
-if AWS_STORAGE_BUCKET_NAME and AWS_ACCESS_KEY_ID:
-    
-    # 1. Define o S3 como o backend padrão para todos os arquivos de MÍDIA
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-    
-    # 2. Define o Domínio Customizado do S3
-    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com'
-    
-    # 3. Faz a MEDIA_URL apontar para o S3
-    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
+# ===============================================================
+# ARQUIVOS ESTÁTICOS (CSS, JS, imagens do admin)
+# ===============================================================
+STATIC_LOCATION = "static"
+STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATIC_LOCATION}/"
+STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  # apenas necessário pro collectstatic
 
-# 🚨 ADICIONE ESTAS DUAS LINHAS TEMPORARIAMENTE 🚨
-print(f"DEBUG: DEFAULT_FILE_STORAGE está usando: {DEFAULT_FILE_STORAGE}")
-print(f"DEBUG: MEDIA_URL está usando: {MEDIA_URL}")
-# 🚨 REMOVA DEPOIS DE TESTAR 🚨
+# ===============================================================
+# ARQUIVOS DE MÍDIA (uploads de usuários)
+# ===============================================================
+MEDIA_LOCATION = "media/produtos/produtos"
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{MEDIA_LOCATION}/"
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+
+print(f"DEBUG: STATIC_URL = {STATIC_URL}")
+print(f"DEBUG: MEDIA_URL = {MEDIA_URL}")
+print(f"DEBUG: DEFAULT_FILE_STORAGE = {DEFAULT_FILE_STORAGE}")
+�
 
 
 
