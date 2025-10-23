@@ -160,7 +160,7 @@ class Variacao(models.Model):
         # CASO 1: imagem enviada manualmente
         if self.imagem and hasattr(self.imagem, "name"):
             ext = os.path.splitext(self.imagem.name)[1].lower()
-            novo_nome = f"produtos/variacoes/{base_name}{ext}"
+            novo_nome = f"media/produtos/variacoes/{base_name}{ext}"
 
             if self.imagem.name != novo_nome:
                 if default_storage.exists(novo_nome):
