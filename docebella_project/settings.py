@@ -215,15 +215,11 @@ AWS_DEFAULT_ACL = None
 # 🚨 CORREÇÃO CRÍTICA AQUI 🚨
 # Ativa o S3 se o nome do bucket ESTIVER configurado E o access key TAMBÉM estiver.
 if AWS_STORAGE_BUCKET_NAME and AWS_ACCESS_KEY_ID:
-    
-    # 1. Define o S3 como o backend padrão para todos os arquivos de MÍDIA
     DEFAULT_FILE_STORAGE = 'core.storages.LocalCacheS3FallbackStorage'
-    
-    # 2. Define o Domínio Customizado do S3
     AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com'
-    
-    # 3. Faz a MEDIA_URL apontar para o S3
-    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+
+    # ⚠️ MANTÉM O MEDIA_URL LOCAL (IMPORTANTE!)
+    MEDIA_URL = '/media/'
 
 # 🚨 ADICIONE ESTAS DUAS LINHAS TEMPORARIAMENTE 🚨
 print(f"DEBUG: DEFAULT_FILE_STORAGE está usando: {DEFAULT_FILE_STORAGE}")
