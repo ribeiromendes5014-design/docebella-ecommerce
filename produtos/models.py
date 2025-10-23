@@ -45,10 +45,11 @@ class Produto(models.Model):
             novo_nome = f"{self.slug}{ext}"
 
             if self.imagem.name != novo_nome:
-                if default_storage.exists(novo_nome):
-                    default_storage.delete(novo_nome)
-                self.imagem.name = os.path.join('produtos', novo_nome)
-                print(f"🖼️ Imagem renomeada automaticamente para: {novo_nome}")
+                caminho_final = f"produtos/{novo_nome}"
+                if default_storage.exists(caminho_final):
+                    default_storage.delete(caminho_final)
+                self.imagem.name = novo_nome
+                print(f"🖼️ Imagem renomeada automaticamente para: {caminho_final}")
 
         # --- CASO 2: Nenhuma imagem enviada → tenta buscar no S3 ---
         elif not self.imagem:
