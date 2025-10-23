@@ -27,8 +27,11 @@ class Command(BaseCommand):
         )
 
         bucket = settings.AWS_STORAGE_BUCKET_NAME
-        prefix = "media/produtos/"
+        prefix = "produtos/"
         local_dir = os.path.join(settings.MEDIA_ROOT, "produtos")
+        print(f"📁 Baixando arquivos de: s3://{bucket}/{prefix}")
+        print(f"📂 Salvando localmente em: {local_dir}")
+
 
         os.makedirs(local_dir, exist_ok=True)
         atualizados = 0
