@@ -39,44 +39,43 @@ class Produto(models.Model):
     atualizado_em = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        # --- CASO 1: Enviou imagem manualmente ---
-        if self.imagem and hasattr(self.imagem, "name"):
-            ext = os.path.splitext(self.imagem.name)[1].lower()  # ex: .jpg, .png
-            novo_nome = f"{self.slug}{ext}"
+    if self.imagem and hasattr(self.imagem, "name"):
+        ext = os.path.splitext(self.imagem.name)[1].lower()  # .jpg, .png etc.
+        novo_nome = f"{self.slug}{ext}"  # ✅ só o nome
 
-            if self.imagem.name != novo_nome:
-                caminho_final = f"produtos/{novo_nome}"
-                if default_storage.exists(caminho_final):
-                    default_storage.delete(caminho_final)
-                self.imagem.name = novo_nome
-                print(f"🖼️ Imagem renomeada automaticamente para: {caminho_final}")
+        caminho_final = f"produtos/{novo_nome}"  # usado só para checar existência
 
-        # --- CASO 2: Nenhuma imagem enviada → tenta buscar no S3 ---
-        elif not self.imagem:
-            s3 = boto3.client(
-                's3',
-                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-                region_name=settings.AWS_S3_REGION_NAME,
-            )
+        if self.imagem.name != novo_nome:
+            if default_storage.exists(caminho_final):
+                default_storage.delete(caminho_final)
+            self.imagem.name = novo_nome  # ✅ não prefixa “produtos/”
+            print(f"🖼️ Imagem renomeada automaticamente para: {caminho_final}")
 
-            bucket = settings.AWS_STORAGE_BUCKET_NAME
-            possible_keys = [
-                f"media/produtos/{self.slug}.jpg",
-                f"media/produtos/{self.slug}.png",
-                f"media/produtos/{self.slug}.jpeg",
-            ]
+    elif not self.imagem:
+        # Tenta buscar no S3
+        s3 = boto3.client(
+            's3',
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            region_name=settings.AWS_S3_REGION_NAME,
+        )
+        bucket = settings.AWS_STORAGE_BUCKET_NAME
+        possible_keys = [
+            f"media/produtos/{self.slug}.jpg",
+            f"media/produtos/{self.slug}.png",
+            f"media/produtos/{self.slug}.jpeg",
+        ]
+        for key in possible_keys:
+            try:
+                s3.head_object(Bucket=bucket, Key=key)
+                self.imagem.name = key.replace("media/", "")
+                print(f"📸 Imagem encontrada e vinculada automaticamente: {key}")
+                break
+            except s3.exceptions.ClientError:
+                continue
 
-            for key in possible_keys:
-                try:
-                    s3.head_object(Bucket=bucket, Key=key)
-                    self.imagem.name = key.replace("media/", "")
-                    print(f"📸 Imagem encontrada e vinculada automaticamente: {key}")
-                    break
-                except s3.exceptions.ClientError:
-                    continue
+    super().save(*args, **kwargs)
 
-        super().save(*args, **kwargs)
 
     def valor_parcela_3x(self):
         """Retorna o valor da parcela em 3x com ajuste de 0.8872."""
