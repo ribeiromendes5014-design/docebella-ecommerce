@@ -201,7 +201,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Configuração que pode ajudar a resolver conflitos de caminho
-AWS_LOCATION = 'media/produtos'  # O Django S3Boto3Storage adiciona isso como prefixo
+AWS_LOCATION = 'media/produtos/produtos'  # O Django S3Boto3Storage adiciona isso como prefixo
 
 # 🔧 Parâmetros padrão do S3
 AWS_S3_OBJECT_PARAMETERS = {
