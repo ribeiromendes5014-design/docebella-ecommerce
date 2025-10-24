@@ -1,0 +1,11 @@
+{% if mensagens_topo %}
+<div class="marquee-container">
+  <div class="marquee">
+    {% for msg in mensagens_topo %}
+      {% if msg.esta_ativa %}
+        <span>{{ msg.texto }}</span>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
