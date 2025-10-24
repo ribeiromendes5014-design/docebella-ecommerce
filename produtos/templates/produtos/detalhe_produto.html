@@ -149,159 +149,146 @@
 
 {% block content %}
 <p class="breadcrumb">
-  <a href="{% url 'home' %}">Início</a> > 
-  <a href="#">{{ produto.categoria.nome }}</a> > 
-  {{ produto.nome }}
+  <a href="{% url 'home' %}">Início</a> > 
+  <a href="#">{{ produto.categoria.nome }}</a> > 
+  {{ produto.nome }}
 </p>
 
-<!-- Adiciona destaque se estiver em promoção -->
 <div class="produto-detalhe-container {% if produto.preco_promocional %}promo-ativo{% endif %}">
 
-  <!-- Coluna esquerda: imagem principal + miniaturas -->
-  <div class="produto-galeria">
-    <div class="main-image-wrapper">
-      {% if produto.imagem %}
-        <img id="main-image" src="{{ produto.imagem.url }}" alt="{{ produto.nome }}">
-      {% else %}
-        <img id="main-image" src="{% static 'img/placeholder.png' %}" alt="Sem imagem">
-      {% endif %}
-    </div>
+    <div class="produto-galeria">
+    <div class="main-image-wrapper">
+            <img id="main-image" src="{{ produto.get_imagem_url }}" alt="{{ produto.nome }}">
+    </div>
 
-    <!-- Modal de Zoom -->
-    <div id="modalZoom" class="modal">
-      <span class="close">&times;</span>
-      <img class="modal-content" id="imgZoomed">
-    </div>
+        <div id="modalZoom" class="modal">
+      <span class="close">&times;</span>
+      <img class="modal-content" id="imgZoomed">
+    </div>
 
-    <div class="galeria-miniaturas">
-      {% if produto.imagem %}
-        <img class="miniatura selecionado"
-             src="{{ produto.imagem.url }}"
-             data-full-url="{{ produto.imagem.url }}"
-             alt="Miniatura principal">
-      {% endif %}
-      {% for imagem_galeria in produto.galeria_imagens.all %}
-        {% if imagem_galeria.imagem %}
-          <img class="miniatura"
-               src="{{ imagem_galeria.imagem.url }}"
-               data-full-url="{{ imagem_galeria.imagem.url }}"
-               alt="{{ imagem_galeria.descricao|default:'Miniatura' }}">
-        {% endif %}
-      {% endfor %}
-    </div>
-  </div>
+    <div class="galeria-miniaturas">
+            <img class="miniatura selecionado"
+            src="{{ produto.get_imagem_url }}"
+            data-full-url="{{ produto.get_imagem_url }}"
+            alt="Miniatura principal">
+      
+      {% for imagem_galeria in produto.galeria_imagens.all %}
+        {% if imagem_galeria.imagem %}
+          <img class="miniatura"
+               src="{{ imagem_galeria.imagem.url }}"
+               data-full-url="{{ imagem_galeria.imagem.url }}"
+               alt="{{ imagem_galeria.descricao|default:'Miniatura' }}">
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
 
-  <!-- Coluna direita -->
-  <div class="produto-info">
-    <h1>{{ produto.nome }}</h1>
-    <p class="preco-principal">{{ produto.get_display_price }}</p>
+    <div class="produto-info">
+    <h1>{{ produto.nome }}</h1>
+    <p class="preco-principal">{{ produto.get_display_price }}</p>
 
-    <p style="font-size: 1rem; color: #777;">
-      ou 3x de R$ {{ valor_parcela|floatformat:2|intcomma }} sem juros
-    </p>
+    <p style="font-size: 1rem; color: #777;">
+      ou 3x de R$ {{ valor_parcela|floatformat:2|intcomma }} sem juros
+    </p>
 
-    {% if promo_ativa %}
-  <div class="timer-container">
-    <strong>🔥 Promoção até:</strong>
-    <div class="timer" id="contador-promocao" data-fim="{{ promo_ativa.data_fim|date:'Y-m-d H:i:s' }}">
-      Carregando contador...
-    </div>
-  </div>
+    {% if promo_ativa %}
+  <div class="timer-container">
+    <strong>🔥 Promoção até:</strong>
+    <div class="timer" id="contador-promocao" data-fim="{{ promo_ativa.data_fim|date:'Y-m-d H:i:s' }}">
+      Carregando contador...
+    </div>
+  </div>
 
-  <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const contador = document.getElementById('contador-promocao');
-    if (!contador) return;
+  <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const contador = document.getElementById('contador-promocao');
+    if (!contador) return;
 
-    const dataFimStr = contador.getAttribute('data-fim');
-    if (!dataFimStr) return;
+    const dataFimStr = contador.getAttribute('data-fim');
+    if (!dataFimStr) return;
 
-    const dataFim = new Date(dataFimStr.replace(' ', 'T'));
+    const dataFim = new Date(dataFimStr.replace(' ', 'T'));
 
-    function atualizarContador() {
-      const agora = new Date();
-      const diff = dataFim - agora;
+    function atualizarContador() {
+      const agora = new Date();
+      const diff = dataFim - agora;
 
-      if (diff <= 0) {
-        contador.innerHTML = "🔥 Promoção encerrada!";
-        clearInterval(intervalo);
-        return;
-      }
+      if (diff <= 0) {
+        contador.innerHTML = "🔥 Promoção encerrada!";
+        clearInterval(intervalo);
+        return;
+      }
 
-      const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const horas = Math.floor((diff / (1000 * 60 * 60)) % 24);
-      const minutos = Math.floor((diff / (1000 * 60)) % 60);
-      const segundos = Math.floor((diff / 1000) % 60);
+      const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const horas = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutos = Math.floor((diff / (1000 * 60)) % 60);
+      const segundos = Math.floor((diff / 1000) % 60);
 
-      contador.textContent = `${dias}d ${horas}h ${minutos}m ${segundos}s`;
-    }
+      contador.textContent = `${dias}d ${horas}h ${minutos}m ${segundos}s`;
+    }
 
-    atualizarContador();
-    const intervalo = setInterval(atualizarContador, 1000);
-  });
-  </script>
+    atualizarContador();
+    const intervalo = setInterval(atualizarContador, 1000);
+  });
+  </script>
 {% endif %}
 
 
-    <p class="status-estoque" style="color: {% if produto.get_estoque_total == 0 %}#d32f2f{% else %}#2e7d32{% endif %};">
-      {{ produto.get_status_estoque }}
-    </p>
+    <p class="status-estoque" style="color: {% if produto.get_estoque_total == 0 %}#d32f2f{% else %}#2e7d32{% endif %};">
+      {{ produto.get_status_estoque }}
+    </p>
 
-    <form id="form-adicionar-carrinho" action="{% url 'carrinho:adicionar_ao_carrinho' produto.slug %}" method="POST">
-      {% csrf_token %}
-      {% if produto.usa_variacoes %}
-        {% for tipo, variacoes in variacoes_por_tipo.items %}
-          <div class="variacao-selector" data-tipo="{{ tipo }}">
-            <h4>Selecione o {{ tipo }}:</h4>
-            {% for variacao in variacoes %}
-              <button type="button" 
-                    data-id="{{ variacao.id }}" 
-                    data-estoque="{{ variacao.estoque }}"
-                    data-imagem-url="{% if variacao.imagem %}{{ variacao.imagem.url }}{% else %}{{ produto.imagem.url }}{% endif %}"
+    <form id="form-adicionar-carrinho" action="{% url 'carrinho:adicionar_ao_carrinho' produto.slug %}" method="POST">
+      {% csrf_token %}
+      {% if produto.usa_variacoes %}
+        {% for tipo, variacoes in variacoes_por_tipo.items %}
+          <div class="variacao-selector" data-tipo="{{ tipo }}">
+            <h4>Selecione o {{ tipo }}:</h4>
+            {% for variacao in variacoes %}
+              <button type="button" 
+                    data-id="{{ variacao.id }}" 
+                    data-estoque="{{ variacao.estoque }}"
+                                        data-imagem-url="{{ variacao.get_imagem_url }}"
                 class="btn-variacao" {% if variacao.estoque == 0 %}disabled{% endif %}>
                 {{ variacao.valor }}
               </button>
             {% endfor %}
-          </div>
-        {% endfor %}
-        <input type="hidden" name="variacao_id" id="variacao-input" value="">
-      {% endif %}
+          </div>
+        {% endfor %}
+        <input type="hidden" name="variacao_id" id="variacao-input" value="">
+      {% endif %}
 
-      <div class="acoes-compra">
-        <input type="number" name="quantidade" id="quantidade" value="1" min="1" max="{{ produto.get_estoque_total }}">
-        {% if produto.get_estoque_total > 0 %}
-          <button type="submit" class="btn-principal btn-comprar">Comprar</button>
-        {% else %}
-          <button class="btn-principal btn-comprar" disabled style="opacity: 0.5;">Esgotado</button>
-        {% endif %}
-      </div>
-    </form>
+      <div class="acoes-compra">
+        <input type="number" name="quantidade" id="quantidade" value="1" min="1" max="{{ produto.get_estoque_total }}">
+        {% if produto.get_estoque_total > 0 %}
+          <button type="submit" class="btn-principal btn-comprar">Comprar</button>
+        {% else %}
+          <button class="btn-principal btn-comprar" disabled style="opacity: 0.5;">Esgotado</button>
+        {% endif %}
+      </div>
+    </form>
 
-    <div class="descricao-completa">
-      <h3>Descrição do Produto</h3>
-      <p>{{ produto.descricao|linebreaksbr }}</p>
-    </div>
-  </div>
+    <div class="descricao-completa">
+      <h3>Descrição do Produto</h3>
+      <p>{{ produto.descricao|linebreaksbr }}</p>
+    </div>
+  </div>
 </div>
 
 {% if produtos_relacionados %}
 <div class="produtos-relacionados" style="margin-top:50px; border-top:1px solid #eee; padding-top:30px;">
-  <h3 style="font-size:1.4rem; font-weight:600; margin-bottom:20px; color:#222;">Produtos Relacionados</h3>
-  <div style="display:flex; flex-wrap:wrap; gap:20px;">
-    {% for item in produtos_relacionados %}
-      <div style="flex:1 1 200px; max-width:220px; text-align:center;">
-        <a href="{% url 'detalhe_produto' item.slug %}" style="text-decoration:none; color:inherit;">
-          {% if item.imagem %}
-            <img src="{{ item.imagem.url }}" alt="{{ item.nome }}" style="width:100%; border-radius:8px; border:1px solid #eee; object-fit:cover; margin-bottom:10px;">
-          {% else %}
-            <img src="{% static 'img/placeholder.png' %}" alt="{{ item.nome }}" style="width:100%; border-radius:8px; border:1px solid #eee; object-fit:cover; margin-bottom:10px;">
-          {% endif %}
-          <p style="font-size:1rem; font-weight:500;">{{ item.nome }}</p>
-          <p style="color:#111; font-weight:600;">{{ item.get_display_price }}</p>
-        </a>
-      </div>
-    {% endfor %}
-  </div>
+  <h3 style="font-size:1.4rem; font-weight:600; margin-bottom:20px; color:#222;">Produtos Relacionados</h3>
+  <div style="display:flex; flex-wrap:wrap; gap:20px;">
+    {% for item in produtos_relacionados %}
+      <div style="flex:1 1 200px; max-width:220px; text-align:center;">
+        <a href="{% url 'detalhe_produto' item.slug %}" style="text-decoration:none; color:inherit;">
+                    <img src="{{ item.get_imagem_url }}" alt="{{ item.nome }}" style="width:100%; border-radius:8px; border:1px solid #eee; object-fit:cover; margin-bottom:10px;">
+          <p style="font-size:1rem; font-weight:500;">{{ item.nome }}</p>
+          <p style="color:#111; font-weight:600;">{{ item.get_display_price }}</p>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
 </div>
 {% endif %}
 {% endblock content %}
@@ -311,186 +298,184 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    const modal = document.getElementById("modalZoom");
-    const modalImg = document.getElementById("imgZoomed");
-    const mainImg = document.getElementById("main-image");
-    const closeBtn = document.querySelector(".close");
-    const thumbs = document.querySelectorAll(".miniatura");
-    
-    // Elementos da variação
-    const variacaoButtons = document.querySelectorAll('.btn-variacao');
-    const variacaoInput = document.getElementById('variacao-input');
-    const formCarrinho = document.getElementById('form-adicionar-carrinho');
-    const quantidadeInput = document.getElementById('quantidade');
-    const btnComprar = document.querySelector('.btn-comprar');
-    const statusEstoque = document.querySelector('.status-estoque');
-    const galeriaMiniaturas = document.querySelector('.galeria-miniaturas');
+    const modal = document.getElementById("modalZoom");
+    const modalImg = document.getElementById("imgZoomed");
+    const mainImg = document.getElementById("main-image");
+    const closeBtn = document.querySelector(".close");
+    const thumbs = document.querySelectorAll(".miniatura");
+    
+    // Elementos da variação
+    const variacaoButtons = document.querySelectorAll('.btn-variacao');
+    const variacaoInput = document.getElementById('variacao-input');
+    const formCarrinho = document.getElementById('form-adicionar-carrinho');
+    const quantidadeInput = document.getElementById('quantidade');
+    const btnComprar = document.querySelector('.btn-comprar');
+    const statusEstoque = document.querySelector('.status-estoque');
+    const galeriaMiniaturas = document.querySelector('.galeria-miniaturas');
 
-    // Estado para controle
-    let variacaoSelecionada = null;
-    let urlImagemProdutoOriginal = mainImg ? mainImg.src : null;
-
-
-    // =================================================================
-    // LÓGICA DO MODAL (Zoom)
-    // =================================================================
-    
-    // Função para abrir o modal com a imagem especificada
-    function abrirZoom(src) {
-      if (!modal || !modalImg) return;
-      // Para garantir que a URL seja a de alta resolução/completa
-      const fullUrl = src.replace('?w=72&h=72&c=1', ''); 
-
-      modal.style.display = "block";
-      modalImg.src = fullUrl;
-    }
-
-    // Clicar na imagem principal
-    if (mainImg) {
-      mainImg.addEventListener("click", function() {
-        abrirZoom(this.src);
-      });
-    }
-
-    // Clicar em qualquer miniatura (para zoom)
-    thumbs.forEach(thumb => {
-      thumb.addEventListener("click", function() {
-        // Usa a URL original (data-full-url) para o zoom
-        const src = this.getAttribute("data-full-url") || this.src; 
-        abrirZoom(src);
-      });
-    });
-
-    // Fechar modal
-    if (closeBtn) {
-      closeBtn.addEventListener("click", function() {
-        modal.style.display = "none";
-      });
-    }
-
-    // Fechar ao clicar fora da imagem
-    window.addEventListener("click", function(event) {
-      if (event.target === modal) {
-        modal.style.display = "none";
-      }
-    });
-
-    // =================================================================
-    // LÓGICA DE SELEÇÃO DE VARIAÇÃO E TROCA DE IMAGEM
-    // =================================================================
-
-    if (variacaoButtons.length > 0 && variacaoInput) {
-        
-        // 1. Inicialização: Seleciona a primeira variação disponível
-        const primeiraVariacaoDisponivel = Array.from(variacaoButtons).find(btn => !btn.disabled);
-
-        if (primeiraVariacaoDisponivel) {
-            simularCliqueVariacao(primeiraVariacaoDisponivel);
-        } else {
-            // Nenhuma variação disponível: desabilita a compra
-            atualizarAcoesCompra(0); 
-        }
-
-        // 2. Event Listeners para os cliques
-        variacaoButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                if (!this.disabled) {
-                    simularCliqueVariacao(this);
-                }
-            });
-        });
-    }
+    // Estado para controle
+    let variacaoSelecionada = null;
+    // O URL inicial deve ser buscado do HTML
+    let urlImagemProdutoOriginal = mainImg ? mainImg.src : null;
 
 
-    /**
-     * Função principal para lidar com a seleção de uma variação.
-     * @param {HTMLElement} clickedButton O botão de variação clicado/simulado.
-     */
-    function simularCliqueVariacao(clickedButton) {
-        const id = clickedButton.getAttribute('data-id');
-        const estoque = parseInt(clickedButton.getAttribute('data-estoque'), 10);
-        const imageUrl = clickedButton.getAttribute('data-imagem-url');
-        
-        // 1. Atualiza o estado visual do botão
-        variacaoButtons.forEach(btn => btn.classList.remove('selecionado'));
-        clickedButton.classList.add('selecionado');
+    // =================================================================
+    // LÓGICA DO MODAL (Zoom)
+    // =================================================================
+    
+    // Função para abrir o modal com a imagem especificada
+    function abrirZoom(src) {
+      if (!modal || !modalImg) return;
+      // Para garantir que a URL seja a de alta resolução/completa
+      const fullUrl = src.replace('?w=72&h=72&c=1', ''); 
 
-        // 2. Atualiza o input hidden com o ID da variação
-        variacaoInput.value = id;
-        variacaoSelecionada = id;
+      modal.style.display = "block";
+      modalImg.src = fullUrl;
+    }
 
-        // 3. ATUALIZAÇÃO DA IMAGEM PRINCIPAL
-        if (mainImg && imageUrl) {
-            mainImg.src = imageUrl;
-            // Opcional: Rolagem suave para o topo do produto para focar na imagem
-            window.scrollTo({
-                top: document.querySelector('.produto-detalhe-container').offsetTop - 50,
-                behavior: 'smooth'
-            });
-        }
-        
-        // 4. Atualiza as ações de compra (Estoque, Quantidade e Botão Comprar)
-        atualizarAcoesCompra(estoque);
+    // Clicar na imagem principal
+    if (mainImg) {
+      mainImg.addEventListener("click", function() {
+        abrirZoom(this.src);
+      });
+    }
 
-        // 5. ATUALIZAÇÃO DA GALERIA DE MINIATURAS (Opção mais avançada)
-        // Se a variação tiver uma imagem diferente da principal do produto,
-        // garantimos que essa imagem da variação seja a primeira miniatura selecionada.
-        if (galeriaMiniaturas) {
-            const miniaturaDaVariacao = galeriaMiniaturas.querySelector(`img[src="${imageUrl}"]`);
-            
-            // Remove a seleção de todas as miniaturas
-            galeriaMiniaturas.querySelectorAll('.miniatura').forEach(thumb => {
-                thumb.classList.remove('selecionado');
-            });
+    // Clicar em qualquer miniatura (para zoom)
+    thumbs.forEach(thumb => {
+      thumb.addEventListener("click", function() {
+        // Usa a URL original (data-full-url) para o zoom
+        const src = this.getAttribute("data-full-url") || this.src; 
+        abrirZoom(src);
+      });
+    });
 
-            if (miniaturaDaVariacao) {
-                // Se a imagem da variação já existe na galeria (por exemplo, como imagem_galeria),
-                // apenas a marca como selecionada.
-                miniaturaDaVariacao.classList.add('selecionado');
-            } else {
-                // Se não existe, a imagem principal é a única que precisa ser marcada como selecionada.
-                // Isso ocorre se a imagem da variação for a mesma imagem principal do produto.
-                const miniaturaOriginal = galeriaMiniaturas.querySelector(`img[data-full-url="${urlImagemProdutoOriginal}"]`);
-                if (miniaturaOriginal) {
-                    miniaturaOriginal.classList.add('selecionado');
-                }
-            }
-        }
-    }
-    
-    /**
-     * Atualiza o status de estoque, o input de quantidade e o botão de compra.
-     * @param {number} estoque O estoque da variação selecionada.
-     */
-    function atualizarAcoesCompra(estoque) {
-        const estaDisponivel = estoque > 0;
-        
-        // Atualiza a quantidade máxima
-        quantidadeInput.max = estoque;
-        if (parseInt(quantidadeInput.value, 10) > estoque) {
-            quantidadeInput.value = estoque > 0 ? 1 : 0; // Reseta para 1 ou 0
-        }
-        
-        // Atualiza o estado do botão Comprar
-        btnComprar.disabled = !estaDisponivel;
-        btnComprar.style.opacity = !estaDisponivel ? 0.5 : 1;
-        btnComprar.textContent = estaDisponivel ? "Comprar" : "Esgotado";
+    // Fechar modal
+    if (closeBtn) {
+      closeBtn.addEventListener("click", function() {
+        modal.style.display = "none";
+      });
+    }
 
-        // Atualiza a mensagem de estoque
-        statusEstoque.textContent = estaDisponivel ? `Em estoque: ${estoque} unidades` : "Esgotado";
-        statusEstoque.style.color = estaDisponivel ? '#2e7d32' : '#d32f2f';
-    }
+    // Fechar ao clicar fora da imagem
+    window.addEventListener("click", function(event) {
+      if (event.target === modal) {
+        modal.style.display = "none";
+      }
+    });
+
+    // =================================================================
+    // LÓGICA DE SELEÇÃO DE VARIAÇÃO E TROCA DE IMAGEM
+    // =================================================================
+
+    if (variacaoButtons.length > 0 && variacaoInput) {
+        
+        // 1. Inicialização: Seleciona a primeira variação disponível
+        const primeiraVariacaoDisponivel = Array.from(variacaoButtons).find(btn => !btn.disabled);
+
+        if (primeiraVariacaoDisponivel) {
+            simularCliqueVariacao(primeiraVariacaoDisponivel);
+        } else {
+            // Nenhuma variação disponível: desabilita a compra
+            atualizarAcoesCompra(0); 
+        }
+
+        // 2. Event Listeners para os cliques
+        variacaoButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                if (!this.disabled) {
+                    simularCliqueVariacao(this);
+                }
+            });
+        });
+    }
 
 
-    // Opcional: Impedir o envio do formulário sem variação selecionada (se não for pré-selecionada)
-    if (formCarrinho) {
-        formCarrinho.addEventListener('submit', function(e) {
-            if (variacaoInput && !variacaoInput.value) {
-                e.preventDefault();
-                alert('Por favor, selecione uma opção de variação antes de adicionar ao carrinho.');
-            }
-        });
-    }
+    /**
+     * Função principal para lidar com a seleção de uma variação.
+     * @param {HTMLElement} clickedButton O botão de variação clicado/simulado.
+     */
+    function simularCliqueVariacao(clickedButton) {
+        const id = clickedButton.getAttribute('data-id');
+        const estoque = parseInt(clickedButton.getAttribute('data-estoque'), 10);
+        const imageUrl = clickedButton.getAttribute('data-imagem-url');
+        
+        // 1. Atualiza o estado visual do botão
+        variacaoButtons.forEach(btn => btn.classList.remove('selecionado'));
+        clickedButton.classList.add('selecionado');
+
+        // 2. Atualiza o input hidden com o ID da variação
+        variacaoInput.value = id;
+        variacaoSelecionada = id;
+
+        // 3. ATUALIZAÇÃO DA IMAGEM PRINCIPAL
+        if (mainImg && imageUrl) {
+            mainImg.src = imageUrl;
+            // Opcional: Rolagem suave para o topo do produto para focar na imagem
+            window.scrollTo({
+                top: document.querySelector('.produto-detalhe-container').offsetTop - 50,
+                behavior: 'smooth'
+            });
+        }
+        
+        // 4. Atualiza as ações de compra (Estoque, Quantidade e Botão Comprar)
+        atualizarAcoesCompra(estoque);
+
+        // 5. ATUALIZAÇÃO DA GALERIA DE MINIATURAS (Opção mais avançada)
+        // Se a variação tiver uma imagem diferente da principal do produto,
+        // garantimos que essa imagem da variação seja a primeira miniatura selecionada.
+        if (galeriaMiniaturas) {
+            // Busca a miniatura na galeria usando a URL (se ela for de uma miniatura existente)
+            const miniaturaDaVariacao = galeriaMiniaturas.querySelector(`img[data-full-url="${imageUrl}"]`);
+            
+            // Remove a seleção de todas as miniaturas
+            galeriaMiniaturas.querySelectorAll('.miniatura').forEach(thumb => {
+                thumb.classList.remove('selecionado');
+            });
+
+            if (miniaturaDaVariacao) {
+                // Marca a miniatura encontrada
+                miniaturaDaVariacao.classList.add('selecionado');
+            } else {
+                // Se a imagem da variação é nova (ex: URL externa) ou não está nas miniaturas,
+                // a imagem principal (que está mostrando a variação) é agora a "selecionada".
+                // Não marcamos nenhuma miniatura.
+            }
+        }
+    }
+    
+    /**
+     * Atualiza o status de estoque, o input de quantidade e o botão de compra.
+     * @param {number} estoque O estoque da variação selecionada.
+     */
+    function atualizarAcoesCompra(estoque) {
+        const estaDisponivel = estoque > 0;
+        
+        // Atualiza a quantidade máxima
+        quantidadeInput.max = estoque;
+        if (parseInt(quantidadeInput.value, 10) > estoque) {
+            quantidadeInput.value = estoque > 0 ? 1 : 0; // Reseta para 1 ou 0
+        }
+        
+        // Atualiza o estado do botão Comprar
+        btnComprar.disabled = !estaDisponivel;
+        btnComprar.style.opacity = !estaDisponivel ? 0.5 : 1;
+        btnComprar.textContent = estaDisponivel ? "Comprar" : "Esgotado";
+
+        // Atualiza a mensagem de estoque
+        statusEstoque.textContent = estaDisponivel ? `Em estoque: ${estoque} unidades` : "Esgotado";
+        statusEstoque.style.color = estaDisponivel ? '#2e7d32' : '#d32f2f';
+    }
+
+
+    // Opcional: Impedir o envio do formulário sem variação selecionada (se não for pré-selecionada)
+    if (formCarrinho) {
+        formCarrinho.addEventListener('submit', function(e) {
+            if (variacaoInput && !variacaoInput.value) {
+                e.preventDefault();
+                alert('Por favor, selecione uma opção de variação antes de adicionar ao carrinho.');
+            }
+        });
+    }
 
 });
 </script>
