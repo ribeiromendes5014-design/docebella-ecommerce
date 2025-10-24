@@ -20,7 +20,32 @@ class Categoria(models.Model):
 
     def __str__(self):
         return self.nome
+from django.db import models
 
+# ======================
+# Mensagem Topo
+# ======================
+class MensagemTopo(models.Model):
+    texto = models.CharField(max_length=255, help_text="Texto que aparecerá rolando no topo do site.")
+    ativo = models.BooleanField(default=True)
+    ordem = models.PositiveIntegerField(default=1, help_text="Define a ordem das mensagens.")
+    data_inicio = models.DateTimeField(null=True, blank=True)
+    data_fim = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['ordem']
+        verbose_name = "Mensagem do Topo"
+        verbose_name_plural = "Mensagens do Topo"
+
+    def __str__(self):
+        return self.texto[:50]
+
+    def esta_ativa(self):
+        from django.utils import timezone
+        agora = timezone.now()
+        if self.data_inicio and self.data_fim:
+            return self.ativo and self.data_inicio <= agora <= self.data_fim
+        return self.ativo
 
 # ======================
 # PRODUTO
