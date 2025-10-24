@@ -2,6 +2,7 @@
 
 from django.contrib import admin
 from . import models  # Importa o módulo completo — seguro contra ImportError
+from django.utils.html import format_html
 
 
 # -----------------------------------------------------------------
@@ -11,21 +12,29 @@ class ImagemProdutoInline(admin.TabularInline):
     """Permite adicionar várias fotos por produto na mesma página."""
     model = models.ImagemProduto
     extra = 1
-    fields = ('imagem', 'variacao', 'descricao', 'ordem')
 
-
-class VariacaoInline(admin.TabularInline):
-    """Permite editar as variações dentro da página do Produto."""
-    model = models.Variacao
-    extra = 1
+    # Campos que aparecem no admin
     fields = (
-        'tipo',
-        'valor',
-        'preco_adicional',
-        'estoque',
         'imagem',
-        'imagem_url_externa',  # 👈 adiciona aqui
+        'imagem_url_externa',
+        'variacao',
+        'descricao',
+        'ordem',
+        'preview_imagem',  # mostra a miniatura
     )
+
+    readonly_fields = ('preview_imagem',)
+
+    def preview_imagem(self, obj):
+        """Mostra uma miniatura da imagem local ou externa"""
+        if not obj.pk:
+            return ""
+        url = obj.get_imagem_url()
+        if not url:
+            return "—"
+        return format_html('<img src="{}" style="max-height: 100px; border-radius: 6px;">', url)
+
+    preview_imagem.short_description = "Pré-visualização"
 
 
 
