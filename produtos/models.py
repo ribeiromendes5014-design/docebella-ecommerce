@@ -291,7 +291,13 @@ class ImagemProduto(models.Model):
         blank=True,
         verbose_name='Variação (Opcional)'
     )
-    imagem = models.ImageField(upload_to='produtos/galeria/')
+    imagem = models.ImageField(upload_to='produtos/galeria/', blank=True, null=True)
+    imagem_url_externa = models.URLField(
+        "URL da Imagem Externa (opcional)",
+        blank=True,
+        null=True,
+        help_text="Cole aqui o link direto da imagem se quiser usar uma hospedada externamente."
+    )
     descricao = models.CharField(max_length=255, blank=True)
     ordem = models.PositiveIntegerField(default=1)
 
@@ -302,6 +308,15 @@ class ImagemProduto(models.Model):
 
     def __str__(self):
         return f"Imagem de {self.produto.nome} - Ordem {self.ordem}"
+
+    def get_imagem_url(self):
+        """Retorna a URL da imagem, seja externa ou local"""
+        if self.imagem_url_externa:
+            return self.imagem_url_externa
+        elif self.imagem:
+            return self.imagem.url
+        return '/static/img/placeholder.png'
+
 
 
 # ======================
