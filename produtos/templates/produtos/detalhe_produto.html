@@ -254,11 +254,14 @@
           <div class="variacao-selector" data-tipo="{{ tipo }}">
             <h4>Selecione o {{ tipo }}:</h4>
             {% for variacao in variacoes %}
-              <button type="button" data-id="{{ variacao.id }}" data-estoque="{{ variacao.estoque }}"
-                class="btn-variacao" {% if variacao.estoque == 0 %}disabled{% endif %}>
-                {{ variacao.valor }}
-              </button>
-            {% endfor %}
+              <button type="button" 
+                    data-id="{{ variacao.id }}" 
+                    data-estoque="{{ variacao.estoque }}"
+                    data-imagem-url="{% if variacao.imagem %}{{ variacao.imagem.url }}{% else %}{{ produto.imagem.url }}{% endif %}"
+                class="btn-variacao" {% if variacao.estoque == 0 %}disabled{% endif %}>
+                {{ variacao.valor }}
+              </button>
+            {% endfor %}
           </div>
         {% endfor %}
         <input type="hidden" name="variacao_id" id="variacao-input" value="">
@@ -308,83 +311,96 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-  const modal = document.getElementById("modalZoom");
-  const modalImg = document.getElementById("imgZoomed");
-  const mainImg = document.getElementById("main-image");
-  const closeBtn = document.querySelector(".close");
-  const thumbs = document.querySelectorAll(".miniatura");
-
-  // Função para abrir o modal com a imagem especificada
-  function abrirZoom(src) {
-    if (!modal || !modalImg) return;
-    modal.style.display = "block";
-    modalImg.src = src;
-  }
-
-  // Clicar na imagem principal
-  if (mainImg) {
-    mainImg.addEventListener("click", function() {
-      abrirZoom(this.src);
-    });
-  }
-
-  // Clicar em qualquer miniatura
-  thumbs.forEach(thumb => {
-    thumb.addEventListener("click", function() {
-      const src = this.getAttribute("data-full-url") || this.src;
-      abrirZoom(src);
-    });
-  });
-
-  // Fechar modal
-  if (closeBtn) {
-    closeBtn.addEventListener("click", function() {
-      modal.style.display = "none";
-    });
-  }
-
-  // Fechar ao clicar fora da imagem
-  window.addEventListener("click", function(event) {
-    if (event.target === modal) {
-      modal.style.display = "none";
-    }
-  });
-  // ===== Lógica de Seleção de Variação =====
+    const modal = document.getElementById("modalZoom");
+    const modalImg = document.getElementById("imgZoomed");
+    const mainImg = document.getElementById("main-image");
+    const closeBtn = document.querySelector(".close");
+    const thumbs = document.querySelectorAll(".miniatura");
+    
+    // Elementos da variação
     const variacaoButtons = document.querySelectorAll('.btn-variacao');
     const variacaoInput = document.getElementById('variacao-input');
     const formCarrinho = document.getElementById('form-adicionar-carrinho');
     const quantidadeInput = document.getElementById('quantidade');
     const btnComprar = document.querySelector('.btn-comprar');
     const statusEstoque = document.querySelector('.status-estoque');
+    const galeriaMiniaturas = document.querySelector('.galeria-miniaturas');
 
-    // Estado inicial para quando o produto possui variações
-    // Tenta pré-selecionar a primeira variação disponível, se existir.
+    // Estado para controle
     let variacaoSelecionada = null;
+    let urlImagemProdutoOriginal = mainImg ? mainImg.src : null;
+
+
+    // =================================================================
+    // LÓGICA DO MODAL (Zoom)
+    // =================================================================
     
-    // Verifica se existem botões de variação e se há um campo de ID de variação
+    // Função para abrir o modal com a imagem especificada
+    function abrirZoom(src) {
+      if (!modal || !modalImg) return;
+      // Para garantir que a URL seja a de alta resolução/completa
+      const fullUrl = src.replace('?w=72&h=72&c=1', ''); 
+
+      modal.style.display = "block";
+      modalImg.src = fullUrl;
+    }
+
+    // Clicar na imagem principal
+    if (mainImg) {
+      mainImg.addEventListener("click", function() {
+        abrirZoom(this.src);
+      });
+    }
+
+    // Clicar em qualquer miniatura (para zoom)
+    thumbs.forEach(thumb => {
+      thumb.addEventListener("click", function() {
+        // Usa a URL original (data-full-url) para o zoom
+        const src = this.getAttribute("data-full-url") || this.src; 
+        abrirZoom(src);
+      });
+    });
+
+    // Fechar modal
+    if (closeBtn) {
+      closeBtn.addEventListener("click", function() {
+        modal.style.display = "none";
+      });
+    }
+
+    // Fechar ao clicar fora da imagem
+    window.addEventListener("click", function(event) {
+      if (event.target === modal) {
+        modal.style.display = "none";
+      }
+    });
+
+    // =================================================================
+    // LÓGICA DE SELEÇÃO DE VARIAÇÃO E TROCA DE IMAGEM
+    // =================================================================
+
     if (variacaoButtons.length > 0 && variacaoInput) {
-        // Encontra o primeiro botão que NÃO está desabilitado e clica nele
-        // para inicializar a seleção.
+        
+        // 1. Inicialização: Seleciona a primeira variação disponível
         const primeiraVariacaoDisponivel = Array.from(variacaoButtons).find(btn => !btn.disabled);
 
         if (primeiraVariacaoDisponivel) {
-            // Chama a função de clique para inicializar o estado
             simularCliqueVariacao(primeiraVariacaoDisponivel);
         } else {
             // Nenhuma variação disponível: desabilita a compra
             atualizarAcoesCompra(0); 
         }
+
+        // 2. Event Listeners para os cliques
+        variacaoButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                if (!this.disabled) {
+                    simularCliqueVariacao(this);
+                }
+            });
+        });
     }
 
-
-    variacaoButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            // Apenas executa a lógica se o botão não estiver desabilitado
-            if (!this.disabled) {
-                simularCliqueVariacao(this);
-            }
-        });
-    });
 
     /**
      * Função principal para lidar com a seleção de uma variação.
@@ -393,8 +409,9 @@ document.addEventListener("DOMContentLoaded", function() {
     function simularCliqueVariacao(clickedButton) {
         const id = clickedButton.getAttribute('data-id');
         const estoque = parseInt(clickedButton.getAttribute('data-estoque'), 10);
+        const imageUrl = clickedButton.getAttribute('data-imagem-url');
         
-        // 1. Desmarca todos e marca o atual como selecionado
+        // 1. Atualiza o estado visual do botão
         variacaoButtons.forEach(btn => btn.classList.remove('selecionado'));
         clickedButton.classList.add('selecionado');
 
@@ -402,12 +419,43 @@ document.addEventListener("DOMContentLoaded", function() {
         variacaoInput.value = id;
         variacaoSelecionada = id;
 
-        // 3. Atualiza as ações de compra (Estoque, Quantidade e Botão Comprar)
+        // 3. ATUALIZAÇÃO DA IMAGEM PRINCIPAL
+        if (mainImg && imageUrl) {
+            mainImg.src = imageUrl;
+            // Opcional: Rolagem suave para o topo do produto para focar na imagem
+            window.scrollTo({
+                top: document.querySelector('.produto-detalhe-container').offsetTop - 50,
+                behavior: 'smooth'
+            });
+        }
+        
+        // 4. Atualiza as ações de compra (Estoque, Quantidade e Botão Comprar)
         atualizarAcoesCompra(estoque);
 
-        // 4. Se houver lógica de imagem por variação, ela iria aqui.
-        // Exemplo: const imagemUrl = clickedButton.getAttribute('data-imagem-url');
-        // if (imagemUrl) { mainImg.src = imagemUrl; }
+        // 5. ATUALIZAÇÃO DA GALERIA DE MINIATURAS (Opção mais avançada)
+        // Se a variação tiver uma imagem diferente da principal do produto,
+        // garantimos que essa imagem da variação seja a primeira miniatura selecionada.
+        if (galeriaMiniaturas) {
+            const miniaturaDaVariacao = galeriaMiniaturas.querySelector(`img[src="${imageUrl}"]`);
+            
+            // Remove a seleção de todas as miniaturas
+            galeriaMiniaturas.querySelectorAll('.miniatura').forEach(thumb => {
+                thumb.classList.remove('selecionado');
+            });
+
+            if (miniaturaDaVariacao) {
+                // Se a imagem da variação já existe na galeria (por exemplo, como imagem_galeria),
+                // apenas a marca como selecionada.
+                miniaturaDaVariacao.classList.add('selecionado');
+            } else {
+                // Se não existe, a imagem principal é a única que precisa ser marcada como selecionada.
+                // Isso ocorre se a imagem da variação for a mesma imagem principal do produto.
+                const miniaturaOriginal = galeriaMiniaturas.querySelector(`img[data-full-url="${urlImagemProdutoOriginal}"]`);
+                if (miniaturaOriginal) {
+                    miniaturaOriginal.classList.add('selecionado');
+                }
+            }
+        }
     }
     
     /**
@@ -434,13 +482,16 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
 
-    // 5. Opcional: Impedir o envio do formulário sem variação selecionada (se não for pré-selecionada)
-    formCarrinho.addEventListener('submit', function(e) {
-        if (variacaoInput && !variacaoInput.value) {
-            e.preventDefault();
-            alert('Por favor, selecione uma opção de variação antes de adicionar ao carrinho.');
-        }
-    });
+    // Opcional: Impedir o envio do formulário sem variação selecionada (se não for pré-selecionada)
+    if (formCarrinho) {
+        formCarrinho.addEventListener('submit', function(e) {
+            if (variacaoInput && !variacaoInput.value) {
+                e.preventDefault();
+                alert('Por favor, selecione uma opção de variação antes de adicionar ao carrinho.');
+            }
+        });
+    }
+
 });
 </script>
 
