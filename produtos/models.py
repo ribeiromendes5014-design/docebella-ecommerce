@@ -199,62 +199,102 @@ class Variacao(models.Model):
         ('Outro', 'Outro'),
     )
 
-    produto = models.ForeignKey(Produto, on_delete=models.CASCADE, related_name='variacoes')
-    tipo = models.CharField(max_length=50, choices=TIPO_VARIACOES, default='Tamanho')
-    valor = models.CharField(max_length=100)
-    preco_adicional = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    estoque = models.IntegerField(default=0)
+    produto = models.ForeignKey(
+        'Produto',
+        on_delete=models.CASCADE,
+        related_name='variacoes'
+    )
+    tipo = models.CharField(
+        max_length=50,
+        choices=TIPO_VARIACOES,
+        default='Tamanho',
+        verbose_name="Tipo da variação"
+    )
+    valor = models.CharField(
+        max_length=100,
+        verbose_name="Valor da variação"
+    )
+    preco_adicional = models.DecimalField(
+        "Preço adicional",
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        help_text="Valor adicionado ao preço base do produto."
+    )
+    estoque = models.IntegerField(
+        default=0,
+        verbose_name="Estoque da variação"
+    )
 
     imagem = models.ImageField(
         upload_to='produtos/variacoes/',
         null=True,
         blank=True,
-        help_text="Opcional. Se preenchido, esta imagem será exibida quando esta variação for selecionada na loja."
+        help_text="Se preenchido, esta imagem será exibida ao selecionar esta variação."
     )
-    
-    # 🚀 NOVO CAMPO: URL para imagem de variação externa
+
     imagem_url_externa = models.URLField(
-        max_length=2000, 
-        null=True, 
-        blank=True, 
-        verbose_name="URL Imagem Externa da Variação",
-        help_text="Prioriza a URL, se o campo Imagem estiver vazio."
+        max_length=2000,
+        null=True,
+        blank=True,
+        verbose_name="URL da Imagem Externa",
+        help_text="Se preenchido, substitui a imagem local."
     )
 
     class Meta:
         verbose_name = "Variação"
         verbose_name_plural = "Variações"
         unique_together = (('produto', 'tipo', 'valor'),)
+        ordering = ['produto', 'tipo', 'valor']
 
     def __str__(self):
-        nome_produto = self.produto.nome if self.produto else f"ID {self.id} (Produto Sem Nome)"
-        return f'{nome_produto} - {self.tipo}: {self.valor}'
+        nome_produto = self.produto.nome if self.produto else f"Produto #{self.id}"
+        return f"{nome_produto} - {self.tipo}: {self.valor}"
 
-    # 🎯 NOVO MÉTODO CENTRAL: Define qual URL de imagem da variação usar
+    # ----------------------------
+    # MÉTODOS DE NEGÓCIO
+    # ----------------------------
+
     def get_imagem_url(self):
         """
-        Retorna a URL da imagem da variação. Prioriza: 1. URL Externa, 2. Imagem S3.
+        Retorna a URL da imagem da variação.
+        Prioriza: 1️⃣ URL externa, 2️⃣ imagem local, 3️⃣ imagem principal do produto.
         """
         if self.imagem_url_externa:
             return self.imagem_url_externa
         if self.imagem:
-            return self.imagem.url
-        
-        # Se não tiver imagem na variação, retorna a imagem principal do produto
-        return self.produto.get_imagem_url() if self.produto else None
-
+            try:
+                return self.imagem.url
+            except Exception:
+                return None
+        if self.produto:
+            return self.produto.get_imagem_url()
+        return None
 
     def get_preco_final(self):
-        preco_base = self.produto.get_preco_final() if self.produto else Decimal('0.00')
+        """
+        Soma o preço base do produto com o adicional da variação.
+        """
+        preco_base = (
+            self.produto.get_preco_final()
+            if hasattr(self.produto, 'get_preco_final')
+            else Decimal('0.00')
+        )
         return preco_base + self.preco_adicional
 
     def get_display_preco_final(self):
+        """
+        Retorna o preço final formatado para exibição.
+        """
         return f"R$ {self.get_preco_final():.2f}".replace('.', ',')
 
     def save(self, *args, **kwargs):
-        base_name = f"{self.produto.slug}-{self.valor.lower().replace(' ', '-')}"
+        """
+        Renomeia automaticamente a imagem local e mantém compatibilidade com URLs externas.
+        """
+        base_name = f"{self.produto.slug}-{self.valor.lower().replace(' ', '-')}" if self.produto else f"variacao-{self.pk}"
 
-        # CASO 1: imagem enviada manualmente (mantido)
+        # CASO 1: imagem local enviada manualmente
         if self.imagem and hasattr(self.imagem, "name"):
             ext = os.path.splitext(self.imagem.name)[1].lower()
             novo_nome = f"media/produtos/variacoes/{base_name}{ext}"
@@ -265,11 +305,11 @@ class Variacao(models.Model):
                 self.imagem.name = novo_nome
                 print(f"🎨 Imagem de variação renomeada automaticamente: {novo_nome}")
 
-        # CASO 2: sem imagem → tenta achar no S3 (mantido)
-        elif not self.imagem and not self.imagem_url_externa: # ⚠️ Apenas se NÃO houver URL externa
-            # ... (seu código de busca no S3 aqui, conforme o original) ...
+        # CASO 2: sem imagem e sem URL externa (mantido)
+        elif not self.imagem and not self.imagem_url_externa:
+            # Aqui você pode colocar a lógica de fallback S3, se tiver implementado
             pass
-            
+
         super().save(*args, **kwargs)
 
 
