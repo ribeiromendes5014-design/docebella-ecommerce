@@ -185,7 +185,7 @@
 {% endblock %}
 
 
-{% block hero_banner %} 
+{% block hero_banner %}
 <div class="full-width-banner-wrapper">
   {% if banners %}
     {% if banners|length > 1 %}
@@ -220,13 +220,14 @@
       {% endfor %}
     {% endif %}
   {% else %}
-    <!-- Banner padrão (caso não tenha nenhum no admin) -->
+    <!-- Banner padrão -->
     <div class="main-banner-image">
       <div class="banner-text"></div>
     </div>
   {% endif %}
 </div>
 {% endblock %}
+
 
 
 
