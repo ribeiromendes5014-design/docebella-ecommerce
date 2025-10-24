@@ -99,6 +99,25 @@
     .btn-principal:hover {
         background: #e3358b;
     }
+    
+    /* === Ajustes para banners do admin === */
+     .banner-admin {
+        max-height: 550px; /* mesma altura do banner padrão */
+        object-fit: cover;
+        width: 100%;
+        display: block;
+    }
+
+   /* Evita sobreposição */
+    .carousel, .banner-admin {
+        position: relative;
+        z-index: 1;
+   }
+
+    .full-width-banner-wrapper {
+        margin-bottom: 40px;
+   }
+
 
     /* === Timer de promoção === */
     .timer-box {
@@ -168,11 +187,47 @@
 
 {% block hero_banner %} 
 <div class="full-width-banner-wrapper">
+  {% if banners %}
+    {% if banners|length > 1 %}
+      <!-- Carrossel de múltiplos banners -->
+      <div id="bannerCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          {% for banner in banners %}
+            {% if banner.ativo %}
+              <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                <a href="{{ banner.link|default:'#' }}">
+                  <img src="{{ banner.imagem.url }}" class="d-block w-100 banner-admin" alt="{{ banner.titulo }}">
+                </a>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon"></span>
+        </button>
+      </div>
+    {% else %}
+      <!-- Banner único -->
+      {% for banner in banners %}
+        {% if banner.ativo %}
+          <a href="{{ banner.link|default:'#' }}">
+            <img src="{{ banner.imagem.url }}" class="img-fluid w-100 banner-admin" alt="{{ banner.titulo }}">
+          </a>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% else %}
+    <!-- Banner padrão (caso não tenha nenhum no admin) -->
     <div class="main-banner-image">
-        <div class="banner-text"></div>
+      <div class="banner-text"></div>
     </div>
+  {% endif %}
 </div>
 {% endblock %}
+
 
 
 {% block content %}
