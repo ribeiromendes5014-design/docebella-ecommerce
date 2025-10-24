@@ -71,6 +71,19 @@ class CategoriaAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('nome',)}
 
 
+
+# -----------------------------------------------------------------
+#   variação
+# -----------------------------------------------------------------
+
+class VariacaoInline(admin.TabularInline):
+    """Permite editar variações diretamente no admin do produto."""
+    model = models.Variacao
+    extra = 1
+    fields = ('nome', 'preco', 'estoque', 'imagem', 'imagem_url_externa', 'ativo')
+
+
+
 # -----------------------------------------------------------------
 # 3. Produto
 # -----------------------------------------------------------------
