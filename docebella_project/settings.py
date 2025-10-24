@@ -205,7 +205,7 @@ AWS_LOCATION = 'media/produtos'  # O Django S3Boto3Storage adiciona isso como pr
 
 # 🔧 Parâmetros padrão do S3
 AWS_S3_OBJECT_PARAMETERS = {
-    'CacheControl': 'max-age=86400',  # Cache de 1 dia
+    'CacheControl': 'max-age=1209600, public',  
 }
 
 # 🚫 NOVO PADRÃO DA AWS → Buckets "ACL desativadas" (Bucket owner enforced)
