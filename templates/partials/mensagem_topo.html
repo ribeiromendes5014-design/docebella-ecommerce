@@ -9,3 +9,33 @@
   </div>
 </div>
 {% endif %}
+
+<style>
+.marquee-container {
+  background-color: #f45ca5;
+  color: #fff;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
+  padding: 8px 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  position: relative;
+  z-index: 9999;
+}
+
+.marquee {
+  display: inline-block;
+  animation: scrollText 15s linear infinite;
+}
+
+.marquee span {
+  margin: 0 50px;
+}
+
+@keyframes scrollText {
+  from { transform: translateX(100%); }
+  to { transform: translateX(-100%); }
+}
+</style>
