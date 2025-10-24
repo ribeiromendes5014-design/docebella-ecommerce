@@ -1,4 +1,5 @@
 # produtos/views.py
+from produtos.models import Produto, Variacao, Banner, MensagemTopo
 from django.shortcuts import render
 from produtos.models import Produto
 from django.core.paginator import Paginator
@@ -36,12 +37,18 @@ def home(request):
             promo.esta_vigente() for promo in p.promocoes.all()
         )
 
+    # 🆕 Adicione estas duas linhas:
+    mensagens_topo = MensagemTopo.objects.filter(ativo=True)
+    banners = Banner.objects.filter(ativo=True)
+
     return render(request, 'produtos/home.html', {
         'produtos': produtos,
         'query': query,
-        'titulo': 'Doce & Bella E-commerce'
+        'titulo': 'Doce & Bella E-commerce',
+        # 🆕 envia os dados para o template:
+        'mensagens_topo': mensagens_topo,
+        'banners': banners,
     })
-
 
 def listar_por_categoria(request, categoria_slug):
     categoria = get_object_or_404(Categoria, slug=categoria_slug)
