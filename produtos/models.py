@@ -140,6 +140,28 @@ class Produto(models.Model):
         return "Disponível"
 
 
+# ======================
+# Banner
+# ======================
+
+class Banner(models.Model):
+    titulo = models.CharField(max_length=100, blank=True, null=True)
+    imagem = models.ImageField(upload_to='banners/')
+    link = models.URLField(blank=True, null=True, help_text="Link opcional para o banner.")
+    ativo = models.BooleanField(default=True)
+    ordem = models.PositiveIntegerField(default=1)
+    usar_em_carrossel = models.BooleanField(default=True, help_text="Se falso, exibe apenas um banner fixo.")
+
+    class Meta:
+        ordering = ['ordem']
+        verbose_name = "Banner"
+        verbose_name_plural = "Banners"
+
+    def __str__(self):
+        return self.titulo or f"Banner {self.id}"
+
+
+
 
 # ======================
 # VARIAÇÃO
