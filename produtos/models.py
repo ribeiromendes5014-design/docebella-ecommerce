@@ -257,8 +257,8 @@ class Variacao(models.Model):
 
     def get_imagem_url(self):
     """
-    Retorna a URL da imagem da variação.
-    Prioriza: 1️⃣ URL externa, 2️⃣ imagem local, 3️⃣ imagem principal do produto.
+    Retorna a URL da imagem, seja externa ou local.
+    Prioriza: 1️⃣ URL externa, 2️⃣ imagem local, 3️⃣ placeholder.
     """
     if self.imagem_url_externa:
         return self.imagem_url_externa
@@ -269,11 +269,9 @@ class Variacao(models.Model):
         except ValueError:
             pass
 
-    if self.produto:
-        return self.produto.get_imagem_url()
-
     from django.templatetags.static import static
     return static('img/placeholder.png')
+
 
 
     def get_preco_final(self):
