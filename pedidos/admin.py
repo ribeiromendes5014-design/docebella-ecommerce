@@ -133,17 +133,46 @@ class EnderecoEntregaAdmin(admin.ModelAdmin):
 @admin.register(Cupom)
 class CupomAdmin(admin.ModelAdmin):
     list_display = (
-        'codigo', 
-        'tipo', 
-        'valor_desconto', 
-        'valor_minimo_pedido', 
-        'limite_usos', 
+        'codigo',
+        'tipo',
+        'valor_desconto',
+        'valor_minimo_pedido',
+        'limite_usos',
         'usos_atuais',
         'data_inicio',
         'data_fim',
         'ativo',
-        'is_valid' 
+        'categoria',    # ✅ novo campo
+        'produto',      # ✅ novo campo
+        'is_valid'
     )
-    list_filter = ('ativo', 'tipo', 'data_inicio', 'data_fim')
+    list_filter = ('ativo', 'tipo', 'categoria', 'data_inicio', 'data_fim')
     search_fields = ('codigo',)
     readonly_fields = ('usos_atuais',)
+
+    fieldsets = (
+        ('Informações do Cupom', {
+            'fields': (
+                'codigo',
+                'tipo',
+                'valor_desconto',
+                'valor_minimo_pedido',
+                'limite_usos',
+                'usos_atuais',
+                'ativo'
+            )
+        }),
+        ('Período de Validade', {
+            'fields': ('data_inicio', 'data_fim'),
+        }),
+        ('Restrições (opcionais)', {
+            'fields': ('categoria', 'produto'),
+            'description': 'Limite este cupom a uma categoria ou produto específico, se desejar.'
+        }),
+    )
+
+    # Exibe "Válido" ou "Inválido" na listagem
+    def is_valid(self, obj):
+        return obj.is_valid()
+    is_valid.boolean = True
+    is_valid.short_description = "Válido?"
