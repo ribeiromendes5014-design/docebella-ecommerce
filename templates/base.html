@@ -242,6 +242,10 @@
     @media (max-width: 768px) {
       .fixed-header-custom { display: none !important; }
       .header-mobile { display: block !important; }
+      /* 💖 SOLUÇÃO: COMPENSAÇÃO DE ALTURA PARA O HEADER FIXO */
+  body {
+      padding-top: 130px !important; /* 130px é uma margem segura para o seu header mobile */
+  }
     }
     @media (min-width: 769px) {
       .header-mobile,
@@ -259,10 +263,7 @@
       z-index: 9997;
       box-shadow: 0 2px 8px var(--sombra);
     }
-    /* empurra o conteúdo quando o header mobile está fixo */
-    @media (max-width: 768px) {
-      main.container { margin-top: 120px !important; }
-    }
+    
 
     .header-mobile-top{
       display:flex; align-items:center; justify-content:space-between;
