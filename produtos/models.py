@@ -256,20 +256,25 @@ class Variacao(models.Model):
     # ----------------------------
 
     def get_imagem_url(self):
-        """
-        Retorna a URL da imagem da variação.
-        Prioriza: 1️⃣ URL externa, 2️⃣ imagem local, 3️⃣ imagem principal do produto.
-        """
-        if self.imagem_url_externa:
-            return self.imagem_url_externa
-        if self.imagem:
-            try:
-                return self.imagem.url
-            except Exception:
-                return None
-        if self.produto:
-            return self.produto.get_imagem_url()
-        return None
+    """
+    Retorna a URL da imagem da variação.
+    Prioriza: 1️⃣ URL externa, 2️⃣ imagem local, 3️⃣ imagem principal do produto.
+    """
+    if self.imagem_url_externa:
+        return self.imagem_url_externa
+
+    if self.imagem and getattr(self.imagem, 'name', None):
+        try:
+            return self.imagem.url
+        except ValueError:
+            pass
+
+    if self.produto:
+        return self.produto.get_imagem_url()
+
+    from django.templatetags.static import static
+    return static('img/placeholder.png')
+
 
     def get_preco_final(self):
         """
@@ -350,12 +355,21 @@ class ImagemProduto(models.Model):
         return f"Imagem de {self.produto.nome} - Ordem {self.ordem}"
 
     def get_imagem_url(self):
-        """Retorna a URL da imagem, seja externa ou local"""
-        if self.imagem_url_externa:
-            return self.imagem_url_externa
-        elif self.imagem:
+    """
+    Retorna a URL da imagem, priorizando externa > local > placeholder.
+    Evita erro se não houver arquivo associado.
+    """
+    if self.imagem_url_externa:
+        return self.imagem_url_externa
+
+    if self.imagem and getattr(self.imagem, 'name', None):
+        try:
             return self.imagem.url
-        return '/static/img/placeholder.png'
+        except ValueError:
+            pass
+
+    from django.templatetags.static import static
+    return static('img/placeholder.png')
 
 
 
