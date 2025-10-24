@@ -18,7 +18,15 @@ class VariacaoInline(admin.TabularInline):
     """Permite editar as variações dentro da página do Produto."""
     model = models.Variacao
     extra = 1
-    fields = ('tipo', 'valor', 'preco_adicional', 'estoque', 'imagem')
+    fields = (
+        'tipo',
+        'valor',
+        'preco_adicional',
+        'estoque',
+        'imagem',
+        'imagem_url_externa',  # 👈 adiciona aqui
+    )
+
 
 
 # -----------------------------------------------------------------
@@ -68,14 +76,23 @@ class ProdutoAdmin(admin.ModelAdmin):
     inlines = [VariacaoInline, ImagemProdutoInline]
 
     fieldsets = (
-        (None, {
-            'fields': ('categoria', 'nome', 'slug', 'descricao', 'preco', 'imagem'),
-        }),
-        ('Controle de Estoque/Variação', {
-            'fields': ('usa_variacoes', 'estoque', 'disponivel'),
-            'description': 'O campo Estoque só é relevante se "usa variações" estiver DESMARCADO.',
-        }),
-    )
+    (None, {
+        'fields': (
+            'categoria',
+            'nome',
+            'slug',
+            'descricao',
+            'preco',
+            'imagem',
+            'imagem_url_externa',  # 👈 adiciona aqui
+        ),
+    }),
+    ('Controle de Estoque/Variação', {
+        'fields': ('usa_variacoes', 'estoque', 'disponivel'),
+        'description': 'O campo Estoque só é relevante se "usa variações" estiver DESMARCADO.',
+    }),
+)
+
 
     def get_fieldsets(self, request, obj=None):
         """Remove o campo 'estoque' se o produto usa variações."""
