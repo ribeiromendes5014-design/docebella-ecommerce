@@ -239,22 +239,19 @@
 
 
 {% block content %}
-
 <div class="secao-destaques">
     <h2>Destaques</h2>
     
-    {% for produto in produtos %}
-    <div class="product-card ...">
-        <a href="{% url 'detalhe_produto' slug=produto.slug %}">
-            <img src="{{ produto.get_imagem_url }}"
-                 alt="{{ produto.nome }}"
-                 loading="lazy"
-                 onerror="this.onerror=null;this.src='{% static 'img/placeholder.png' %}';">
-        </a>
-        ...
-    </div>
-{% endfor %}
-
+    {% if produtos %}
+        <div class="product-grid">
+            {% for produto in produtos %}
+                <div class="product-card {% if produto.promocoes.first and produto.promocoes.first.esta_vigente %}promo-ativo{% endif %}">
+                    <a href="{% url 'detalhe_produto' slug=produto.slug %}">
+                        <img src="{{ produto.get_imagem_url }}"
+                             alt="{{ produto.nome }}"
+                             loading="lazy"
+                             onerror="this.onerror=null;this.src='{% static 'img/placeholder.png' %}';">
+                    </a>
 
                     <h3>{{ produto.nome }}</h3>
                     
@@ -294,7 +291,6 @@
         <p style="text-align: center;">Nenhum produto em destaque encontrado.</p>
     {% endif %}
 </div>
-
 {% endblock %}
 
 
