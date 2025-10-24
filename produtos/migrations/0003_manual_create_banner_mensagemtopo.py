@@ -1,9 +1,10 @@
 from django.db import migrations, models
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('produtos', '0002_banner_mensagemtopo_alter_categoria_options_and_more'),
+        ('produtos', '0001_initial'),
     ]
 
     operations = [
@@ -31,8 +32,8 @@ class Migration(migrations.Migration):
                 ('texto', models.CharField(max_length=255, help_text="Texto que aparecerá rolando no topo do site.")),
                 ('ativo', models.BooleanField(default=True)),
                 ('ordem', models.PositiveIntegerField(default=1, help_text="Define a ordem das mensagens.")),
-                ('data_inicio', models.DateTimeField(blank=True, null=True)),
-                ('data_fim', models.DateTimeField(blank=True, null=True)),
+                ('data_inicio', models.DateTimeField(null=True, blank=True)),
+                ('data_fim', models.DateTimeField(null=True, blank=True)),
             ],
             options={
                 'ordering': ['ordem'],
