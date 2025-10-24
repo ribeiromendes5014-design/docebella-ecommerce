@@ -349,6 +349,98 @@ document.addEventListener("DOMContentLoaded", function() {
       modal.style.display = "none";
     }
   });
+  // ===== Lógica de Seleção de Variação =====
+    const variacaoButtons = document.querySelectorAll('.btn-variacao');
+    const variacaoInput = document.getElementById('variacao-input');
+    const formCarrinho = document.getElementById('form-adicionar-carrinho');
+    const quantidadeInput = document.getElementById('quantidade');
+    const btnComprar = document.querySelector('.btn-comprar');
+    const statusEstoque = document.querySelector('.status-estoque');
+
+    // Estado inicial para quando o produto possui variações
+    // Tenta pré-selecionar a primeira variação disponível, se existir.
+    let variacaoSelecionada = null;
+    
+    // Verifica se existem botões de variação e se há um campo de ID de variação
+    if (variacaoButtons.length > 0 && variacaoInput) {
+        // Encontra o primeiro botão que NÃO está desabilitado e clica nele
+        // para inicializar a seleção.
+        const primeiraVariacaoDisponivel = Array.from(variacaoButtons).find(btn => !btn.disabled);
+
+        if (primeiraVariacaoDisponivel) {
+            // Chama a função de clique para inicializar o estado
+            simularCliqueVariacao(primeiraVariacaoDisponivel);
+        } else {
+            // Nenhuma variação disponível: desabilita a compra
+            atualizarAcoesCompra(0); 
+        }
+    }
+
+
+    variacaoButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Apenas executa a lógica se o botão não estiver desabilitado
+            if (!this.disabled) {
+                simularCliqueVariacao(this);
+            }
+        });
+    });
+
+    /**
+     * Função principal para lidar com a seleção de uma variação.
+     * @param {HTMLElement} clickedButton O botão de variação clicado/simulado.
+     */
+    function simularCliqueVariacao(clickedButton) {
+        const id = clickedButton.getAttribute('data-id');
+        const estoque = parseInt(clickedButton.getAttribute('data-estoque'), 10);
+        
+        // 1. Desmarca todos e marca o atual como selecionado
+        variacaoButtons.forEach(btn => btn.classList.remove('selecionado'));
+        clickedButton.classList.add('selecionado');
+
+        // 2. Atualiza o input hidden com o ID da variação
+        variacaoInput.value = id;
+        variacaoSelecionada = id;
+
+        // 3. Atualiza as ações de compra (Estoque, Quantidade e Botão Comprar)
+        atualizarAcoesCompra(estoque);
+
+        // 4. Se houver lógica de imagem por variação, ela iria aqui.
+        // Exemplo: const imagemUrl = clickedButton.getAttribute('data-imagem-url');
+        // if (imagemUrl) { mainImg.src = imagemUrl; }
+    }
+    
+    /**
+     * Atualiza o status de estoque, o input de quantidade e o botão de compra.
+     * @param {number} estoque O estoque da variação selecionada.
+     */
+    function atualizarAcoesCompra(estoque) {
+        const estaDisponivel = estoque > 0;
+        
+        // Atualiza a quantidade máxima
+        quantidadeInput.max = estoque;
+        if (parseInt(quantidadeInput.value, 10) > estoque) {
+            quantidadeInput.value = estoque > 0 ? 1 : 0; // Reseta para 1 ou 0
+        }
+        
+        // Atualiza o estado do botão Comprar
+        btnComprar.disabled = !estaDisponivel;
+        btnComprar.style.opacity = !estaDisponivel ? 0.5 : 1;
+        btnComprar.textContent = estaDisponivel ? "Comprar" : "Esgotado";
+
+        // Atualiza a mensagem de estoque
+        statusEstoque.textContent = estaDisponivel ? `Em estoque: ${estoque} unidades` : "Esgotado";
+        statusEstoque.style.color = estaDisponivel ? '#2e7d32' : '#d32f2f';
+    }
+
+
+    // 5. Opcional: Impedir o envio do formulário sem variação selecionada (se não for pré-selecionada)
+    formCarrinho.addEventListener('submit', function(e) {
+        if (variacaoInput && !variacaoInput.value) {
+            e.preventDefault();
+            alert('Por favor, selecione uma opção de variação antes de adicionar ao carrinho.');
+        }
+    });
 });
 </script>
 
