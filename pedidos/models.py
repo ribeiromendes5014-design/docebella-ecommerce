@@ -94,41 +94,60 @@ class ItemPedido(models.Model):
 
 
 # >> NOVO MODELO: CUPOM DE DESCONTO <<
+from produtos.models import Produto, Categoria  # ✅ Adicione este import junto com os outros
+
 class Cupom(models.Model):
     TIPO_DESCONTO = (
-        ('percentagem', 'Percentagem'), # Ex: 10% de desconto
-        ('fixo', 'Valor Fixo'),        # Ex: R$ 20,00 de desconto
+        ('percentagem', 'Percentagem'),  # Ex: 10% de desconto
+        ('fixo', 'Valor Fixo'),          # Ex: R$ 20,00 de desconto
     )
 
     codigo = models.CharField(max_length=50, unique=True)
-    
+
     # Detalhes do Desconto
     tipo = models.CharField(max_length=15, choices=TIPO_DESCONTO, default='percentagem')
     valor_desconto = models.DecimalField(
-        max_digits=5, 
-        decimal_places=2, 
+        max_digits=5,
+        decimal_places=2,
         validators=[MinValueValidator(0)]
     )
-    
+
     # Regras de Uso
     valor_minimo_pedido = models.DecimalField(
-        max_digits=10, 
-        decimal_places=2, 
+        max_digits=10,
+        decimal_places=2,
         default=0.00,
         help_text="Valor mínimo do pedido para aplicar o cupom."
     )
     limite_usos = models.IntegerField(
-        default=100, 
+        default=100,
         validators=[MinValueValidator(1)],
         help_text="Número máximo de vezes que este cupom pode ser usado por todos os clientes."
     )
     usos_atuais = models.IntegerField(default=0)
-    
+
     # Validade
     data_inicio = models.DateTimeField(default=timezone.now)
     data_fim = models.DateTimeField()
-    
+
+    # Status
     ativo = models.BooleanField(default=True)
+
+    # 🔹 NOVOS CAMPOS (restrições opcionais)
+    categoria = models.ForeignKey(
+        Categoria,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="(Opcional) Limite o cupom a uma categoria específica de produtos."
+    )
+    produto = models.ForeignKey(
+        Produto,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="(Opcional) Limite o cupom a um produto específico."
+    )
 
     class Meta:
         verbose_name = "Cupom de Desconto"
@@ -137,10 +156,28 @@ class Cupom(models.Model):
     def __str__(self):
         return self.codigo
 
+    # ===============================
+    # ✅ Validações e lógica de uso
+    # ===============================
     def is_valid(self):
         """Verifica se o cupom está ativo e dentro do limite de datas/usos."""
         now = timezone.now()
-        return (self.ativo and 
-                self.data_inicio <= now and 
-                self.data_fim >= now and
-                self.usos_atuais < self.limite_usos)
+        return (
+            self.ativo and
+            self.data_inicio <= now <= self.data_fim and
+            self.usos_atuais < self.limite_usos
+        )
+
+    def aplica_em_produto(self, produto):
+        """Verifica se o cupom pode ser aplicado ao produto informado."""
+        if self.produto and produto != self.produto:
+            return False
+        if self.categoria and produto.categoria != self.categoria:
+            return False
+        return True
+
+    def clean(self):
+        """Valida regras básicas antes de salvar."""
+        from django.core.exceptions import ValidationError
+        if self.data_fim <= self.data_inicio:
+            raise ValidationError("A data de fim deve ser posterior à data de início.")
