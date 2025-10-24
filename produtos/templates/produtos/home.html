@@ -100,23 +100,30 @@
         background: #e3358b;
     }
     
-    /* === Ajustes para banners do admin === */
-     .banner-admin {
-        max-height: 550px; /* mesma altura do banner padrão */
-        object-fit: cover;
-        width: 100%;
-        display: block;
-    }
-
-   /* Evita sobreposição */
-    .carousel, .banner-admin {
-        position: relative;
-        z-index: 1;
+/* === Corrige sobreposição de banners === */
+    {% if banners %}
+    .main-banner-image {
+        display: none !important;
    }
+    {% endif %}
+
+/* Ajusta os banners do admin */
+   .banner-admin {
+      max-height: 550px;
+      object-fit: cover;
+      width: 100%;
+      display: block;
+  }
+
+   .carousel,
+   .banner-admin {
+     position: relative;
+     z-index: 1;
+  }
 
     .full-width-banner-wrapper {
-        margin-bottom: 40px;
-   }
+      margin-bottom: 40px;
+ }
 
 
     /* === Timer de promoção === */
