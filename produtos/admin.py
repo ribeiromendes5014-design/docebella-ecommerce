@@ -80,8 +80,7 @@ class VariacaoInline(admin.TabularInline):
     """Permite editar variações diretamente no admin do produto."""
     model = models.Variacao
     extra = 1
-    fields = ('nome', 'preco', 'estoque', 'imagem', 'imagem_url_externa', 'ativo')
-
+    fields = ('tipo', 'valor', 'estoque', 'imagem', 'imagem_url_externa')
 
 
 # -----------------------------------------------------------------
