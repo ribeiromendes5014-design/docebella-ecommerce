@@ -173,10 +173,15 @@
             alt="Miniatura principal">
       
 {% for imagem_galeria in produto.galeria_imagens.all %}
-  {% if imagem_galeria.imagem or imagem_galeria.imagem_url_externa %}
+  {% if imagem_galeria.imagem and imagem_galeria.imagem.name %}
     <img class="miniatura"
-         src="{{ imagem_galeria.imagem.url|default:imagem_galeria.imagem_url_externa }}"
-         data-full-url="{{ imagem_galeria.imagem.url|default:imagem_galeria.imagem_url_externa }}"
+         src="{{ imagem_galeria.imagem.url }}"
+         data-full-url="{{ imagem_galeria.imagem.url }}"
+         alt="{{ imagem_galeria.descricao|default:'Miniatura' }}">
+  {% elif imagem_galeria.imagem_url_externa %}
+    <img class="miniatura"
+         src="{{ imagem_galeria.imagem_url_externa }}"
+         data-full-url="{{ imagem_galeria.imagem_url_externa }}"
          alt="{{ imagem_galeria.descricao|default:'Miniatura' }}">
   {% endif %}
 {% endfor %}
