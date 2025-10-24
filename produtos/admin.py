@@ -22,6 +22,30 @@ class VariacaoInline(admin.TabularInline):
 
 
 # -----------------------------------------------------------------
+#Texto admin
+# -----------------------------------------------------------------
+from django.contrib import admin
+from .models import Banner, MensagemTopo
+
+@admin.register(MensagemTopo)
+class MensagemTopoAdmin(admin.ModelAdmin):
+    list_display = ('texto', 'ativo', 'ordem', 'data_inicio', 'data_fim')
+    list_editable = ('ativo', 'ordem')
+    search_fields = ('texto',)
+    ordering = ('ordem',)
+
+# -----------------------------------------------------------------
+# Banner admin
+# -----------------------------------------------------------------
+@admin.register(Banner)
+class BannerAdmin(admin.ModelAdmin):
+    list_display = ('titulo', 'ativo', 'ordem', 'usar_em_carrossel')
+    list_editable = ('ativo', 'ordem', 'usar_em_carrossel')
+    search_fields = ('titulo',)
+    ordering = ('ordem',)
+
+
+# -----------------------------------------------------------------
 # 2. Categoria
 # -----------------------------------------------------------------
 @admin.register(models.Categoria)
