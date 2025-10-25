@@ -286,37 +286,35 @@
     <div class="variacao-selector">
       
       {# ==== Seletor de COR ==== #}
-      {% with cores=produto.variacao_set.values_list('cor', flat=True).distinct %}
-        {% if cores %}
-          <h4>Cor:</h4>
-          <div class="botoes-cor">
-            {% for cor in cores %}
-              <button type="button"
-                      class="btn-variacao btn-cor"
-                      data-tipo="cor"
-                      data-cor="{{ cor|default:'Única' }}">
-                {{ cor|default:"Única" }}
-              </button>
-            {% endfor %}
-          </div>
-        {% endif %}
-      {% endwith %}
+{% if cores %}
+  <h4>Cor:</h4>
+  <div class="botoes-cor">
+    {% for cor in cores %}
+      <button type="button"
+              class="btn-variacao btn-cor"
+              data-tipo="cor"
+              data-cor="{{ cor|default:'Única' }}">
+        {{ cor|default:"Única" }}
+      </button>
+    {% endfor %}
+  </div>
+{% endif %}
 
-      {# ==== Seletor de TAMANHO ==== #}
-      {% with tamanhos=produto.variacao_set.values_list('valor', flat=True).distinct %}
-        {% if tamanhos %}
-          <h4 style="margin-top: 15px;">Tamanho:</h4>
-          <div class="botoes-tamanho">
-            {% for tamanho in tamanhos %}
-              <button type="button"
-                      class="btn-variacao btn-tamanho"
-                      data-tipo="tamanho"
-                      data-valor="{{ tamanho }}">
-                {{ tamanho }}
-              </button>
-            {% endfor %}
-          </div>
-        {% endif %}
+{# ==== Seletor de TAMANHO ==== #}
+{% if tamanhos %}
+  <h4 style="margin-top: 15px;">Tamanho:</h4>
+  <div class="botoes-tamanho">
+    {% for tamanho in tamanhos %}
+      <button type="button"
+              class="btn-variacao btn-tamanho"
+              data-tipo="tamanho"
+              data-valor="{{ tamanho }}">
+        {{ tamanho }}
+      </button>
+    {% endfor %}
+  </div>
+{% endif %}
+
       {% endwith %}
     </div>
 
