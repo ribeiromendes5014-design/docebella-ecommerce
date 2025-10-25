@@ -5,7 +5,7 @@ from .models import EnderecoEntrega, Pedido, ItemPedido
 from django.db import transaction
 from django import forms
 from carrinho.views import _get_session_key
-from produtos.models import Produto, Variacao 
+from produtos.models import Produto, VariacaoTamanho, VariacaoCor 
 from django.contrib import messages
 
 
