@@ -228,10 +228,11 @@ class Variacao(models.Model):
         default=Decimal('0.00'),
         help_text="Valor adicionado ao preço base do produto."
     )
-    estoque = models.IntegerField(default=0, verbose_name="Estoque da variação")
+        estoque = models.IntegerField(
         default=0,
         verbose_name="Estoque da variação"
     )
+
 
     imagem = models.ImageField(
         upload_to='produtos/variacoes/',
