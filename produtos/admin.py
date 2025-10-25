@@ -112,9 +112,9 @@ class VariacaoForm(forms.ModelForm):
 class VariacaoInline(admin.TabularInline):
     """Permite editar variações diretamente no admin do produto."""
     model = models.Variacao
-    form = VariacaoForm  # 👈 adiciona o form personalizado
     extra = 1
-    fields = ('tipo', 'valor', 'estoque', 'imagem', 'imagem_url_externa')
+    fields = ('tipo', 'valor', 'cor', 'estoque', 'imagem', 'imagem_url_externa')
+
 
 
 # -----------------------------------------------------------------
