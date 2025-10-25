@@ -66,67 +66,65 @@ def listar_por_categoria(request, categoria_slug):
 def detalhe_produto(request, slug):
     # Busca o produto ou retorna 404
     produto = get_object_or_404(Produto, slug=slug, disponivel=True)
+    
+    # ✅ Calcula o estoque total somando todas as variações
+    if produto.usa_variacoes:
+        estoque_total = sum(v.estoque for v in produto.variacoes.all())
+    else:
+        estoque_total = produto.estoque
 
-    # 🔹 Busca TODAS as variações ativas do produto
-    variacoes = Variacao.objects.filter(produto=produto)
+    # Separa as variações
+    variacoes = produto.variacoes.all()
+    cores = variacoes.values_list('cor', flat=True).distinct()
+    tamanhos = variacoes.values_list('valor', flat=True).distinct()
 
-    # 🔹 Agrupar variações por cor (para não repetir cores iguais)
-    variacoes_por_cor = defaultdict(list)
-    for v in variacoes:
-        if v.cor:  # evita None
-            variacoes_por_cor[v.cor].append({
-                "id": v.id,
-                "tamanho": v.valor,
-                "estoque": v.estoque,
-                "imagem": v.imagem.url if v.imagem else (v.produto.imagem.url if v.produto.imagem else "")
-            })
-
-    # 🔹 Listas únicas de cores e tamanhos
-    cores = sorted(set([v.cor for v in variacoes if v.cor]))
-    tamanhos = sorted(set([v.valor for v in variacoes if v.valor]))
-
-    # 🔹 Serializa os dados para o JS no template
-    variacoes_json = [
+    # Monta o JSON das variações
+    import json
+    variacoes_json = json.dumps([
         {
             "id": v.id,
             "cor": v.cor,
             "tamanho": v.valor,
             "estoque": v.estoque,
-            "imagem": v.imagem.url if v.imagem else (v.produto.imagem.url if v.produto.imagem else "")
+            "imagem": v.imagem.url if v.imagem else "",
         }
         for v in variacoes
-    ]
+    ])
 
-    # 🔹 Cálculo da simulação de parcelamento
+    # Cálculo de parcelamento
+    from decimal import Decimal
     preco = produto.get_preco_final() or Decimal('0')
     valor_final = preco / Decimal('0.8872')
     valor_parcela = valor_final / Decimal('3')
 
-    # 🔹 Promoção ativa (para o cronômetro)
+    # Promoção ativa
     promo_ativa = None
     for promo in produto.promocoes.all():
         if promo.esta_vigente():
             promo_ativa = promo
             break
 
-    # 🔹 Produtos relacionados
+    # Produtos relacionados
     produtos_relacionados = Produto.objects.filter(
         categoria=produto.categoria,
         disponivel=True,
         estoque__gt=0
-    ).exclude(id=produto.id).order_by('?')[:4]
+    ).exclude(
+        id=produto.id
+    ).order_by('?')[:4]
 
-    # 🔹 Envia tudo ao template
+    # Contexto
     context = {
-        "produto": produto,
-        "cores": cores,
-        "tamanhos": tamanhos,
-        "variacoes_por_cor": dict(variacoes_por_cor),
-        "variacoes_json": json.dumps(variacoes_json, ensure_ascii=False),
-        "produtos_relacionados": produtos_relacionados,
-        "valor_parcela": valor_parcela,
-        "promo_ativa": promo_ativa,
-        "titulo": f"{produto.nome} | Doce & Bella",
+        'produto': produto,
+        'cores': cores,
+        'tamanhos': tamanhos,
+        'produtos_relacionados': produtos_relacionados,
+        'valor_parcela': valor_parcela,
+        'promo_ativa': promo_ativa,
+        'variacoes_json': variacoes_json,
+        'estoque_total': estoque_total,  # 👈 AQUI USADO NO TEMPLATE
+        'titulo': f'{produto.nome} | Doce & Bella',
     }
 
-    return render(request, "produtos/detalhe_produto.html", context)
+    return render(request, 'produtos/detalhe_produto.html', context)
+
