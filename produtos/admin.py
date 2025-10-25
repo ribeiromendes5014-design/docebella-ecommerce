@@ -76,24 +76,6 @@ class CategoriaAdmin(admin.ModelAdmin):
 # -----------------------------------------------------------------
 #   variação
 # -----------------------------------------------------------------
-
-# -----------------------------------------------------------------
-# 2.1 Variações e Subvariações
-# -----------------------------------------------------------------
-
-
-
-@admin.register(models.Variacao)
-class VariacaoAdmin(admin.ModelAdmin):
-    """Admin para gerenciar variações de forma hierárquica."""
-    list_display = ('produto', 'tipo', 'valor', 'estoque', 'parent')
-    list_filter = ('produto', 'tipo')
-    search_fields = ('valor', 'produto__nome')
-    inlines = [SubVariacaoInline]
-    exclude = ('parent',)
-
-
-
 # -----------------------------------------------------------------
 # 2.1 Variações e Subvariações com Nested Admin
 # -----------------------------------------------------------------
@@ -118,6 +100,24 @@ class VariacaoInline(nested_admin.NestedTabularInline):
     verbose_name = "Variação"
     verbose_name_plural = "Variações"
     inlines = [SubVariacaoInline]
+# -----------------------------------------------------------------
+# 2.1 Variações e Subvariações
+# -----------------------------------------------------------------
+
+
+
+@admin.register(models.Variacao)
+class VariacaoAdmin(admin.ModelAdmin):
+    """Admin para gerenciar variações de forma hierárquica."""
+    list_display = ('produto', 'tipo', 'valor', 'estoque', 'parent')
+    list_filter = ('produto', 'tipo')
+    search_fields = ('valor', 'produto__nome')
+    inlines = [SubVariacaoInline]
+    exclude = ('parent',)
+
+
+
+
 
 
 @admin.register(models.Produto)
