@@ -80,7 +80,7 @@ class ItemPedido(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        elated_name="itens_pedido"
+        related_name="itens_pedido"
     )
     preco_unitario = models.DecimalField(max_digits=10, decimal_places=2)
     quantidade = models.PositiveIntegerField()
