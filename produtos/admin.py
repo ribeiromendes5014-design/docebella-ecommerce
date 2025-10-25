@@ -3,7 +3,8 @@
 from django.contrib import admin
 from . import models  # Importa o módulo completo — seguro contra ImportError
 from django.utils.html import format_html
-
+from django import forms
+from django.core.exceptions import ValidationError
 
 # -----------------------------------------------------------------
 # 1. Inlines (Imagens e Variações)
@@ -71,7 +72,39 @@ class CategoriaAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('nome',)}
 
 
+class VariacaoForm(forms.ModelForm):
+    class Meta:
+        model = models.Variacao
+        fields = '__all__'
 
+    def clean(self):
+        cleaned_data = super().clean()
+        produto = cleaned_data.get('produto')
+        tipo = cleaned_data.get('tipo')
+        valor = cleaned_data.get('valor')
+        color = cleaned_data.get('cor')  # 👈 Adiciona aqui
+
+        # Só valida se os dados principais existirem
+        if produto and tipo and valor:
+            existe = models.Variacao.objects.filter(
+                produto=produto,
+                tipo=tipo,
+                valor=valor,
+                cor=color  # 👈 usa aqui também
+            )
+
+            # Ignora a própria instância se estiver editando
+            if self.instance.pk:
+                existe = existe.exclude(pk=self.instance.pk)
+
+            if existe.exists():
+                raise ValidationError(
+                    f"Já existe uma variação '{valor}' ({color}) para o tipo '{tipo}' neste produto."
+                )
+
+        return cleaned_data
+
+        
 # -----------------------------------------------------------------
 #   variação
 # -----------------------------------------------------------------
@@ -79,6 +112,7 @@ class CategoriaAdmin(admin.ModelAdmin):
 class VariacaoInline(admin.TabularInline):
     """Permite editar variações diretamente no admin do produto."""
     model = models.Variacao
+    form = VariacaoForm  # 👈 adiciona o form personalizado
     extra = 1
     fields = ('tipo', 'valor', 'estoque', 'imagem', 'imagem_url_externa')
 
