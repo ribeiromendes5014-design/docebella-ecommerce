@@ -3,6 +3,7 @@
 from django.contrib import admin
 from . import models  # Importa o módulo completo — seguro contra ImportError
 from django.utils.html import format_html
+import nested_admin
 
 
 # -----------------------------------------------------------------
@@ -79,15 +80,7 @@ class CategoriaAdmin(admin.ModelAdmin):
 # -----------------------------------------------------------------
 # 2.1 Variações e Subvariações
 # -----------------------------------------------------------------
-class SubVariacaoInline(admin.TabularInline):
-    """Subvariações dentro de uma variação principal (ex: Tamanhos dentro de Cor)."""
-    model = models.Variacao
-    fk_name = 'parent'
-    extra = 1
-    verbose_name = "Subvariação"
-    verbose_name_plural = "Subvariações"
-    fields = ('tipo', 'valor', 'estoque', 'imagem', 'imagem_url_externa')
-    show_change_link = True
+
 
 
 @admin.register(models.Variacao)
@@ -102,36 +95,58 @@ class VariacaoAdmin(admin.ModelAdmin):
 
 
 # -----------------------------------------------------------------
-# 3. Produto
+# 2.1 Variações e Subvariações com Nested Admin
 # -----------------------------------------------------------------
+import nested_admin
+
+class SubVariacaoInline(nested_admin.NestedTabularInline):
+    """Subvariações dentro de uma variação principal (ex: Tamanhos dentro de Cor)."""
+    model = models.Variacao
+    fk_name = 'parent'
+    extra = 1
+    fields = ('tipo', 'valor', 'estoque', 'imagem', 'imagem_url_externa')
+    verbose_name = "Subvariação"
+    verbose_name_plural = "Subvariações"
+
+
+class VariacaoInline(nested_admin.NestedTabularInline):
+    """Variações principais (ex: Cores), que podem conter subvariações."""
+    model = models.Variacao
+    fk_name = 'produto'
+    extra = 1
+    fields = ('tipo', 'valor', 'estoque', 'imagem', 'imagem_url_externa')
+    verbose_name = "Variação"
+    verbose_name_plural = "Variações"
+    inlines = [SubVariacaoInline]
+
+
 @admin.register(models.Produto)
-class ProdutoAdmin(admin.ModelAdmin):
+class ProdutoAdmin(nested_admin.NestedModelAdmin):
+    """Admin completo do produto com variações aninhadas e imagens."""
+    inlines = [VariacaoInline, ImagemProdutoInline]
     list_display = ('nome', 'categoria', 'preco', 'estoque', 'disponivel', 'usa_variacoes')
     list_filter = ('disponivel', 'categoria', 'usa_variacoes')
     search_fields = ('nome', 'descricao')
     prepopulated_fields = {'slug': ('nome',)}
     list_editable = ('preco', 'estoque', 'disponivel')
 
-    inlines = [VariacaoInline, ImagemProdutoInline]
-
     fieldsets = (
-    (None, {
-        'fields': (
-            'categoria',
-            'nome',
-            'slug',
-            'descricao',
-            'preco',
-            'imagem',
-            'imagem_url_externa',  # 👈 adiciona aqui
-        ),
-    }),
-    ('Controle de Estoque/Variação', {
-        'fields': ('usa_variacoes', 'estoque', 'disponivel'),
-        'description': 'O campo Estoque só é relevante se "usa variações" estiver DESMARCADO.',
-    }),
-)
-
+        (None, {
+            'fields': (
+                'categoria',
+                'nome',
+                'slug',
+                'descricao',
+                'preco',
+                'imagem',
+                'imagem_url_externa',
+            ),
+        }),
+        ('Controle de Estoque/Variação', {
+            'fields': ('usa_variacoes', 'estoque', 'disponivel'),
+            'description': 'O campo Estoque só é relevante se "usa variações" estiver DESMARCADO.',
+        }),
+    )
 
     def get_fieldsets(self, request, obj=None):
         """Remove o campo 'estoque' se o produto usa variações."""
@@ -141,7 +156,6 @@ class ProdutoAdmin(admin.ModelAdmin):
             controle_fieldset.remove('estoque')
         fieldsets[1][1]['fields'] = tuple(controle_fieldset)
         return fieldsets
-
 
 # -----------------------------------------------------------------
 # 4. Promoção
