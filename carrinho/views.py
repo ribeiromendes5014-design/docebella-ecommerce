@@ -42,7 +42,7 @@ def adicionar_ao_carrinho(request, produto_slug):
         try:
             variacao = VariacaoTamanho.objects.get(id=variacao_id, produto=produto)
             estoque_disponivel = variacao.estoque
-        except Variacao.DoesNotExist:
+        except VariacaoTamanho.DoesNotExist:
             messages.error(request, 'Variação inválida ou não encontrada.')
             return redirect('detalhe_produto', slug=produto_slug)
 
