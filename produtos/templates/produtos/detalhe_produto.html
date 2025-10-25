@@ -346,6 +346,9 @@ document.addEventListener("DOMContentLoaded", function() {
     const btnComprar = document.querySelector('.btn-comprar');
     const statusEstoque = document.querySelector('.status-estoque');
     const galeriaMiniaturas = document.querySelector('.galeria-miniaturas');
+     // 🔹 Apenas as subvariações devem ser clicáveis
+    const variacaoButtons = document.querySelectorAll('.subvariacoes .btn-variacao');
+
 
     // Estado para controle
     let variacaoSelecionada = null;
