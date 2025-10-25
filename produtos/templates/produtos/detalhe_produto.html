@@ -319,6 +319,9 @@
 
     <input type="hidden" name="variacao_id" id="variacao-input" value="">
   {% endif %}
+  <script id="variacoes-data" type="application/json">
+    {{ variacoes_json|safe }}
+</script>
 
   <div class="acoes-compra">
     <input type="number" name="quantidade" id="quantidade" value="1" min="1" max="{{ produto.get_estoque_total }}">
@@ -450,6 +453,21 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         });
     }
+const VARIACOES = JSON.parse(document.getElementById('variacoes-data').textContent);
+
+function atualizarVariaçãoSelecionada() {
+    const cor = document.querySelector('.btn-cor.selecionado')?.dataset.cor;
+    const tamanho = document.querySelector('.btn-tamanho.selecionado')?.dataset.valor;
+
+    const variacao = VARIACOES.find(v => v.cor === cor && v.tamanho === tamanho);
+    if (variacao) {
+        variacaoInput.value = variacao.id;
+        atualizarAcoesCompra(variacao.estoque);
+        if (mainImg && variacao.imagem) {
+            mainImg.src = variacao.imagem;
+        }
+    }
+}
 
 
     /**
