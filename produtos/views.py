@@ -9,7 +9,8 @@ from produtos.models import Produto, Variacao
 from decimal import Decimal
 from produtos.models import Produto, Categoria
 from django.utils import timezone
-
+import json
+from collections import defaultdict
 
 def home(request):
     query = request.GET.get('q', '')
@@ -65,26 +66,43 @@ def listar_por_categoria(request, categoria_slug):
 def detalhe_produto(request, slug):
     # Busca o produto ou retorna 404
     produto = get_object_or_404(Produto, slug=slug, disponivel=True)
-    
-    # Separa as variações por tipo (ex: 'Tamanho', 'Cor') para exibição antiga (ainda útil)
-    variacoes_por_tipo = {}
-    if produto.usa_variacoes:
-        tipos_disponiveis = produto.variacoes.values('tipo').distinct()
-        for tipo in tipos_disponiveis:
-            nome_tipo = tipo['tipo']
-            variacoes_por_tipo[nome_tipo] = produto.variacoes.filter(tipo=nome_tipo).order_by('valor')
 
-    # 🔹 NOVO BLOCO — obtém listas distintas de cores e tamanhos (sem chamar .values_list() no template)
-    variacoes = produto.variacoes.all()
-    cores = variacoes.values_list('cor', flat=True).distinct()
-    tamanhos = variacoes.values_list('valor', flat=True).distinct()
+    # 🔹 Busca TODAS as variações ativas do produto
+    variacoes = Variacao.objects.filter(produto=produto)
+
+    # 🔹 Agrupar variações por cor (para não repetir cores iguais)
+    variacoes_por_cor = defaultdict(list)
+    for v in variacoes:
+        if v.cor:  # evita None
+            variacoes_por_cor[v.cor].append({
+                "id": v.id,
+                "tamanho": v.valor,
+                "estoque": v.estoque,
+                "imagem": v.imagem.url if v.imagem else (v.produto.imagem.url if v.produto.imagem else "")
+            })
+
+    # 🔹 Listas únicas de cores e tamanhos
+    cores = sorted(set([v.cor for v in variacoes if v.cor]))
+    tamanhos = sorted(set([v.valor for v in variacoes if v.valor]))
+
+    # 🔹 Serializa os dados para o JS no template
+    variacoes_json = [
+        {
+            "id": v.id,
+            "cor": v.cor,
+            "tamanho": v.valor,
+            "estoque": v.estoque,
+            "imagem": v.imagem.url if v.imagem else (v.produto.imagem.url if v.produto.imagem else "")
+        }
+        for v in variacoes
+    ]
 
     # 🔹 Cálculo da simulação de parcelamento
     preco = produto.get_preco_final() or Decimal('0')
     valor_final = preco / Decimal('0.8872')
     valor_parcela = valor_final / Decimal('3')
 
-    # 🔹 Busca promoção ativa (para o cronômetro)
+    # 🔹 Promoção ativa (para o cronômetro)
     promo_ativa = None
     for promo in produto.promocoes.all():
         if promo.esta_vigente():
@@ -96,20 +114,19 @@ def detalhe_produto(request, slug):
         categoria=produto.categoria,
         disponivel=True,
         estoque__gt=0
-    ).exclude(
-        id=produto.id
-    ).order_by('?')[:4]
-    
-    # 🔹 Contexto enviado ao template
+    ).exclude(id=produto.id).order_by('?')[:4]
+
+    # 🔹 Envia tudo ao template
     context = {
-        'produto': produto,
-        'variacoes_por_tipo': variacoes_por_tipo,
-        'cores': cores,
-        'tamanhos': tamanhos,
-        'produtos_relacionados': produtos_relacionados,
-        'valor_parcela': valor_parcela,
-        'promo_ativa': promo_ativa,
-        'titulo': f'{produto.nome} | Doce & Bella',
+        "produto": produto,
+        "cores": cores,
+        "tamanhos": tamanhos,
+        "variacoes_por_cor": dict(variacoes_por_cor),
+        "variacoes_json": json.dumps(variacoes_json, ensure_ascii=False),
+        "produtos_relacionados": produtos_relacionados,
+        "valor_parcela": valor_parcela,
+        "promo_ativa": promo_ativa,
+        "titulo": f"{produto.nome} | Doce & Bella",
     }
 
-    return render(request, 'produtos/detalhe_produto.html', context)
+    return render(request, "produtos/detalhe_produto.html", context)
