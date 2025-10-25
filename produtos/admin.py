@@ -76,11 +76,29 @@ class CategoriaAdmin(admin.ModelAdmin):
 #   variação
 # -----------------------------------------------------------------
 
-class VariacaoInline(admin.TabularInline):
-    """Permite editar variações diretamente no admin do produto."""
+# -----------------------------------------------------------------
+# 2.1 Variações e Subvariações
+# -----------------------------------------------------------------
+class SubVariacaoInline(admin.TabularInline):
+    """Subvariações dentro de uma variação principal (ex: Tamanhos dentro de Cor)."""
     model = models.Variacao
+    fk_name = 'parent'
     extra = 1
+    verbose_name = "Subvariação"
+    verbose_name_plural = "Subvariações"
     fields = ('tipo', 'valor', 'estoque', 'imagem', 'imagem_url_externa')
+    show_change_link = True
+
+
+@admin.register(models.Variacao)
+class VariacaoAdmin(admin.ModelAdmin):
+    """Admin para gerenciar variações de forma hierárquica."""
+    list_display = ('produto', 'tipo', 'valor', 'estoque', 'parent')
+    list_filter = ('produto', 'tipo')
+    search_fields = ('valor', 'produto__nome')
+    inlines = [SubVariacaoInline]
+    exclude = ('parent',)
+
 
 
 # -----------------------------------------------------------------
