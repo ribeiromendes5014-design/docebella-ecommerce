@@ -175,13 +175,13 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-#3-c$i&#$#wx^n6^#0v4w
 ALLOWED_HOSTS = [
     '127.0.0.1', 
     'localhost', 
-    'docebella-ecommerce-ej9d.onrender.com', 
+    'docebella-ecommerce-q2py.onrender.com', 
     '.onrender.com'               
 ] 
 
 # >>> CORREÇÃO CRÍTICA DO ERRO 403 (CSRF) <<<
 CSRF_TRUSTED_ORIGINS = [
-    'https://docebella-ecommerce-ej9d.onrender.com',
+    'https://docebella-ecommerce-q2py.onrender.com',
     'https://*.onrender.com',
 ]
 
