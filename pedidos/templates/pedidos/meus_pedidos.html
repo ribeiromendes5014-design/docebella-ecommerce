@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="pedidos-container">
+    <h2 class="titulo-pedidos"><i class="fa-solid fa-box-heart"></i> Meus Pedidos</h2>
+
+    {% if pedidos %}
+        <div class="lista-pedidos">
+            {% for pedido in pedidos %}
+                <div class="pedido-card">
+                    <div class="pedido-header">
+                        <h3>Pedido #{{ pedido.id }}</h3>
+
+                        {% if pedido.status == "Em Separação" %}
+                            <span class="status separacao"><i class="fa-solid fa-box-open"></i> {{ pedido.status }}</span>
+                        {% elif pedido.status == "Pronto para Retirada" %}
+                            <span class="status pronto"><i class="fa-solid fa-store"></i> {{ pedido.status }}</span>
+                        {% elif pedido.status == "Cancelado" %}
+                            <span class="status cancelado"><i class="fa-solid fa-ban"></i> {{ pedido.status }}</span>
+                        {% else %}
+                            <span class="status aberto"><i class="fa-solid fa-hourglass-half"></i> {{ pedido.status }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="pedido-info">
+                        <p><strong>Data:</strong> {{ pedido.data_criacao|date:"d/m/Y H:i" }}</p>
+                        <p><strong>Total:</strong> R$ {{ pedido.valor_total|floatformat:2 }}</p>
+                    </div>
+
+                    <div class="pedido-actions">
+                        <a href="{% url 'pedidos:detalhe_pedido' pedido.id %}" class="btn-ver">
+                            <i class="fa-solid fa-eye"></i> Ver Detalhes
+                        </a>
+
+                        {% if pedido.status != "Pronto para Retirada" and pedido.status != "Cancelado" %}
+                            <form method="post" action="{% url 'pedidos:cancelar_pedido' pedido.id %}" class="cancelar-form">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-cancelar">
+                                    <i class="fa-solid fa-xmark"></i> Cancelar Pedido
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="nenhum-pedido">Você ainda não fez nenhum pedido 💖</p>
+    {% endif %}
+</div>
+
+<style>
+.pedidos-container {
+    max-width: 900px;
+    margin: 60px auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.titulo-pedidos {
+    color: #f45ca5;
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 30px;
+}
+
+.lista-pedidos {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.pedido-card {
+    border: 1px solid #f7b8d1;
+    border-radius: 12px;
+    padding: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.pedido-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(244, 92, 165, 0.15);
+}
+
+.pedido-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status.aberto { background: #fbe8ff; color: #b24fe0; }
+.status.separacao { background: #fff5d1; color: #b97f00; }
+.status.pronto { background: #d6f8d6; color: #137a0d; }
+.status.cancelado { background: #fcd5d5; color: #c40000; }
+
+.pedido-info p { margin: 5px 0; color: #333; }
+
+.pedido-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.btn-ver, .btn-cancelar {
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-ver {
+    background-color: #f45ca5;
+    color: #fff;
+    transition: background 0.3s;
+}
+
+.btn-ver:hover { background-color: #e3358b; }
+
+.btn-cancelar {
+    background-color: #ffb4b4;
+    color: #a10000;
+    border: 1px solid #ff9b9b;
+    transition: all 0.3s;
+}
+
+.btn-cancelar:hover {
+    background-color: #ff7d7d;
+    color: #fff;
+}
+
+.nenhum-pedido {
+    text-align: center;
+    font-size: 1.1rem;
+    color: #777;
+}
+</style>
+{% endblock %}

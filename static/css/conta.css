@@ -1,0 +1,49 @@
+.conta-container {
+  max-width: 500px;
+  margin: 40px auto;
+  padding: 30px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.form-title-custom {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.conta-form label {
+  display: block;
+  margin-top: 10px;
+  font-weight: 600;
+}
+
+.conta-form input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.conta-form button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 20px;
+  background: #ff3fa4;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.conta-form button:hover {
+  background: #e53590;
+}
+
+.voltar-link {
+  display: inline-block;
+  margin-top: 15px;
+  color: #555;
+}

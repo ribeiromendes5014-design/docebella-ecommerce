@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+{% comment %}
+    AVISO: O filtro '|attr' abaixo é a forma correta e estável
+    de adicionar atributos no 'django-widget-tweaks'.
+{% endcomment %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="form-wrapper">
+    <div class="breadcrumb">Início . Minha Conta . Login</div>
+    
+    <h2 class="form-title-custom">Iniciar sessão</h2>
+    
+    {% if form.errors %}
+        <div class="error-message">
+            E-mail ou senha inválidos. Por favor, tente novamente.
+        </div>
+    {% endif %}
+
+    <form method="post" class="custom-form">
+        {% csrf_token %}
+        
+        <div class="form-field">
+            <label for="{{ form.username.id_for_label }}">E-mail</label>
+            {# CORRIGIDO: Usando '|attr' no lugar de '|add_attribute' #}
+            {{ form.username|add_class:"custom-input"|attr:"placeholder:ex.: seu-email@email.com.br" }}
+        </div>
+        
+        <div class="form-field">
+            <label for="{{ form.password.id_for_label }}">Senha</label>
+            {# CORRIGIDO: Usando '|attr' no lugar de '|add_attribute' #}
+            {{ form.password|add_class:"custom-input"|attr:"placeholder:ex.: suasenha" }}
+            
+            {# 🔑 CORREÇÃO AQUI: Adicionar o namespace 'usuarios:' para resolver o NoReverseMatch #}
+            <a href="{% url 'usuarios:password_reset' %}" class="forgot-link">Esqueceu a senha?</a>
+        </div>
+        
+        {% if next %}
+            <input type="hidden" name="next" value="{{ next }}" />
+        {% endif %}
+
+        <button type="submit" class="btn-submit dark-button">
+            Iniciar sessão
+        </button>
+    </form>
+    
+    <p class="link-rodape">
+        Não possui uma conta ainda? <a href="{% url 'usuarios:cadastro' %}" class="pink-link">Criar uma conta</a>
+    </p>
+</div>
+{% endblock %}

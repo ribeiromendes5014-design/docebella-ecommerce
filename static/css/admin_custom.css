@@ -1,0 +1,33 @@
+/* === Doce & Bella admin theme === */
+#header {
+    background-color: #f45ca5 !important; /* rosa da marca */
+    color: white !important;
+}
+
+#header h1 a {
+    color: white !important;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+#branding img {
+    height: 60px;
+    margin-right: 15px;
+}
+
+.module caption {
+    background-color: #f9c7df !important;
+    color: #333 !important;
+}
+
+a:link, a:visited {
+    color: #f45ca5 !important;
+}
+
+.button, input[type=submit], input[type=button], .submit-row input {
+    background-color: #f45ca5 !important;
+    border: none !important;
+    color: white !important;
+    border-radius: 8px;
+    padding: 8px 16px;
+}
