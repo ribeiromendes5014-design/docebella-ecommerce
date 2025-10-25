@@ -114,7 +114,7 @@ class VariacaoAdmin(admin.ModelAdmin):
     list_display = ('produto', 'tipo', 'valor', 'estoque', 'parent')
     list_filter = ('produto', 'tipo')
     search_fields = ('valor', 'produto__nome')
-    inlines = [SubVariacaoInline]
+    #inlines = [SubVariacaoInline]
     exclude = ('parent',)
 
 
