@@ -31,3 +31,26 @@ a:link, a:visited {
     border-radius: 8px;
     padding: 8px 16px;
 }
+/* === CORREÇÃO DE LAYOUT DO NESTED ADMIN / INLINE === */
+
+/* Garante que o container de cada célula da inline não force quebras desnecessárias */
+.djn-tabular .djn-items-container td {
+    white-space: nowrap; /* Mantém o conteúdo da célula na mesma linha */
+    vertical-align: top;
+    padding: 8px 10px; /* Ajuste o padding se necessário */
+}
+
+/* Força o campo de imagem (FileField) a ocupar menos espaço, se possível */
+.djn-tabular .file-upload {
+    max-width: 120px; /* Limita a largura do controle de upload de arquivo */
+    display: block;
+    overflow: hidden; /* Oculta qualquer texto extra que possa quebrar */
+}
+
+/* Força os campos de input de texto e select a terem um tamanho razoável */
+.djn-tabular input[type="text"], 
+.djn-tabular select {
+    width: 100%; /* Ocupa a largura total da célula, que agora está limitada */
+    box-sizing: border-box; /* Garante que padding e borda não aumentem o width total */
+    min-width: 80px; /* Impede que fiquem muito estreitos */
+}
