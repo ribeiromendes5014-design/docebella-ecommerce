@@ -13,7 +13,7 @@ from .models import (
     VariacaoTamanho,
 )
 from . import models
-
+from .models import Produto, VariacaoCor, VariacaoTamanho, ImagemProduto
 
 # -----------------------------------------------------------------
 # 1. Inlines (Imagens e Variações)
