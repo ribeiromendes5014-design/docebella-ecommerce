@@ -228,11 +228,10 @@ class Variacao(models.Model):
         default=Decimal('0.00'),
         help_text="Valor adicionado ao preço base do produto."
     )
-        estoque = models.IntegerField(
+    estoque = models.IntegerField(
         default=0,
         verbose_name="Estoque da variação"
     )
-
 
     imagem = models.ImageField(
         upload_to='produtos/variacoes/',
@@ -252,12 +251,13 @@ class Variacao(models.Model):
     class Meta:
         verbose_name = "Variação"
         verbose_name_plural = "Variações"
-        unique_together = (('produto', 'tipo', 'valor', 'cor'),
+        unique_together = (('produto', 'tipo', 'valor', 'cor'),)
         ordering = ['produto', 'tipo', 'valor']
 
     def __str__(self):
         nome_produto = self.produto.nome if self.produto else f"Produto #{self.id}"
-        return f"{nome_produto} - {self.tipo}: {self.valor}"
+        return f"{nome_produto} - {self.tipo}: {self.valor} ({self.cor})"
+
 
     # ----------------------------
     # MÉTODOS DE NEGÓCIO
