@@ -290,19 +290,32 @@ class Variacao(models.Model):
         return f"R$ {self.get_preco_final():.2f}".replace('.', ',')
 
     def save(self, *args, **kwargs):
-        """Renomeia automaticamente a imagem local e mantém compatibilidade com URLs externas."""
-        base_name = f"{self.produto.slug}-{self.valor.lower().replace(' ', '-')}" if self.produto else f"variacao-{self.pk}"
-
-        if self.imagem and hasattr(self.imagem, "name"):
-            ext = os.path.splitext(self.imagem.name)[1].lower()
-            novo_nome = f"media/produtos/variacoes/{base_name}{ext}"
-            if self.imagem.name != novo_nome:
-                if default_storage.exists(novo_nome):
-                    default_storage.delete(novo_nome)
-                self.imagem.name = novo_nome
-                print(f"🎨 Imagem de variação renomeada automaticamente: {novo_nome}")
-
+    """
+    Evita erro RelatedObjectDoesNotExist ao salvar variações no admin
+    e renomeia imagem de forma segura.
+    """
+    # 🚫 Se o produto ainda não foi associado (nested_admin ainda não setou), apenas salva
+    if not getattr(self, "produto_id", None):
         super().save(*args, **kwargs)
+        return
+
+    # Gera slug seguro baseado no valor da variação
+    valor_slug = slugify(self.valor or "")
+    base_name = f"{self.produto.slug}-{valor_slug}" if self.produto_id else f"variacao-{self.pk or 'temp'}"
+
+    # Se houver imagem local, renomeia o arquivo
+    if self.imagem and hasattr(self.imagem, "name"):
+        ext = os.path.splitext(self.imagem.name)[1].lower()
+        novo_nome = f"media/produtos/variacoes/{base_name}{ext}"
+
+        if self.imagem.name != novo_nome:
+            if default_storage.exists(novo_nome):
+                default_storage.delete(novo_nome)
+            self.imagem.name = novo_nome
+            print(f"🎨 Imagem de variação renomeada automaticamente: {novo_nome}")
+
+    # Salva normalmente após garantir segurança
+    super().save(*args, **kwargs)
 
 
 
