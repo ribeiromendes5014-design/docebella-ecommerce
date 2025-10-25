@@ -190,12 +190,13 @@ class Banner(models.Model):
 
 
 # ======================
-# VARIAÇÃO
+# VARIAÇÃO (atualizada com suporte a subvariações)
 # ======================
 class Variacao(models.Model):
     TIPO_VARIACOES = (
-        ('Tamanho', 'Tamanho'),
         ('Cor', 'Cor'),
+        ('Tamanho', 'Tamanho'),
+        ('Modelo', 'Modelo'),
         ('Outro', 'Outro'),
     )
 
@@ -241,43 +242,42 @@ class Variacao(models.Model):
         help_text="Se preenchido, substitui a imagem local."
     )
 
+    # 🚀 NOVO: subvariações
+    parent = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        related_name='subvariacoes',
+        on_delete=models.CASCADE,
+        verbose_name="Variação Pai"
+    )
+
     class Meta:
         verbose_name = "Variação"
         verbose_name_plural = "Variações"
-        unique_together = (('produto', 'tipo', 'valor'),)
+        unique_together = (('produto', 'tipo', 'valor', 'parent'),)
         ordering = ['produto', 'tipo', 'valor']
 
     def __str__(self):
         nome_produto = self.produto.nome if self.produto else f"Produto #{self.id}"
+        if self.parent:
+            return f"{nome_produto} - {self.parent.valor} → {self.valor}"
         return f"{nome_produto} - {self.tipo}: {self.valor}"
 
-    # ----------------------------
-    # MÉTODOS DE NEGÓCIO
-    # ----------------------------
-
     def get_imagem_url(self):
-        """
-        Retorna a URL da imagem, seja externa ou local.
-        Prioriza: 1️⃣ URL externa, 2️⃣ imagem local, 3️⃣ placeholder.
-        """
+        """Retorna a URL da imagem (prioriza externa > local > placeholder)."""
         if self.imagem_url_externa:
             return self.imagem_url_externa
-
         if self.imagem and getattr(self.imagem, 'name', None):
             try:
                 return self.imagem.url
             except ValueError:
                 pass
-
         from django.templatetags.static import static
         return static('img/placeholder.png')
 
-
-
     def get_preco_final(self):
-        """
-        Soma o preço base do produto com o adicional da variação.
-        """
+        """Soma o preço base do produto com o adicional da variação."""
         preco_base = (
             self.produto.get_preco_final()
             if hasattr(self.produto, 'get_preco_final')
@@ -286,34 +286,24 @@ class Variacao(models.Model):
         return preco_base + self.preco_adicional
 
     def get_display_preco_final(self):
-        """
-        Retorna o preço final formatado para exibição.
-        """
+        """Retorna o preço final formatado para exibição."""
         return f"R$ {self.get_preco_final():.2f}".replace('.', ',')
 
     def save(self, *args, **kwargs):
-        """
-        Renomeia automaticamente a imagem local e mantém compatibilidade com URLs externas.
-        """
+        """Renomeia automaticamente a imagem local e mantém compatibilidade com URLs externas."""
         base_name = f"{self.produto.slug}-{self.valor.lower().replace(' ', '-')}" if self.produto else f"variacao-{self.pk}"
 
-        # CASO 1: imagem local enviada manualmente
         if self.imagem and hasattr(self.imagem, "name"):
             ext = os.path.splitext(self.imagem.name)[1].lower()
             novo_nome = f"media/produtos/variacoes/{base_name}{ext}"
-
             if self.imagem.name != novo_nome:
                 if default_storage.exists(novo_nome):
                     default_storage.delete(novo_nome)
                 self.imagem.name = novo_nome
                 print(f"🎨 Imagem de variação renomeada automaticamente: {novo_nome}")
 
-        # CASO 2: sem imagem e sem URL externa (mantido)
-        elif not self.imagem and not self.imagem_url_externa:
-            # Aqui você pode colocar a lógica de fallback S3, se tiver implementado
-            pass
-
         super().save(*args, **kwargs)
+
 
 
 # ======================
