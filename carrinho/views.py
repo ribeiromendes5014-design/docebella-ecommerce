@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.utils import timezone
 from decimal import Decimal
 
-from produtos.models import Produto, Variacao
+from produtos.models import Produto, VariacaoTamanho
 from pedidos.models import Cupom  # ✅ usa o modelo do admin (pedidos)
 from .models import ItemCarrinho  # mantém apenas o ItemCarrinho
 
