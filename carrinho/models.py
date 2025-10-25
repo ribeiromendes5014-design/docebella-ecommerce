@@ -1,32 +1,50 @@
 # carrinho/models.py
+
 from django.db import models
-from produtos.models import Produto, Variacao
+# CORREÇÃO 1: Importamos VariacaoTamanho, que agora é o nosso SKU/Item de estoque
+from produtos.models import Produto, VariacaoTamanho 
 from django.utils import timezone
 from decimal import Decimal
+
 class ItemCarrinho(models.Model):
     # Vincula o item à sessão do usuário (para quem não está logado)
     session_key = models.CharField(max_length=40, db_index=True)
 
     # Produto e variação (ambos podem ser nulos em casos especiais)
     produto = models.ForeignKey(Produto, on_delete=models.CASCADE, null=True, blank=True)
-    variacao = models.ForeignKey(Variacao, on_delete=models.CASCADE, null=True, blank=True)
+    
+    # CORREÇÃO 2: A ForeignKey agora aponta para o novo modelo de SKU
+    variacao = models.ForeignKey(VariacaoTamanho, on_delete=models.CASCADE, null=True, blank=True) 
 
     # Quantidade e preço fixo no momento da adição
     quantidade = models.PositiveIntegerField(default=1)
-    preco = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # ✅ CAMPO ADICIONADO AQUI
+    preco = models.DecimalField(max_digits=10, decimal_places=2, default=0) 
 
     adicionado_em = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Item de Carrinho"
         verbose_name_plural = "Itens de Carrinho"
-        unique_together = ('produto', 'variacao', 'session_key')
+        # CORREÇÃO 3: unique_together usa VariacaoTamanho
+        unique_together = ('produto', 'variacao', 'session_key') 
 
     def __str__(self):
         if self.variacao:
+            # CORREÇÃO 4: O valor está na VariacaoTamanho, mas o nome do produto 
+            # está na VariacaoTamanho.variacao_cor.produto.nome.
+            # Vamos simplificar, acessando o nome do produto via FK
             if self.produto:
-                return f'{self.produto.nome} ({self.variacao.valor}) - Qtd: {self.quantidade}'
-            return f'(Produto Nulo) ({self.variacao.valor}) - Qtd: {self.quantidade}'
+                # O valor é o tamanho. Para mostrar a cor, teríamos que acessar:
+                # self.variacao.variacao_cor.cor
+                return f'{self.produto.nome} ({self.variacao.tamanho}) - Qtd: {self.quantidade}'
+            
+            # Se o produto for nulo, mas a variação não for, pegamos o nome do produto via FK da variação
+            if self.variacao.variacao_cor.produto:
+                 nome_produto = self.variacao.variacao_cor.produto.nome
+                 cor = self.variacao.variacao_cor.cor
+                 return f'{nome_produto} ({cor}, {self.variacao.tamanho}) - Qtd: {self.quantidade}'
+
+            return f'(Item de Variação) ({self.variacao.tamanho}) - Qtd: {self.quantidade}'
 
         if self.produto:
             return f'{self.produto.nome} - Qtd: {self.quantidade}'
@@ -39,17 +57,17 @@ class ItemCarrinho(models.Model):
             return self.preco
 
         # Caso contrário, busca o preço atual (fallback)
-        if self.variacao and self.variacao.produto:
-            return self.variacao.get_preco_final()
+        if self.variacao:
+            # CORREÇÃO 5: Usa o método de preço do novo modelo VariacaoTamanho
+            return self.variacao.get_preco_final() 
         if self.produto:
             return self.produto.preco
-        return 0.00
+        return Decimal('0.00') # Usar Decimal('0.00') para consistência
 
     def get_subtotal(self):
         return self.get_preco_unitario() * self.quantidade
-from django.utils import timezone
-from decimal import Decimal
 
+# O restante do arquivo (CupomDesconto) permanece inalterado.
 class CupomDesconto(models.Model):
     codigo = models.CharField(max_length=50, unique=True)
     desconto_percentual = models.DecimalField(
@@ -83,4 +101,3 @@ class CupomDesconto(models.Model):
         elif self.desconto_fixo:
             total -= self.desconto_fixo
         return max(total, Decimal('0.00'))
-
