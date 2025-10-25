@@ -69,14 +69,14 @@ def detalhe_produto(request, slug):
     
     # ✅ Calcula o estoque total somando todas as variações
     if produto.usa_variacoes:
-        estoque_total = sum(v.estoque for v in produto.variacoes.all())
+        estoque_total = sum(v.estoque or 0 for v in produto.variacoes.all())
     else:
         estoque_total = produto.estoque
 
     # Separa as variações
     variacoes = produto.variacoes.all()
-    cores = variacoes.values_list('cor', flat=True).distinct()
-    tamanhos = variacoes.values_list('valor', flat=True).distinct()
+    cores = sorted(set(v.cor for v in variacoes if v.cor))
+    tamanhos = sorted(set(v.valor for v in variacoes if v.valor))
 
     # Monta o JSON das variações
     import json
