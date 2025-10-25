@@ -214,6 +214,13 @@ class Variacao(models.Model):
         max_length=100,
         verbose_name="Valor da variação"
     )
+    cor = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name="Cor",
+        help_text="Ex: Azul, Vermelho, Preto"
+    )
     preco_adicional = models.DecimalField(
         "Preço adicional",
         max_digits=10,
@@ -221,7 +228,7 @@ class Variacao(models.Model):
         default=Decimal('0.00'),
         help_text="Valor adicionado ao preço base do produto."
     )
-    estoque = models.IntegerField(
+    estoque = models.IntegerField(default=0, verbose_name="Estoque da variação")
         default=0,
         verbose_name="Estoque da variação"
     )
@@ -244,7 +251,7 @@ class Variacao(models.Model):
     class Meta:
         verbose_name = "Variação"
         verbose_name_plural = "Variações"
-        unique_together = (('produto', 'tipo', 'valor'),)
+        unique_together = (('produto', 'tipo', 'valor', 'cor'),
         ordering = ['produto', 'tipo', 'valor']
 
     def __str__(self):
