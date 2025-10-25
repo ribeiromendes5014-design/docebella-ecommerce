@@ -67,7 +67,7 @@ class VariacaoCorInline(admin.StackedInline): # StackedInline é melhor para ani
     fields = ('cor', 'imagem', 'imagem_url_externa')
     
     # ANINHAMENTO: A Cor contém a lista de Tamanhos
-    inlines = [VariacaoTamanhoInline] 
+    inlines = [VariacaoCorInline, VariacaoTamanhoInline, ImagemProdutoInline] 
     
     verbose_name = 'Variação de Cor'
     verbose_name_plural = 'Variações de Cores'
