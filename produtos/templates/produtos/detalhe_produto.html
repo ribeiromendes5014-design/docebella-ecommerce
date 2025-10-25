@@ -281,41 +281,40 @@
 
 <form id="form-adicionar-carrinho" action="{% url 'carrinho:adicionar_ao_carrinho' produto.slug %}" method="POST">
   {% csrf_token %}
-
+  
   {% if produto.usa_variacoes %}
     <div class="variacao-selector">
-      
+
       {# ==== Seletor de COR ==== #}
-{% if cores %}
-  <h4>Cor:</h4>
-  <div class="botoes-cor">
-    {% for cor in cores %}
-      <button type="button"
-              class="btn-variacao btn-cor"
-              data-tipo="cor"
-              data-cor="{{ cor|default:'Única' }}">
-        {{ cor|default:"Única" }}
-      </button>
-    {% endfor %}
-  </div>
-{% endif %}
+      {% if cores %}
+        <h4>Cor:</h4>
+        <div class="botoes-cor">
+          {% for cor in cores %}
+            <button type="button"
+                    class="btn-variacao btn-cor"
+                    data-tipo="cor"
+                    data-cor="{{ cor|default:'Única' }}">
+              {{ cor|default:"Única" }}
+            </button>
+          {% endfor %}
+        </div>
+      {% endif %}
 
-{# ==== Seletor de TAMANHO ==== #}
-{% if tamanhos %}
-  <h4 style="margin-top: 15px;">Tamanho:</h4>
-  <div class="botoes-tamanho">
-    {% for tamanho in tamanhos %}
-      <button type="button"
-              class="btn-variacao btn-tamanho"
-              data-tipo="tamanho"
-              data-valor="{{ tamanho }}">
-        {{ tamanho }}
-      </button>
-    {% endfor %}
-  </div>
-{% endif %}
-
-      {% endwith %}
+      {# ==== Seletor de TAMANHO ==== #}
+      {% if tamanhos %}
+        <h4 style="margin-top: 15px;">Tamanho:</h4>
+        <div class="botoes-tamanho">
+          {% for tamanho in tamanhos %}
+            <button type="button"
+                    class="btn-variacao btn-tamanho"
+                    data-tipo="tamanho"
+                    data-valor="{{ tamanho }}">
+              {{ tamanho }}
+            </button>
+          {% endfor %}
+        </div>
+      {% endif %}
+      
     </div>
 
     <input type="hidden" name="variacao_id" id="variacao-input" value="">
@@ -335,8 +334,7 @@
   <h3>Descrição do Produto</h3>
   <p>{{ produto.descricao|linebreaksbr }}</p>
 </div>
-</div>
-</div>
+
 
 {% if produtos_relacionados %}
 <div class="produtos-relacionados" style="margin-top:50px; border-top:1px solid #eee; padding-top:30px;">
