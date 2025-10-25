@@ -296,3 +296,17 @@ JAZZMIN_SETTINGS = {
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
 LOGIN_URL = '/conta/login/'
+
+
+# 🚨 SOLUÇÃO: USE ESTE BLOCO JAZZMIN_ASSETS NO FINAL DO settings.py 🚨
+JAZZMIN_ASSETS = {
+    # Garante que o CSS do nested_admin seja injetado
+    "custom_css": [
+        "nested_admin/css/nested-admin.css", 
+        "css/admin_custom.css", # Seu tema customizado
+    ],
+    # Garante que o JS do nested_admin seja injetado (CRUCIAL para a funcionalidade)
+    "custom_js": [
+        "nested_admin/js/nested-admin.js",
+    ]
+}
