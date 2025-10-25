@@ -94,10 +94,10 @@ class SubVariacaoInline(nested_admin.NestedTabularInline):
         'estoque',
         'imagem',
         'imagem_url_externa',
-        'parent',  # 👈 o parent fica aqui, nas subvariações
     )
     verbose_name = "Subvariação"
     verbose_name_plural = "Subvariações"
+
 
 
 class VariacaoInline(nested_admin.NestedTabularInline):
@@ -112,7 +112,7 @@ class VariacaoInline(nested_admin.NestedTabularInline):
         'imagem',
         'imagem_url_externa',
     )
-    inlines = [SubVariacaoInline]  # 👈 mantém a hierarquia
+    inlines = [SubVariacaoInline]  # ✅ mantém a hierarquia
     verbose_name = "Variação"
     verbose_name_plural = "Variações"
 
