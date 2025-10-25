@@ -30,6 +30,25 @@
   to { box-shadow: 0 0 20px rgba(255, 77, 166, 0.9); }
 }
 
+  /* ===== Subvariações ===== */
+.subvariacoes {
+  margin-top: 6px;
+  margin-left: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.subvariacoes .btn-variacao {
+  background: #fafafa;
+  border-color: #ccc;
+  font-size: 0.95rem;
+}
+.subvariacoes .btn-variacao:hover,
+.subvariacoes .btn-variacao.selecionado {
+  background: #333;
+  color: #fff;
+}
+
 /* ===== Coluna da imagem ===== */
 .produto-galeria { flex: 1 1 480px; max-width: 520px; }
 .produto-galeria .main-image-wrapper {
@@ -247,20 +266,29 @@
     <form id="form-adicionar-carrinho" action="{% url 'carrinho:adicionar_ao_carrinho' produto.slug %}" method="POST">
       {% csrf_token %}
       {% if produto.usa_variacoes %}
-        {% for tipo, variacoes in variacoes_por_tipo.items %}
-          <div class="variacao-selector" data-tipo="{{ tipo }}">
-            <h4>Selecione o {{ tipo }}:</h4>
-            {% for variacao in variacoes %}
-              <button type="button" 
-                    data-id="{{ variacao.id }}" 
-                    data-estoque="{{ variacao.estoque }}"
-                                        data-imagem-url="{{ variacao.get_imagem_url }}"
-                class="btn-variacao" {% if variacao.estoque == 0 %}disabled{% endif %}>
-                {{ variacao.valor }}
-              </button>
-            {% endfor %}
-          </div>
-        {% endfor %}
+        {% for variacao_pai, subvariacoes in variacoes_por_tipo.items %}
+  <div class="variacao-selector" data-tipo="{{ variacao_pai.tipo }}">
+    <h4>{{ variacao_pai.tipo }}: {{ variacao_pai.valor }}</h4>
+
+    {% if subvariacoes %}
+      <div class="subvariacoes" style="margin-left:10px;">
+        {% for sub in subvariacoes %}
+          <button type="button"
+                  data-id="{{ sub.id }}"
+                  data-estoque="{{ sub.estoque }}"
+                  data-imagem-url="{{ sub.get_imagem_url }}"
+                  class="btn-variacao"
+                  {% if sub.estoque == 0 %}disabled{% endif %}>
+            {{ sub.valor }}
+          </button>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p style="font-size:0.9rem; color:#777;">(sem subvariações disponíveis)</p>
+    {% endif %}
+  </div>
+{% endfor %}
+
         <input type="hidden" name="variacao_id" id="variacao-input" value="">
       {% endif %}
 
