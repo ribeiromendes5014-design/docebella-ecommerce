@@ -9,7 +9,7 @@ import nested_admin
 # -----------------------------------------------------------------
 # 1. Inlines (Imagens e Variações)
 # -----------------------------------------------------------------
-class ImagemProdutoInline(admin.TabularInline):
+class ImagemProdutoInline(nested_admin.NestedTabularInline):
     """Permite adicionar várias fotos por produto na mesma página."""
     model = models.ImagemProduto
     extra = 1
