@@ -98,9 +98,17 @@ class VariacaoInline(nested_admin.NestedTabularInline):
     model = models.Variacao
     fk_name = 'produto'
     extra = 1
-    fields = ('tipo', 'valor', 'estoque', 'imagem', 'imagem_url_externa')
+    fields = (
+        'tipo',
+        'valor',
+        'estoque',
+        'imagem',
+        'imagem_url_externa',
+        'parent',  # 👈 Adicionado
+    )
     verbose_name = "Variação"
     verbose_name_plural = "Variações"
+
 # -----------------------------------------------------------------
 # 2.1 Variações e Subvariações
 # -----------------------------------------------------------------
