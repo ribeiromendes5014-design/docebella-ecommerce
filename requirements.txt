@@ -82,6 +82,8 @@ boto3
 dj-database-url
 psycopg2-binary
 django-environ==0.11.2
+django-nested-admin==4.0.2
+
 
 
 
