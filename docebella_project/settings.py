@@ -154,15 +154,22 @@ USERNAME_FIELD = 'email'
 REQUIRED_FIELDS = ['nome_completo'] 
 
 # ----------------------------------------------------
-# CONFIGURAÇÕES DE ARQUIVOS (Static - Manter)
+# CONFIGURAÇÕES DE ARQUIVOS (Static - CORRIGIDO)
 # ----------------------------------------------------
-# Configurações de Estáticos são mantidas com os nomes de variáveis do bloco original.
+
+# Converte BASE_DIR para string para compatibilidade com os.path.join
+BASE_DIR_STR = str(BASE_DIR)
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Removidas as configurações antigas de MEDIA_URL e MEDIA_ROOT aqui.
+# STATICFILES_DIRS: Onde o Django procura arquivos estáticos adicionais
+# O CSS Customizado do seu Admin está aqui (static/css/admin_custom.css)
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR_STR, 'static'),
+]
+
+# STATIC_ROOT: Onde os arquivos são COLETADOS (onde o urls.py busca em DEBUG)
+STATIC_ROOT = os.path.join(BASE_DIR_STR, 'staticfiles')
 
 
 # ----------------------------------------------------
