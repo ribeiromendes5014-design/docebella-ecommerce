@@ -6,7 +6,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('painel-loja/', admin.site.urls),
 
-    # 👇 ADICIONE ESTA LINHA
+    # ✅ CORRETO: URLs do nested_admin
     path('_nested_admin/', include('nested_admin.urls')),
 
     # 1. Rotas do App PRODUTOS (Home Page)
@@ -22,6 +22,13 @@ urlpatterns = [
     path('pedido/', include('pedidos.urls', namespace='pedidos')),
 ]
 
-# Servir arquivos de mídia em modo DEBUG
+# -------------------------------------------------------------------------
+# ✅ CORREÇÃO AQUI: Garante que arquivos Estáticos E Mídia sejam servidos
+# -------------------------------------------------------------------------
 if settings.DEBUG:
+    # 🚨 ESSA LINHA ESTAVA FALTANDO/INCOMPLETA: Serve arquivos Estáticos (CSS/JS)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) 
+    
+    # Já estava correta: Serve arquivos de Mídia
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# -------------------------------------------------------------------------
