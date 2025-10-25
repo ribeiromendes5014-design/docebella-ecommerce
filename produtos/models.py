@@ -249,7 +249,8 @@ class VariacaoCor(models.Model):
 class VariacaoTamanho(models.Model):
     # Foreign Key aponta para o grupo de cores
     variacao_cor = models.ForeignKey(
-        VariacaoCor, 
+        VariacaoCor,
+        related_name='imagens',
         on_delete=models.CASCADE, 
         related_name='tamanhos',
         verbose_name="Grupo de Cor"
