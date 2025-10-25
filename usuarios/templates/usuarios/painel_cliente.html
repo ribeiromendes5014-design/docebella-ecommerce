@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="form-wrapper">
+    <div class="breadcrumb">Início . Minha Conta . Painel</div>
+    
+    <h2 class="form-title-custom">Bem-vindo(a) ao seu Painel de Cliente, {{ request.user.username }}!</h2>
+    
+    <p>Aqui você pode ver e gerenciar suas informações:</p>
+
+    <div class="painel-links">
+        <ul>
+            <li><a href="{% url 'pedidos:meus_pedidos' %}">Meus Pedidos</a></li>
+            {# CORREÇÃO AQUI: Adiciona o namespace 'usuarios' #}
+            <li><a href="{% url 'usuarios:detalhes_conta' %}">Detalhes da Conta</a></li>
+            
+            <li>
+                <form method="post" action="{% url 'usuarios:logout' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="link-like-button">
+                        Sair (Logout)
+                    </button>
+                </form>
+            </li>
+            
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="conta-container">
+    <div class="conta-card">
+        <h2 class="titulo-conta"><i class="fa-solid fa-user"></i> Detalhes da Conta</h2>
+        <p class="subtitulo">Aqui você pode ver ou editar suas informações pessoais.</p>
+
+        <!-- 🔹 Seção de visualização -->
+        <div id="info-section">
+            <p><strong>Nome Completo:</strong> {{ request.user.nome_completo }}</p>
+            <p><strong>E-mail:</strong> {{ request.user.email }}</p>
+            <p><strong>Data de Cadastro:</strong> {{ request.user.date_joined|date:"d/m/Y H:i" }}</p>
+
+            <button id="editar-btn" class="btn-editar">
+                <i class="fa-solid fa-pen"></i> Redefinir Informações
+            </button>
+        </div>
+
+        <!-- 🔹 Seção de edição -->
+        <form id="form-section" method="post" style="display:none;">
+            {% csrf_token %}
+            <div class="campo-form">
+                <label><i class="fa-solid fa-user"></i> Nome Completo</label>
+                <input type="text" name="nome_completo" value="{{ request.user.nome_completo }}" required />
+            </div>
+
+            <div class="campo-form">
+                <label><i class="fa-solid fa-envelope"></i> E-mail</label>
+                <input type="email" name="email" value="{{ request.user.email }}" required />
+            </div>
+
+            <div class="campo-form">
+                <label><i class="fa-solid fa-lock"></i> Nova Senha</label>
+                <input type="password" name="password" placeholder="Digite uma nova senha (opcional)" />
+            </div>
+
+            <button type="submit" class="btn-salvar">
+                <i class="fa-solid fa-floppy-disk"></i> Salvar Alterações
+            </button>
+
+            <button type="button" id="cancelar-btn" class="btn-cancelar">
+                <i class="fa-solid fa-xmark"></i> Cancelar
+            </button>
+        </form>
+
+        <a href="{% url 'usuarios:painel_cliente' %}" class="voltar-link">
+            <i class="fa-solid fa-arrow-left"></i> Voltar para o Painel
+        </a>
+    </div>
+</div>
+
+<style>
+.conta-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 20px;
+}
+
+.conta-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+    max-width: 500px;
+    width: 100%;
+}
+
+.titulo-conta {
+    text-align: center;
+    color: #f45ca5;
+    margin-bottom: 10px;
+}
+
+.subtitulo {
+    text-align: center;
+    color: #555;
+    margin-bottom: 25px;
+}
+
+.campo-form {
+    margin-bottom: 15px;
+}
+
+.campo-form label {
+    display: block;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 5px;
+}
+
+.campo-form input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.btn-editar, .btn-salvar, .btn-cancelar {
+    display: block;
+    width: 100%;
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-editar {
+    background: #f45ca5;
+    color: white;
+}
+
+.btn-editar:hover { background: #e3358b; }
+
+.btn-salvar {
+    background: #f45ca5;
+    color: #fff;
+}
+
+.btn-salvar:hover { background: #e3358b; }
+
+.btn-cancelar {
+    background: #ddd;
+    color: #333;
+}
+
+.btn-cancelar:hover { background: #bbb; }
+
+.voltar-link {
+    display: block;
+    text-align: center;
+    margin-top: 25px;
+    color: #f45ca5;
+    text-decoration: none;
+}
+
+.voltar-link:hover {
+    text-decoration: underline;
+}
+</style>
+
+<script>
+document.getElementById('editar-btn').addEventListener('click', () => {
+    document.getElementById('info-section').style.display = 'none';
+    document.getElementById('form-section').style.display = 'block';
+});
+
+document.getElementById('cancelar-btn').addEventListener('click', () => {
+    document.getElementById('form-section').style.display = 'none';
+    document.getElementById('info-section').style.display = 'block';
+});
+</script>
+{% endblock %}

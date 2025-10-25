@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="detalhe-pedido-container">
+  <div class="pedido-card-detalhe">
+    <h2 class="pedido-titulo">{{ titulo }}</h2>
+
+    <div class="pedido-info">
+      <p><strong>Status:</strong> {{ pedido.status }}</p>
+      <p><strong>Data:</strong> {{ pedido.data|date:"d/m/Y H:i" }}</p>
+      <p><strong>Total:</strong> R$ {{ pedido.total }}</p>
+    </div>
+
+    <hr>
+
+    <h3 class="subtitulo-itens">🛍 Itens do Pedido</h3>
+    <ul class="lista-itens">
+      {% for item in pedido.itens.all %}
+        <li>
+          <span>{{ item.produto.nome }}</span>
+          <span>{{ item.quantidade }}x</span>
+          <span>R$ {{ item.subtotal }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <a href="{% url 'pedidos:meus_pedidos' %}" class="voltar-link">
+      <i class="fa fa-arrow-left"></i> Voltar para Meus Pedidos
+    </a>
+  </div>
+</section>
+{% endblock %}

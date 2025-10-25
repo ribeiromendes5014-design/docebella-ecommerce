@@ -1,0 +1,72 @@
+{% extends 'base.html' %} 
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Meus Pedidos</h2>
+    <hr>
+
+    {% if pedidos %}
+        <p>Você tem {{ pedidos|length }} pedido(s) registrado(s).</p>
+        
+        {% for pedido in pedidos %}
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="my-0 font-weight-normal">
+                        Pedido #{{ pedido.id }} 
+                        <span class="badge 
+                            {% if pedido.status == 'Pendente' %}text-bg-warning
+                            {% elif pedido.status == 'Processando' %}text-bg-primary
+                            {% elif pedido.status == 'Concluído' %}text-bg-success
+                            {% elif pedido.status == 'Cancelado' %}text-bg-danger
+                            {% else %}text-bg-secondary
+                            {% endif %}">
+                            {{ pedido.get_status_display }}
+                        </span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Data:</strong> {{ pedido.data_pedido|date:"d/m/Y H:i" }}</p>
+                            <p><strong>Total:</strong> R$ {{ pedido.valor_total|floatformat:2 }}</p>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <a href="{% url 'pedidos:detalhe_pedido' pedido.id %}" class="btn btn-outline-primary btn-sm">
+                                Ver Detalhes
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6>Itens do Pedido:</h6>
+                    <ul class="list-group list-group-flush">
+                        {% for item in pedido.itens.all %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    {{ item.produto.nome }} 
+                                    <small class="text-muted">({{ item.quantidade }}x)</small>
+                                </div>
+                                <span>R$ {{ item.subtotal|floatformat:2 }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% endfor %}
+
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            Você ainda não realizou nenhum pedido.
+        </div>
+        <p>
+            <a href="{% url 'home' %}" class="btn btn-primary">
+                Voltar à Loja
+            </a>
+        </p>
+    {% endif %}
+    
+</div>
+{% endblock content %}

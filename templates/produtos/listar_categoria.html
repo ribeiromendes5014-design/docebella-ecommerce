@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+/* ===========================
+   💖 Destaque para Promoções (Tema Doce & Bella)
+   =========================== */
+.product-card {
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 10px;
+    transition: all 0.3s ease;
+    background-color: #fff;
+}
+
+/* 💖 Quando o produto estiver em promoção */
+.product-card.promo-ativo {
+    border: 3px solid #ff4da6; /* Rosa vibrante */
+    box-shadow: 0 0 15px rgba(255, 77, 166, 0.6);
+    animation: brilhoPromo 1.5s infinite alternate;
+}
+
+/* ✨ Animação suave de brilho */
+@keyframes brilhoPromo {
+    from {
+        box-shadow: 0 0 10px rgba(255, 77, 166, 0.4);
+    }
+    to {
+        box-shadow: 0 0 20px rgba(255, 77, 166, 0.9);
+    }
+}
+
+/* Efeito leve ao passar o mouse */
+.product-card:hover {
+    transform: scale(1.03);
+}
+</style>
+
+<div class="secao-destaques">
+    <h2>{{ categoria.nome }}</h2>
+
+    {% if produtos %}
+        <div class="product-grid">
+            {% for produto in produtos %}
+                <!-- Se tiver promoção, adiciona classe 'promo-ativo' -->
+                <div class="product-card {% if produto.preco_promocional %}promo-ativo{% endif %}">
+                    <a href="{% url 'detalhe_produto' slug=produto.slug %}">
+                        {% if produto.imagem %}
+                            <img src="{{ produto.imagem.url }}" alt="{{ produto.nome }}" loading="lazy">
+                        {% else %}
+                            <img src="{% static 'img/placeholder.png' %}" alt="Sem Imagem" loading="lazy">
+                        {% endif %}
+                    </a>
+
+                    <h3>{{ produto.nome }}</h3>
+                    <p class="price">{{ produto.get_display_price }}</p>
+
+                    {% if produto.get_estoque_total > 0 %}
+                        <a href="{% url 'detalhe_produto' slug=produto.slug %}" class="btn-principal">Comprar</a>
+                    {% else %}
+                        <button class="btn-principal" disabled style="opacity: 0.5; background-color: #dc3545;">Esgotado</button>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p style="text-align: center;">Nenhum produto encontrado nesta categoria.</p>
+    {% endif %}
+</div>
+{% endblock %}

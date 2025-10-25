@@ -1,0 +1,19 @@
+{% if banners %}
+<div id="bannerCarousel" class="carousel slide" data-bs-ride="carousel">
+  <div class="carousel-inner">
+    {% for banner in banners %}
+      {% if banner.ativo %}
+        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+          {% if banner.link %}
+            <a href="{{ banner.link }}">
+              <img src="{{ banner.imagem.url }}" class="d-block w-100" alt="{{ banner.titulo }}">
+            </a>
+          {% else %}
+            <img src="{{ banner.imagem.url }}" class="d-block w-100" alt="{{ banner.titulo }}">
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+{% endif %}

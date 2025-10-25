@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+{% comment %} {% load widget_tweaks %} Se estiver usando django-widget-tweaks {% endcomment %}
+{% block content %}
+<div class="form-wrapper">
+    <div class="breadcrumb">Início . Minha Conta . Cadastre-se</div>
+    <h2 class="form-title-custom">Criar uma conta</h2>
+    <p class="form-subtitle">Compre mais rápido e acompanhe seus pedidos em um só lugar!</p>
+
+    {% if form.non_field_errors %}
+        <div class="error-message">
+            <p>Por favor, corrija os seguintes erros:</p>
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <form method="post" class="custom-form">
+        {% csrf_token %}
+        
+        <div class="form-field">
+            <label for="{{ form.nome_completo.id_for_label }}">Nome completo</label>
+            <input type="text" name="{{ form.nome_completo.name }}" id="{{ form.nome_completo.id_for_label }}"
+                   placeholder="ex.: Maria Perez" class="custom-input" required>
+            {% if form.nome_completo.errors %}
+                <p class="error-text">{{ form.nome_completo.errors|striptags }}</p>
+            {% endif %}
+        </div>
+        
+        <div class="form-field">
+            <label for="{{ form.email.id_for_label }}">E-mail</label>
+            <input type="email" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}"
+                   placeholder="ex.: seu-email@email.com.br" class="custom-input" required>
+            {% if form.email.errors %}
+                <p class="error-text">{{ form.email.errors|striptags }}</p>
+            {% endif %}
+        </div>
+        
+        <div class="form-field">
+            <label for="{{ form.telefone.id_for_label }}">Telefone (opcional)</label>
+            <input type="text" name="{{ form.telefone.name }}" id="{{ form.telefone.id_for_label }}"
+                   placeholder="ex.: 11971923030" class="custom-input">
+            {% if form.telefone.errors %}
+                <p class="error-text">{{ form.telefone.errors|striptags }}</p>
+            {% endif %}
+        </div>
+        
+        <div class="form-field">
+            <label for="{{ form.password1.id_for_label }}">Senha</label>
+            <input type="password" name="{{ form.password1.name }}" id="{{ form.password1.id_for_label }}"
+                   placeholder="Mínimo 8 caracteres e caracteres especiais" class="custom-input" required>
+            {% if form.password1.errors %} 
+                <p class="error-text">{{ form.password1.errors|striptags }}</p>
+            {% endif %}
+        </div>
+        
+        <div class="form-field">
+            <label for="{{ form.password2.id_for_label }}">Confirmar senha</label>
+            <input type="password" name="{{ form.password2.name }}" id="{{ form.password2.id_for_label }}"
+                   placeholder="Repita a senha" class="custom-input" required>
+            {% if form.password2.errors %} 
+                <p class="error-text">{{ form.password2.errors|striptags }}</p>
+            {% endif %}
+        </div>
+        <div class="recaptcha-field">
+            <input type="checkbox" id="robot-check" required> 
+            <label for="robot-check">Não sou um robô</label>
+        </div>
+
+        <button type="submit" class="btn-submit dark-button">
+            Criar uma conta
+        </button>
+    </form>
+    
+    <p class="link-rodape">
+        Já possui uma conta? <a href="{% url 'usuarios:login' %}" class="pink-link">Faça login</a>
+    </p>
+</div>
+
+{% endblock %}

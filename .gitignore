@@ -1,0 +1,17 @@
+# Conteúdo ATUALIZADO para o seu .gitignore
+
+# Variáveis de ambiente
+.env
+
+# Banco de dados local (SQLite)
+db.sqlite3
+
+# Pasta do ambiente virtual Python
+venv_clean/
+
+# Arquivos estáticos gerados pelo 'collectstatic' do Django
+staticfiles/
+
+# Arquivos compilados do Python
+__pycache__/
+*.pyc
