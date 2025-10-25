@@ -275,9 +275,14 @@
 {% endif %}
 
 
-    <p class="status-estoque" style="color: {% if produto.get_estoque_total == 0 %}#d32f2f{% else %}#2e7d32{% endif %};">
-  {{ produto.get_status_estoque }}
+    <p class="status-estoque" style="color: {% if estoque_total == 0 %}#d32f2f{% else %}#2e7d32{% endif %};">
+  {% if estoque_total == 0 %}
+    Esgotado
+  {% else %}
+    Em estoque: {{ estoque_total }} unidades
+  {% endif %}
 </p>
+
 
 <form id="form-adicionar-carrinho" action="{% url 'carrinho:adicionar_ao_carrinho' produto.slug %}" method="POST">
   {% csrf_token %}
@@ -324,12 +329,12 @@
 </script>
 
   <div class="acoes-compra">
-    <input type="number" name="quantidade" id="quantidade" value="1" min="1" max="{{ produto.get_estoque_total }}">
-    {% if produto.get_estoque_total > 0 %}
-      <button type="submit" class="btn-principal btn-comprar">Comprar</button>
-    {% else %}
-      <button class="btn-principal btn-comprar" disabled style="opacity: 0.5;">Esgotado</button>
-    {% endif %}
+    <input type="number" name="quantidade" id="quantidade" value="1" min="1" max="{{ estoque_total }}">
+    {% if estoque_total > 0 %}
+  <button type="submit" class="btn-principal btn-comprar">Comprar</button>
+{% else %}
+  <button class="btn-principal btn-comprar" disabled style="opacity: 0.5;">Esgotado</button>
+{% endif %}
   </div>
 </form>
 
