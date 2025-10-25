@@ -190,30 +190,73 @@ class Banner(models.Model):
 
 
 # ======================
-# VARIAÇÃO
+# VARIAÇÃO (NOVA ESTRUTURA ANINHADA)
 # ======================
-class Variacao(models.Model):
-    TIPO_VARIACOES = (
-        ('Tamanho', 'Tamanho'),
-        ('Cor', 'Cor'),
-        ('Outro', 'Outro'),
+
+# NOVO MODELO 1: Agrupa variações de cor e é a Foreign Key do Produto
+# (Substitui o agrupamento que antes era feito pelo campo 'tipo' no modelo Variacao)
+class VariacaoCor(models.Model):
+    produto = models.ForeignKey(
+        'Produto', 
+        on_delete=models.CASCADE, 
+        related_name='variacoes_cor',
+        verbose_name="Produto Principal"
+    )
+    cor = models.CharField(max_length=50, verbose_name="Cor da Variação")
+    
+    # Reutilizamos os campos de imagem do modelo Variacao anterior
+    imagem = models.ImageField(
+        upload_to='produtos/variacoes/', 
+        null=True, 
+        blank=True,
+        help_text="Imagem desta cor."
+    )
+    imagem_url_externa = models.URLField(
+        max_length=2000,
+        null=True,
+        blank=True,
+        verbose_name="URL Imagem Externa da Cor",
+        help_text="Se preenchido, substitui a imagem local."
     )
 
-    produto = models.ForeignKey(
-        'Produto',
-        on_delete=models.CASCADE,
-        related_name='variacoes'
-    )
-    tipo = models.CharField(
-        max_length=50,
-        choices=TIPO_VARIACOES,
-        default='Tamanho',
-        verbose_name="Tipo da variação"
-    )
-    valor = models.CharField(
-        max_length=100,
-        verbose_name="Valor da variação"
-    )
+    class Meta:
+        verbose_name = "Variação de Cor"
+        verbose_name_plural = "Variações de Cores"
+        # A chave de unicidade agora é Produto + Cor
+        unique_together = (('produto', 'cor'),) 
+
+    def __str__(self):
+        return f"{self.produto.nome} - Cor: {self.cor}"
+    
+    # Adicione métodos de imagem se necessário (similar ao que você já tem)
+    def get_imagem_url(self):
+        # ... (Implementação do get_imagem_url, similar ao que você já tem no Produto)
+        if self.imagem_url_externa:
+            return self.imagem_url_externa
+
+        if self.imagem and getattr(self.imagem, 'name', None):
+            try:
+                return self.imagem.url
+            except ValueError:
+                pass
+        
+        from django.templatetags.static import static
+        return static('img/placeholder.png')
+
+
+# NOVO MODELO 2: SKU/Variação por Tamanho (aninhado à cor)
+# (Este modelo agora representa o item estocável final)
+class VariacaoTamanho(models.Model):
+    # Foreign Key aponta para o grupo de cores
+    variacao_cor = models.ForeignKey(
+        VariacaoCor, 
+        on_delete=models.CASCADE, 
+        related_name='tamanhos',
+        verbose_name="Grupo de Cor"
+    ) 
+    tamanho = models.CharField(max_length=10, verbose_name="Numeração/Tamanho")
+    
+    # Preço Adicional agora é por Tamanho (SKU)
     preco_adicional = models.DecimalField(
         "Preço adicional",
         max_digits=10,
@@ -223,116 +266,38 @@ class Variacao(models.Model):
     )
     estoque = models.IntegerField(
         default=0,
-        verbose_name="Estoque da variação"
-    )
-
-    imagem = models.ImageField(
-        upload_to='produtos/variacoes/',
-        null=True,
-        blank=True,
-        help_text="Se preenchido, esta imagem será exibida ao selecionar esta variação."
-    )
-
-    imagem_url_externa = models.URLField(
-        max_length=2000,
-        null=True,
-        blank=True,
-        verbose_name="URL da Imagem Externa",
-        help_text="Se preenchido, substitui a imagem local."
+        verbose_name="Estoque desta numeração"
     )
 
     class Meta:
-        verbose_name = "Variação"
-        verbose_name_plural = "Variações"
-        unique_together = (('produto', 'tipo', 'valor'),)
-        ordering = ['produto', 'tipo', 'valor']
+        verbose_name = "Variação por Numeração"
+        verbose_name_plural = "Variações por Numeração"
+        # A chave de unicidade é apenas a Numeração DENTRO de um Grupo de Cor
+        unique_together = (('variacao_cor', 'tamanho'),)
+        ordering = ['variacao_cor', 'tamanho']
 
     def __str__(self):
-        nome_produto = self.produto.nome if self.produto else f"Produto #{self.id}"
-        return f"{nome_produto} - {self.tipo}: {self.valor}"
+        return f"{self.variacao_cor.cor} - Tam. {self.tamanho}"
 
-    # ----------------------------
-    # MÉTODOS DE NEGÓCIO
-    # ----------------------------
-
-    def get_imagem_url(self):
-        """
-        Retorna a URL da imagem, seja externa ou local.
-        Prioriza: 1️⃣ URL externa, 2️⃣ imagem local, 3️⃣ placeholder.
-        """
-        if self.imagem_url_externa:
-            return self.imagem_url_externa
-
-        if self.imagem and getattr(self.imagem, 'name', None):
-            try:
-                return self.imagem.url
-            except ValueError:
-                pass
-
-        from django.templatetags.static import static
-        return static('img/placeholder.png')
-
-
-
-    def get_preco_final(self):
-        """
-        Soma o preço base do produto com o adicional da variação.
-        """
-        preco_base = (
-            self.produto.get_preco_final()
-            if hasattr(self.produto, 'get_preco_final')
-            else Decimal('0.00')
-        )
-        return preco_base + self.preco_adicional
-
-    def get_display_preco_final(self):
-        """
-        Retorna o preço final formatado para exibição.
-        """
-        return f"R$ {self.get_preco_final():.2f}".replace('.', ',')
-
-    def save(self, *args, **kwargs):
-        """
-        Renomeia automaticamente a imagem local e mantém compatibilidade com URLs externas.
-        """
-        base_name = f"{self.produto.slug}-{self.valor.lower().replace(' ', '-')}" if self.produto else f"variacao-{self.pk}"
-
-        # CASO 1: imagem local enviada manualmente
-        if self.imagem and hasattr(self.imagem, "name"):
-            ext = os.path.splitext(self.imagem.name)[1].lower()
-            novo_nome = f"media/produtos/variacoes/{base_name}{ext}"
-
-            if self.imagem.name != novo_nome:
-                if default_storage.exists(novo_nome):
-                    default_storage.delete(novo_nome)
-                self.imagem.name = novo_nome
-                print(f"🎨 Imagem de variação renomeada automaticamente: {novo_nome}")
-
-        # CASO 2: sem imagem e sem URL externa (mantido)
-        elif not self.imagem and not self.imagem_url_externa:
-            # Aqui você pode colocar a lógica de fallback S3, se tiver implementado
-            pass
-
-        super().save(*args, **kwargs)
-
+    # Seus métodos de preço (get_preco_final, get_display_preco_final) devem ser reescritos aqui
+    # para usar a VariacaoTamanho como o SKU final.
 
 # ======================
 # GALERIA DE IMAGENS
 # ======================
 class ImagemProduto(models.Model):
-    produto = models.ForeignKey(
-        Produto,
-        related_name='galeria_imagens',
-        on_delete=models.CASCADE,
-        verbose_name='Produto Principal'
-    )
-    variacao = models.ForeignKey(
-        'Variacao',
+    # ... (Seu modelo ImagemProduto permanece inalterado)
+    # ATENÇÃO: Se o campo 'variacao' no ImagemProduto apontava para a antiga Variacao,
+    # você precisará decidir se ele deve apontar para VariacaoCor ou VariacaoTamanho.
+    # Se a imagem é por cor, aponte para VariacaoCor.
+
+    variacao_cor = models.ForeignKey(
+        'VariacaoCor', # ATENÇÃO: Substituir Variacao por VariacaoCor
         related_name='imagens',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        verbose_name='Variação (Opcional)'
+        verbose_name='Variação de Cor (Opcional)'
     )
     imagem = models.ImageField(upload_to='produtos/galeria/', blank=True, null=True)
     imagem_url_externa = models.URLField(
