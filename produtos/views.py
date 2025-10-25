@@ -65,28 +65,40 @@ def listar_por_categoria(request, categoria_slug):
 def detalhe_produto(request, slug):
     # Busca o produto ou retorna 404
     produto = get_object_or_404(Produto, slug=slug, disponivel=True)
-    
-    # Separa as variações por tipo (ex: 'Tamanho', 'Cor') para exibição
+
+    # =============================================================
+    # 🔹 Lógica nova de variações com hierarquia (pai → filho)
+    # =============================================================
     variacoes_por_tipo = {}
     if produto.usa_variacoes:
-        tipos_disponiveis = produto.variacoes.values('tipo').distinct()
-        for tipo in tipos_disponiveis:
-            nome_tipo = tipo['tipo']
-            variacoes_por_tipo[nome_tipo] = produto.variacoes.filter(tipo=nome_tipo).order_by('valor')
+        # Pega variações principais (sem parent)
+        variacoes_principais = Variacao.objects.filter(produto=produto, parent__isnull=True)
+        # Pega subvariações (com parent)
+        variacoes_filhas = Variacao.objects.filter(produto=produto, parent__isnull=False)
 
+        for variacao_pai in variacoes_principais:
+            subvariacoes = variacoes_filhas.filter(parent=variacao_pai)
+            variacoes_por_tipo[variacao_pai] = subvariacoes
+
+    # =============================================================
     # 🔹 Cálculo da simulação de parcelamento
+    # =============================================================
     preco = produto.get_preco_final() or Decimal('0')
     valor_final = preco / Decimal('0.8872')  # Corrige o valor com base na sua fórmula
     valor_parcela = valor_final / Decimal('3')  # Divide em 3x
 
-    # 🔹 Busca promoção ativa (para o cronômetro)
+    # =============================================================
+    # 🔹 Promoção ativa (para o cronômetro)
+    # =============================================================
     promo_ativa = None
     for promo in produto.promocoes.all():
         if promo.esta_vigente():
             promo_ativa = promo
             break
 
-    # >> NOVO: Lógica para Produtos Relacionados <<
+    # =============================================================
+    # 🔹 Produtos relacionados (mesma categoria)
+    # =============================================================
     produtos_relacionados = Produto.objects.filter(
         categoria=produto.categoria,
         disponivel=True,
@@ -94,14 +106,16 @@ def detalhe_produto(request, slug):
     ).exclude(
         id=produto.id
     ).order_by('?')[:4]
-    
-    # 🔹 Contexto enviado ao template
+
+    # =============================================================
+    # 🔹 Contexto final enviado ao template
+    # =============================================================
     context = {
         'produto': produto,
         'variacoes_por_tipo': variacoes_por_tipo,
         'produtos_relacionados': produtos_relacionados,
         'valor_parcela': valor_parcela,
-        'promo_ativa': promo_ativa,  # ✅ importante: envia a promoção ativa para o template
+        'promo_ativa': promo_ativa,
         'titulo': f'{produto.nome} | Doce & Bella',
     }
 
