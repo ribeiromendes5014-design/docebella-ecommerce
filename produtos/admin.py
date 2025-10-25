@@ -101,7 +101,6 @@ class VariacaoInline(nested_admin.NestedTabularInline):
     fields = ('tipo', 'valor', 'estoque', 'imagem', 'imagem_url_externa')
     verbose_name = "Variação"
     verbose_name_plural = "Variações"
-    #inlines = [SubVariacaoInline]
 # -----------------------------------------------------------------
 # 2.1 Variações e Subvariações
 # -----------------------------------------------------------------
@@ -114,7 +113,6 @@ class VariacaoAdmin(admin.ModelAdmin):
     list_display = ('produto', 'tipo', 'valor', 'estoque', 'parent')
     list_filter = ('produto', 'tipo')
     search_fields = ('valor', 'produto__nome')
-    #inlines = [SubVariacaoInline]
     exclude = ('parent',)
 
 
