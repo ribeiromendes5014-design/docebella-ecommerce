@@ -75,7 +75,13 @@ class ItemPedido(models.Model):
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name="itens")
     produto = models.ForeignKey(Produto, on_delete=models.CASCADE)
     # 🚨 CORRIGIDO AQUI: Permite que produtos simples sejam criados com VARIAÇÃO NULA 🚨
-    variacao = models.ForeignKey(Variacao, on_delete=models.CASCADE, null=True, blank=True)
+    variacao = models.ForeignKey(
+        VariacaoTamanho,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        elated_name="itens_pedido"
+    )
     preco_unitario = models.DecimalField(max_digits=10, decimal_places=2)
     quantidade = models.PositiveIntegerField()
 
