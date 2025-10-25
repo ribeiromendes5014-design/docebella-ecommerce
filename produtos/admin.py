@@ -143,6 +143,25 @@ class ProdutoAdmin(nested_admin.NestedModelAdmin):
     prepopulated_fields = {'slug': ('nome',)}
     list_editable = ('preco', 'estoque', 'disponivel')
 
+    # -----------------------------------------------------------------
+    # ✅ ADICIONE A CLASSE MEDIA AQUI PARA CORRIGIR O CSS/JS DO NESTED ADMIN
+    # -----------------------------------------------------------------
+    class Media:
+        """
+        Garante que o CSS e o JS do 'nested_admin' sejam carregados.
+        Isso é a solução padrão para corrigir o desalinhamento (quebra) do layout
+        nas inlines aninhadas (VariacaoInline).
+        """
+        css = {
+            'all': ('nested_admin/css/nested-admin.css',)
+        }
+        js = (
+            'nested_admin/js/nested-admin.js',
+            'nested_admin/js/jquery.init.js',
+        )
+    # -----------------------------------------------------------------
+
+
     fieldsets = (
         (None, {
             'fields': (
@@ -169,7 +188,6 @@ class ProdutoAdmin(nested_admin.NestedModelAdmin):
             controle_fieldset.remove('estoque')
         fieldsets[1][1]['fields'] = tuple(controle_fieldset)
         return fieldsets
-
 # -----------------------------------------------------------------
 # 4. Promoção
 # -----------------------------------------------------------------
