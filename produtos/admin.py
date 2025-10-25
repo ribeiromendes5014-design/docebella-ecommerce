@@ -13,6 +13,7 @@ class ImagemProdutoInline(nested_admin.NestedTabularInline):
     """Permite adicionar várias fotos por produto na mesma página."""
     model = models.ImagemProduto
     extra = 1
+    sortable_field_name = "ordem"  # <- 👈 ESSENCIAL para o nested_admin funcionar!
 
     # Campos que aparecem no admin
     fields = (
@@ -21,7 +22,7 @@ class ImagemProdutoInline(nested_admin.NestedTabularInline):
         'variacao',
         'descricao',
         'ordem',
-        'preview_imagem',  # mostra a miniatura
+        'preview_imagem',
     )
 
     readonly_fields = ('preview_imagem',)
@@ -36,6 +37,7 @@ class ImagemProdutoInline(nested_admin.NestedTabularInline):
         return format_html('<img src="{}" style="max-height: 100px; border-radius: 6px;">', url)
 
     preview_imagem.short_description = "Pré-visualização"
+
 
 
 
