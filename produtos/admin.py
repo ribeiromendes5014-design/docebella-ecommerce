@@ -101,7 +101,7 @@ class VariacaoInline(nested_admin.NestedTabularInline):
     fields = ('tipo', 'valor', 'estoque', 'imagem', 'imagem_url_externa')
     verbose_name = "Variação"
     verbose_name_plural = "Variações"
-    inlines = [SubVariacaoInline]
+    #inlines = [SubVariacaoInline]
 # -----------------------------------------------------------------
 # 2.1 Variações e Subvariações
 # -----------------------------------------------------------------
