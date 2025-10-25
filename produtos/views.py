@@ -1,5 +1,5 @@
 # produtos/views.py
-from produtos.models import Produto, Variacao, Banner, MensagemTopo
+from produtos.models import Produto, VariacaoCor, VariacaoTamanho, Banner, MensagemTopo
 from django.shortcuts import render
 from produtos.models import Produto
 from django.core.paginator import Paginator
