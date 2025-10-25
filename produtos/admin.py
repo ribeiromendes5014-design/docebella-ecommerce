@@ -20,7 +20,7 @@ from .models import Produto, VariacaoCor, VariacaoTamanho, ImagemProduto
 # -----------------------------------------------------------------
 class ImagemProdutoInline(admin.TabularInline):
     """Permite adicionar várias fotos por produto na mesma página."""
-    model = models.ImagemProduto
+    model = ImagemProduto
     extra = 1
     fields = ('imagem', 'imagem_url_externa', 'variacao', 'descricao', 'ordem', 'preview_imagem')
     readonly_fields = ('preview_imagem',)
