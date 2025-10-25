@@ -20,39 +20,48 @@
             {% for item in itens_carrinho %}
             <tr>
                 <td>
-                    <div class="product-info-carrinho">
-                        <img src="{% if item.produto.imagem %}{{ item.produto.imagem.url }}{% else %}{% static 'img/placeholder.png' %}{% endif %}" alt="{{ item.produto.nome }}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 4px;">
-                        
-                        <div>
-                            <a href="{% url 'detalhe_produto' slug=item.produto.slug %}">{{ item.produto.nome }}</a>
-                            {% if item.variacao %}
-                                <p style="font-size: 0.9rem; color: #6c757d;">({{ item.variacao.tipo }}: {{ item.variacao.valor }})</p>
-                            {% endif %}
-                        </div>
-                    </div>
-                </td>
-                
-                <td>R$ {{ item.get_preco_unitario|floatformat:2 }}</td>
-                
-                <td>
-                    <form action="{% url 'carrinho:atualizar_carrinho' %}" method="POST" style="display: flex; align-items: center; gap: 5px;">
-                        {% csrf_token %}
-                        <input type="hidden" name="item_id" value="{{ item.id }}">
-                        <input type="number" name="quantidade" value="{{ item.quantidade }}" min="1" max="99" style="width: 50px; text-align: center;">
-                        <button type="submit" class="btn-sm" style="background-color: #6c757d;">
-                            Atualizar
-                        </button>
-                    </form>
-                </td>
+  <div class="product-info-carrinho">
+      <img src="{{ item.produto.get_imagem_url }}" 
+           alt="{{ item.produto.nome }}" 
+           style="width: 70px; height: 70px; object-fit: cover; border-radius: 4px; border: 1px solid #eee;">
+      
+      <div>
+          <a href="{% url 'detalhe_produto' slug=item.produto.slug %}">
+              {{ item.produto.nome }}
+          </a>
+          
+          {% if item.variacao %}
+              <p style="font-size: 0.9rem; color: #6c757d;">
+                  {% if item.variacao.cor %}(Cor: {{ item.variacao.cor }}){% endif %}
+                  {% if item.variacao.tamanho %}(Tamanho: {{ item.variacao.tamanho }}){% endif %}
+              </p>
+          {% endif %}
+      </div>
+  </div>
+</td>
 
-                <td>R$ {{ item.get_subtotal|floatformat:2 }}</td>
-                
-                <td>
-                    <form action="{% url 'carrinho:remover_item' item_id=item.id %}" method="POST" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-sm btn-danger">Remover</button>
-                    </form>
-                </td>
+<td>R$ {{ item.get_preco_unitario|floatformat:2 }}</td>
+
+<td>
+  <form action="{% url 'carrinho:atualizar_carrinho' %}" method="POST" style="display: flex; align-items: center; gap: 5px;">
+      {% csrf_token %}
+      <input type="hidden" name="item_id" value="{{ item.id }}">
+      <input type="number" name="quantidade" value="{{ item.quantidade }}" min="1" max="99" style="width: 50px; text-align: center;">
+      <button type="submit" class="btn-sm" style="background-color: #6c757d;">
+          Atualizar
+      </button>
+  </form>
+</td>
+
+<td>R$ {{ item.get_subtotal|floatformat:2 }}</td>
+
+<td>
+  <form action="{% url 'carrinho:remover_item' item_id=item.id %}" method="POST" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit" class="btn-sm btn-danger">Remover</button>
+  </form>
+</td>
+
             </tr>
             {% endfor %}
         </tbody>

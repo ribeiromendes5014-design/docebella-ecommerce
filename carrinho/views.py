@@ -1,16 +1,16 @@
 # G:\projeto\carrinho\views.py
 
 from django.shortcuts import render, redirect, get_object_or_404
+
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.db.models import Sum, F
 from django.contrib import messages
 from django.utils import timezone
 from decimal import Decimal
-
 from produtos.models import Produto, Variacao
-from pedidos.models import Cupom  # ✅ usa o modelo do admin (pedidos)
-from .models import ItemCarrinho  # mantém apenas o ItemCarrinho
+from pedidos.models import Cupom  
+from .models import ItemCarrinho  
 
 
 
@@ -141,55 +141,52 @@ def ver_carrinho(request):
     return render(request, 'carrinho/carrinho.html', context)
 
 
-
-# ---------------------- ATUALIZAR QUANTIDADE ----------------------
+# ---------------------- ATUALIZAR CARRINHO ----------------------
 @require_POST
 def atualizar_carrinho(request):
-    item_id = request.POST.get('item_id')
-    nova_quantidade = int(request.POST.get('quantidade', 0))
+    """Atualiza a quantidade de um item no carrinho"""
     session_key = _get_session_key(request)
+    item_id = request.POST.get('item_id')
+    nova_quantidade = int(request.POST.get('quantidade', 1))
 
     item = get_object_or_404(ItemCarrinho, id=item_id, session_key=session_key)
 
-    if nova_quantidade > 0:
-        estoque_disponivel = item.variacao.estoque if item.variacao else item.produto.estoque
-
-        if nova_quantidade <= estoque_disponivel:
-            item.quantidade = nova_quantidade
-            item.save()
-            messages.success(request, f"Quantidade de {item.produto.nome} atualizada.")
-        else:
-            messages.error(request, f"Quantidade excede o estoque disponível ({estoque_disponivel}).")
-    else:
+    if nova_quantidade <= 0:
         item.delete()
-        messages.success(request, f"{item.produto.nome} removido do carrinho.")
+        messages.success(request, f"{item.produto.nome} foi removido do carrinho.")
+    else:
+        item.quantidade = nova_quantidade
+        item.save()
+        messages.success(request, f"Quantidade de {item.produto.nome} atualizada com sucesso.")
 
     return redirect('carrinho:ver_carrinho')
 
 
-# ---------------------- REMOVER ITEM ----------------------
+
+# ---------------------- REMOVER ITEM DO CARRINHO ----------------------
+@require_POST
 def remover_item(request, item_id):
-    item = get_object_or_404(ItemCarrinho, id=item_id, session_key=_get_session_key(request))
+    """Remove um item específico do carrinho"""
+    session_key = _get_session_key(request)
+    item = get_object_or_404(ItemCarrinho, id=item_id, session_key=session_key)
     item.delete()
-    messages.success(request, f"{item.produto.nome} removido do carrinho.")
+    messages.success(request, "Item removido do carrinho.")
     return redirect('carrinho:ver_carrinho')
 
 
-# ---------------------- CUPOM ----------------------
-# ---------------------- CUPOM ----------------------
+# ---------------------- ATUALIZAR QUANTIDADE ----------------------
 @require_POST
 def aplicar_cupom(request):
+    """Aplica um cupom de desconto e salva na sessão do usuário"""
     codigo_cupom = request.POST.get('cupom_codigo', '').strip()
-    session_key = request.session.session_key
+    session_key = _get_session_key(request)
 
     if not session_key:
         request.session.create()
         session_key = request.session.session_key
 
-    # Busca os itens do carrinho
     itens = ItemCarrinho.objects.filter(session_key=session_key)
     total = sum(item.get_subtotal() for item in itens)
-    total_descontado = total
 
     if not codigo_cupom:
         messages.error(request, "Por favor, insira um código de cupom.")
@@ -199,39 +196,55 @@ def aplicar_cupom(request):
         cupom = Cupom.objects.get(codigo__iexact=codigo_cupom)
         agora = timezone.now()
 
-        # Verifica validade
+        # 🚫 Validações
         if not cupom.ativo:
             messages.error(request, "Este cupom está inativo.")
-        elif cupom.data_fim and cupom.data_fim < agora:
+            return redirect('carrinho:ver_carrinho')
+
+        if cupom.data_fim and cupom.data_fim < agora:
             messages.error(request, "Este cupom expirou.")
-        else:
-            # Calcula o desconto
-            desconto = Decimal('0.00')
-            if hasattr(cupom, 'desconto_percentual') and cupom.desconto_percentual:
-                desconto = total * (cupom.desconto_percentual / Decimal('100'))
-            elif hasattr(cupom, 'desconto_fixo') and cupom.desconto_fixo:
-                desconto = cupom.desconto_fixo
-            elif hasattr(cupom, 'valor_desconto') and cupom.valor_desconto:
-                desconto = cupom.valor_desconto
+            return redirect('carrinho:ver_carrinho')
 
-            total_descontado = total - desconto
-            if total_descontado < 0:
-                total_descontado = Decimal('0.00')
+        # 💰 Calcula o desconto
+        desconto = Decimal('0.00')
 
-            # Guarda os dados na sessão
-            request.session['cupom_codigo'] = cupom.codigo
-            request.session['desconto_valor'] = float(desconto)
-            request.session['total_com_desconto'] = float(total_descontado)
+        if getattr(cupom, 'desconto_percentual', None):
+            percentual = Decimal(str(cupom.desconto_percentual))
+            desconto = (total * percentual / Decimal('100')).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        elif getattr(cupom, 'desconto_fixo', None):
+            desconto = Decimal(str(cupom.desconto_fixo))
+        elif getattr(cupom, 'valor_desconto', None):
+            desconto = Decimal(str(cupom.valor_desconto))
 
-            messages.success(
-                request,
-                f"Cupom '{cupom.codigo}' aplicado com sucesso! Desconto de R$ {desconto:.2f}."
-            )
+        # 🔒 Garante que o desconto não ultrapasse o total
+        if desconto > total:
+            desconto = total
+
+        total_descontado = (total - desconto).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+
+        # ✅ SALVA NA SESSÃO (com valores limpos)
+        request.session['cupom_codigo'] = str(cupom.codigo)
+        request.session['desconto_valor'] = str(desconto)
+        request.session['total_com_desconto'] = str(total_descontado)
+        request.session.modified = True
+
+        print("=== CUPOM SALVO NA SESSÃO ===")
+        print("cupom_codigo:", request.session.get('cupom_codigo'))
+        print("desconto_valor:", request.session.get('desconto_valor'))
+        print("total_com_desconto:", request.session.get('total_com_desconto'))
+        print("==============================")
+
+        messages.success(
+            request,
+            f"Cupom '{cupom.codigo}' aplicado com sucesso! Desconto de R$ {desconto:.2f}."
+        )
 
     except Cupom.DoesNotExist:
         messages.error(request, "Cupom inválido.")
 
     return redirect('carrinho:ver_carrinho')
+
+
 
 
 

@@ -64,32 +64,32 @@ def listar_por_categoria(request, categoria_slug):
 
 # NOVA VIEW: Detalhe do Produto (Com Produtos Relacionados)
 def detalhe_produto(request, slug):
-    # Busca o produto ou retorna 404
     produto = get_object_or_404(Produto, slug=slug, disponivel=True)
-    
-    # ✅ Calcula o estoque total somando todas as variações
+
+    # Calcula o estoque total
     if produto.usa_variacoes:
-        estoque_total = sum(v.estoque or 0 for v in produto.variacoes.all())
+        estoque_total = sum(v.estoque for v in produto.variacoes.all())
     else:
         estoque_total = produto.estoque
 
-    # Separa as variações
+    # Separa variações
     variacoes = produto.variacoes.all()
     cores = sorted(set(v.cor for v in variacoes if v.cor))
     tamanhos = sorted(set(v.valor for v in variacoes if v.valor))
 
     # Monta o JSON das variações
+    from django.core.serializers.json import DjangoJSONEncoder
     import json
     variacoes_json = json.dumps([
-        {
-            "id": v.id,
-            "cor": v.cor,
-            "tamanho": v.valor,
-            "estoque": v.estoque,
-            "imagem": v.imagem.url if v.imagem else "",
-        }
-        for v in variacoes
-    ])
+    {
+        "id": v.id,
+        "cor": v.cor or "",
+        "tamanho": v.valor or "",
+        "estoque": v.estoque,
+        "imagem": v.get_imagem_url(),  # ✅ usa o método da model
+    }
+    for v in variacoes
+], cls=DjangoJSONEncoder)
 
     # Cálculo de parcelamento
     from decimal import Decimal
@@ -103,6 +103,7 @@ def detalhe_produto(request, slug):
         if promo.esta_vigente():
             promo_ativa = promo
             break
+
 
     # Produtos relacionados
     produtos_relacionados = Produto.objects.filter(
@@ -122,9 +123,10 @@ def detalhe_produto(request, slug):
         'valor_parcela': valor_parcela,
         'promo_ativa': promo_ativa,
         'variacoes_json': variacoes_json,
-        'estoque_total': estoque_total,  # 👈 AQUI USADO NO TEMPLATE
+        'estoque_total': estoque_total,
         'titulo': f'{produto.nome} | Doce & Bella',
     }
 
     return render(request, 'produtos/detalhe_produto.html', context)
+
 

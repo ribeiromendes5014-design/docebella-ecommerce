@@ -1,186 +1,397 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
+{% load produto_extras %}
 
 {% block extra_css %}
 <style>
-/* ===== Layout principal ===== */
 .produto-detalhe-container {
   display: flex;
-  flex-wrap: wrap;
   align-items: flex-start;
-  gap: 56px;
-  padding: 40px 20px;
+  gap: 40px;
   max-width: 1100px;
-  margin: 0 auto;
+  margin: 2rem auto;
   background: #fff;
   border-radius: 12px;
-  transition: all 0.3s ease;
+  padding: 30px;
 }
 
-/* 💖 Destaque visual se o produto estiver em promoção */
-.produto-detalhe-container.promo-ativo {
-  border: 3px solid #ff4da6;
-  box-shadow: 0 0 18px rgba(255, 77, 166, 0.6);
-  animation: brilhoPromo 1.5s infinite alternate;
+/* === Galeria com miniaturas abaixo === */
+.produto-galeria {
+  text-align: center;
 }
 
-@keyframes brilhoPromo {
-  from { box-shadow: 0 0 10px rgba(255, 77, 166, 0.4); }
-  to { box-shadow: 0 0 20px rgba(255, 77, 166, 0.9); }
-}
 
-/* ===== Coluna da imagem ===== */
-.produto-galeria { flex: 1 1 480px; max-width: 520px; }
-.produto-galeria .main-image-wrapper {
-  width: 100%; border: 1px solid #e9e9e9; border-radius: 10px; overflow: hidden;
-}
-#main-image { display: block; width: 100%; height: auto; object-fit: contain; cursor: pointer; }
-
-/* ===== Timer de promoção ===== */
-.timer-container {
-  background: #fff3f9;
-  border: 1px solid #ff4da6;
+.main-image-wrapper {
+  border: 1px solid #eee;
   border-radius: 8px;
-  padding: 6px 10px;
-  display: inline-block;
-  margin-top: 5px;
-  color: #d81b60;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+#main-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  transition: opacity .3s ease;
+}
+
+/* Miniaturas em linha abaixo da imagem */
+.thumbs-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.thumbs-row .miniatura {
+  width: 80px;
+  height: 80px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform .15s ease, border-color .15s ease;
+}
+
+.thumbs-row .miniatura:hover {
+  transform: translateY(-2px);
+}
+
+.thumbs-row .miniatura.selecionado {
+  border: 2px solid #f26b7f;
+}
+
+
+.galeria-miniaturas {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.miniatura {
+  width: 70px;
+  height: 70px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  object-fit: cover;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.miniatura:hover,
+.miniatura.selecionado {
+  border: 2px solid #f26b7f;
+}
+
+.produto-info {
+  flex: 1 1 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.produto-info h1 {
+  font-size: 1.8rem;
   font-weight: 600;
+  color: #222;
+}
+
+.preco-principal {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111;
+}
+
+.parcelamento {
+  color: #777;
   font-size: 0.9rem;
 }
-.timer { display: inline-block; margin-left: 5px; }
 
-/* ===== Modal Zoom ===== */
+.status-estoque {
+  font-weight: 600;
+  margin-top: 6px;
+  color: #2e7d32;
+}
+
+.btn-variacao,
+.botoes-cor button,
+.botoes-tamanho button {
+  background: #f7f7f7;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-variacao:hover,
+.btn-variacao.selecionado,
+.botoes-cor button:hover,
+.botoes-tamanho button:hover,
+.botoes-cor button.selecionado,
+.botoes-tamanho button.selecionado {
+  background: #f26b7f;
+  color: #fff;
+  border-color: #f26b7f;
+}
+
+.acoes-compra {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+#quantidade {
+  width: 60px;
+  text-align: center;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.btn-comprar {
+  background: #f26b7f;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 60px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-comprar:hover {
+  background: #e2546d;
+}
+
+.descricao-completa {
+  border-top: 1px solid #eee;
+  margin-top: 30px;
+  padding-top: 15px;
+}
+
+@media (max-width: 768px) {
+  .produto-detalhe-container {
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .galeria-miniaturas {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .miniatura {
+    width: 60px;
+    height: 60px;
+  }
+
+  .btn-comprar {
+    width: 100%;
+  }
+}
+
+/* === Layout da galeria: miniaturas à esquerda === */
+.galeria-grid {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.thumbs-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.thumbs-col .miniatura {
+  width: 90px;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform .15s ease, border-color .15s ease;
+}
+
+.thumbs-col .miniatura:hover {
+  transform: translateY(-2px);
+}
+
+.thumbs-col .miniatura.selecionado {
+  border: 2px solid #f26b7f;
+}
+
+/* ======== MODAL ZOOM ========= */
 .modal {
   display: none;
-  position: fixed;
-  z-index: 9999;
-  padding-top: 80px;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.9);
+  position: fixed !important;
+  inset: 0;
+  z-index: 1000;
+  padding-top: 5vh;
+  background-color: rgba(0, 0, 0, 0.85);
+  justify-content: center;
+  align-items: center;
 }
+
+body.modal-open {
+  overflow: hidden;
+}
+
 .modal-content {
   margin: auto;
   display: block;
-  max-width: 80%;
-  max-height: 80%;
-  border-radius: 8px;
-  box-shadow: 0 0 15px rgba(255,255,255,0.2);
-  animation: fadeIn 0.3s ease;
+  max-width: 90%;
+  max-height: 85vh;
+  border-radius: 10px;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+  animation: zoomIn 0.3s ease;
+  cursor: zoom-out;
 }
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+
+@keyframes zoomIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
+
 .close {
-  position: absolute;
-  top: 30px;
-  right: 45px;
+  position: fixed;
+  top: 20px;
+  right: 40px;
   color: #fff;
   font-size: 40px;
   font-weight: bold;
   cursor: pointer;
   transition: color 0.2s;
-}
-.close:hover { color: #ff69b4; }
-
-/* Miniaturas */
-.galeria-miniaturas {
-  display: flex; gap: 12px; margin-top: 14px; overflow-x: auto; padding-bottom: 4px;
-}
-.galeria-miniaturas .miniatura {
-  display: block; width: 72px; aspect-ratio: 1/1; object-fit: cover;
-  border: 1px solid #ddd; border-radius: 6px;
-  flex-shrink: 0;
-  cursor: pointer;
-}
-.galeria-miniaturas .miniatura.selecionado { border: 2px solid #111; }
-
-/* ===== Coluna das infos ===== */
-.produto-info { flex: 1 1 380px; display: flex; flex-direction: column; gap: 12px; }
-.produto-info h1 { font-size: 2rem; font-weight: 600; color: #222; margin: 0 0 6px; }
-.preco-principal { font-size: 1.8rem; font-weight: 600; color: #111; margin: 0; }
-.produto-info p { color: #555; font-size: 1rem; line-height: 1.6; margin: 0; }
-.status-estoque { font-weight: 600; margin-top: 6px; }
-
-/* ===== Variações ===== */
-.variacao-selector { margin-top: 14px; }
-.variacao-selector h4 { margin: 0 0 8px; font-weight: 600; color: #222; }
-.btn-variacao {
-  background: #f5f5f5; border: 1px solid #ddd; padding: 8px 14px; border-radius: 6px;
-  cursor: pointer; transition: .2s; margin-right: 8px; margin-bottom: 8px;
-}
-.btn-variacao:hover, .btn-variacao.selecionado {
-  background: #111; color: #fff; border-color: #111;
+  z-index: 1001;
 }
 
-/* ===== Cor e Tamanho separados ===== */
-.botoes-cor,
-.botoes-tamanho {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 10px;
+.close:hover {
+  color: #f26b7f;
 }
 
-.botoes-cor button,
-.botoes-tamanho button {
-  background: #f5f5f5;
-  border: 1px solid #ddd;
-  padding: 8px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-}
-
-.botoes-cor button:hover,
-.botoes-tamanho button:hover,
-.botoes-cor button.selecionado,
-.botoes-tamanho button.selecionado {
-  background: #111;
-  color: #fff;
-  border-color: #111;
-}
-
-/* Melhor espaçamento entre os grupos */
-.variacao-selector h4 {
-  margin: 14px 0 8px;
-  font-weight: 600;
-  color: #222;
-}
-
-/* ===== Quantidade + Comprar ===== */
-.acoes-compra { display: flex; align-items: center; gap: 14px; margin-top: 8px; flex-wrap: wrap; }
-.acoes-compra input[type="number"] {
-  width: 72px; text-align: center; padding: 8px; border: 1px solid #ddd; border-radius: 6px;
-}
-.btn-comprar {
-  background: #111; color: #fff; padding: 12px 28px; border: none; border-radius: 6px;
-  font-size: 1rem; font-weight: 500; cursor: pointer; transition: background .2s ease; min-width: 180px;
-}
-.btn-comprar:hover { background: #333; }
-
-/* ===== Descrição ===== */
-.descricao-completa { margin-top: 22px; border-top: 1px solid #eee; padding-top: 16px; }
-.descricao-completa h3 { font-size: 1.1rem; font-weight: 600; margin: 0 0 8px; }
-
-/* ===== Breadcrumb ===== */
-.breadcrumb { font-size: .9rem; color: #7b7b7b; margin-bottom: 18px; }
-.breadcrumb a { color: inherit; }
-
-/* ===== Responsivo ===== */
 @media (max-width: 768px) {
-  .produto-detalhe-container { flex-direction: column; gap: 28px; padding: 24px 16px; }
-  .produto-info h1 { font-size: 1.6rem; }
-  .preco-principal { font-size: 1.5rem; }
-  .btn-comprar { width: 100%; }
+  .modal-content {
+    max-width: 95%;
+    max-height: 80vh;
+  }
+
+  .galeria-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .thumbs-col {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .thumbs-col .miniatura {
+    width: 64px;
+  }
+}
+
+.thumbs-col .miniatura.selecionado {
+  border: 2px solid #f26b7f;
+}
+/* ======== MODAL ZOOM ========= */
+.modal {
+  display: none; /* escondido por padrão */
+  position: fixed;
+  z-index: 1000;
+  padding-top: 5vh;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.85); /* fundo escuro */
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  position: fixed !important;
+  inset: 0; /* garante que ocupe a tela toda */
+}
+body.modal-open {
+  overflow: hidden; /* impede que o corpo role ou se mova */
+}
+
+
+.modal-content {
+  margin: auto;
+  display: block;
+  max-width: 90%;
+  max-height: 85vh;
+  border-radius: 10px;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+  animation: zoomIn 0.3s ease;
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.close {
+  position: fixed;
+  top: 20px;
+  right: 40px;
+  color: #fff;
+  font-size: 40px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.2s;
+  z-index: 1001;
+}
+
+.close:hover {
+  color: #f26b7f;
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    max-width: 95%;
+    max-height: 80vh;
+  }
+
+.main-image-wrapper {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+#main-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  transition: opacity .3s ease;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .galeria-grid {
+    grid-template-columns: 1fr;
+  }
+  .thumbs-col {
+    flex-direction: row;
+    justify-content: center;
+  }
+  .thumbs-col .miniatura {
+    width: 64px;
+  }
 }
 </style>
 {% endblock %}
+
 
 {% block content %}
 <p class="breadcrumb">
@@ -192,37 +403,43 @@
 <div class="produto-detalhe-container {% if produto.preco_promocional %}promo-ativo{% endif %}">
 
     <div class="produto-galeria">
-    <div class="main-image-wrapper">
-            <img id="main-image" src="{{ produto.get_imagem_url }}" alt="{{ produto.nome }}">
-    </div>
+      <!-- Imagem principal -->
+  <div class="main-image-wrapper">
+    <img id="main-image"
+         src="{{ produto.get_imagem_url }}"
+         data-full-url="{{ produto.get_imagem_url }}"
+         alt="{{ produto.nome }}">
+  </div>
 
-        <div id="modalZoom" class="modal">
-      <span class="close">&times;</span>
-      <img class="modal-content" id="imgZoomed">
-    </div>
+  <!-- Miniaturas abaixo -->
+  <div class="thumbs-row">
+    <img class="miniatura selecionado"
+         src="{{ produto.get_imagem_url }}"
+         data-full-url="{{ produto.get_imagem_url }}"
+         alt="Miniatura principal">
 
-    <div class="galeria-miniaturas">
-            <img class="miniatura selecionado"
-            src="{{ produto.get_imagem_url }}"
-            data-full-url="{{ produto.get_imagem_url }}"
-            alt="Miniatura principal">
-      
-{% for imagem_galeria in produto.galeria_imagens.all %}
-  {% if imagem_galeria.imagem and imagem_galeria.imagem.name %}
-    <img class="miniatura"
-         src="{{ imagem_galeria.imagem.url }}"
-         data-full-url="{{ imagem_galeria.imagem.url }}"
-         alt="{{ imagem_galeria.descricao|default:'Miniatura' }}">
-  {% elif imagem_galeria.imagem_url_externa %}
-    <img class="miniatura"
-         src="{{ imagem_galeria.imagem_url_externa }}"
-         data-full-url="{{ imagem_galeria.imagem_url_externa }}"
-         alt="{{ imagem_galeria.descricao|default:'Miniatura' }}">
-  {% endif %}
-{% endfor %}
+    {% for imagem_galeria in produto.galeria_imagens.all %}
+      {% if imagem_galeria.imagem and imagem_galeria.imagem.name %}
+        <img class="miniatura"
+             src="{{ imagem_galeria.imagem.url }}"
+             data-full-url="{{ imagem_galeria.imagem.url }}"
+             alt="{{ imagem_galeria.descricao|default:'Miniatura' }}">
+      {% elif imagem_galeria.imagem_url_externa %}
+        <img class="miniatura"
+             src="{{ imagem_galeria.imagem_url_externa }}"
+             data-full-url="{{ imagem_galeria.imagem_url_externa }}"
+             alt="{{ imagem_galeria.descricao|default:'Miniatura' }}">
+      {% endif %}
+    {% endfor %}
+  </div>
+</div> <!-- fecha .produto-galeria -->
+<!-- Modal de zoom (fora da galeria) -->
+<div id="modalZoom" class="modal">
+  <span class="close">&times;</span>
+  <img class="modal-content" id="imgZoomed" alt="Zoom da imagem">
+</div>
 
-    </div>
-  </div>
+
 
     <div class="produto-info">
     <h1>{{ produto.nome }}</h1>
@@ -275,14 +492,18 @@
 {% endif %}
 
 
-    <p class="status-estoque" style="color: {% if estoque_total == 0 %}#d32f2f{% else %}#2e7d32{% endif %};">
-  {% if estoque_total == 0 %}
+    {% with total=estoque_total|default:0 %}
+<p class="status-estoque"
+   style="font-weight:600;
+          margin-top:6px;
+          color:{% if total|floatformat:0 <= 0 %}#d32f2f{% else %}#2e7d32{% endif %};">
+  {% if total|floatformat:0 <= 0 %}
     Esgotado
   {% else %}
-    Em estoque: {{ estoque_total }} unidades
+    Em estoque: {{ total }} unidade{{ total|pluralize }}
   {% endif %}
 </p>
-
+{% endwith %}
 
 <form id="form-adicionar-carrinho" action="{% url 'carrinho:adicionar_ao_carrinho' produto.slug %}" method="POST">
   {% csrf_token %}
@@ -310,12 +531,13 @@
         <h4 style="margin-top: 15px;">Tamanho:</h4>
         <div class="botoes-tamanho">
           {% for tamanho in tamanhos %}
-            <button type="button"
-                    class="btn-variacao btn-tamanho"
-                    data-tipo="tamanho"
-                    data-valor="{{ tamanho }}">
-              {{ tamanho }}
-            </button>
+                <button type="button"
+                class="btn-variacao btn-tamanho"
+                data-tipo="tamanho"
+                data-valor="{{ tamanho }}"
+                data-estoque="{{ variacoes|get_estoque_por_tamanho:tamanho }}">
+          {{ tamanho }}
+        </button>
           {% endfor %}
         </div>
       {% endif %}
@@ -328,15 +550,20 @@
     {{ variacoes_json|safe }}
 </script>
 
-  <div class="acoes-compra">
+  <script id="variacoes-data" type="application/json">
+  {{ variacoes_json|safe }}
+</script>
+
+<div class="acoes-compra">
     <input type="number" name="quantidade" id="quantidade" value="1" min="1" max="{{ estoque_total }}">
     {% if estoque_total > 0 %}
-  <button type="submit" class="btn-principal btn-comprar">Comprar</button>
-{% else %}
-  <button class="btn-principal btn-comprar" disabled style="opacity: 0.5;">Esgotado</button>
-{% endif %}
-  </div>
+      <button type="submit" class="btn-principal btn-comprar">Comprar</button>
+    {% else %}
+      <button class="btn-principal btn-comprar" disabled style="opacity: 0.5;">Esgotado</button>
+    {% endif %}
+</div>
 </form>
+
 
 <div class="descricao-completa">
   <h3>Descrição do Produto</h3>
@@ -367,201 +594,154 @@
 {{ block.super }}
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const modal = document.getElementById("modalZoom");
-    const modalImg = document.getElementById("imgZoomed");
-    const mainImg = document.getElementById("main-image");
-    const closeBtn = document.querySelector(".close");
-    const thumbs = document.querySelectorAll(".miniatura");
-    
-    // Elementos da variação
-    const variacaoButtons = document.querySelectorAll('.btn-variacao');
-    const variacaoInput = document.getElementById('variacao-input');
-    const formCarrinho = document.getElementById('form-adicionar-carrinho');
-    const quantidadeInput = document.getElementById('quantidade');
-    const btnComprar = document.querySelector('.btn-comprar');
-    const statusEstoque = document.querySelector('.status-estoque');
-    const galeriaMiniaturas = document.querySelector('.galeria-miniaturas');
+document.addEventListener("DOMContentLoaded", function () {
+  const modal = document.getElementById("modalZoom");
+  const modalImg = document.getElementById("imgZoomed");
+  const mainImg = document.getElementById("main-image");
+  const closeBtn = document.querySelector(".close");
+  const thumbs = document.querySelectorAll(".miniatura");
 
-    // Estado para controle
-    let variacaoSelecionada = null;
-    // O URL inicial deve ser buscado do HTML
-    let urlImagemProdutoOriginal = mainImg ? mainImg.src : null;
+  // Elementos do produto
+  const variacaoInput = document.getElementById("variacao-input");
+  const formCarrinho = document.getElementById("form-adicionar-carrinho");
+  const quantidadeInput = document.getElementById("quantidade");
+  const btnComprar = document.querySelector(".btn-comprar");
+  const statusEstoque = document.querySelector(".status-estoque");
+  const galeriaMiniaturas = document.querySelector(".galeria-miniaturas");
+  const VARIACOES = JSON.parse(document.getElementById("variacoes-data").textContent);
 
-
-    // =================================================================
-    // LÓGICA DO MODAL (Zoom)
-    // =================================================================
-    
-    // Função para abrir o modal com a imagem especificada
-    function abrirZoom(src) {
-      if (!modal || !modalImg) return;
-      // Para garantir que a URL seja a de alta resolução/completa
-      const fullUrl = src.replace('?w=72&h=72&c=1', ''); 
-
-      modal.style.display = "block";
-      modalImg.src = fullUrl;
-    }
-
-    // Clicar na imagem principal
-    if (mainImg) {
-      mainImg.addEventListener("click", function() {
-        abrirZoom(this.src);
-      });
-    }
-
-    // Clicar em qualquer miniatura (para zoom)
-    thumbs.forEach(thumb => {
-      thumb.addEventListener("click", function() {
-        // Usa a URL original (data-full-url) para o zoom
-        const src = this.getAttribute("data-full-url") || this.src; 
-        abrirZoom(src);
-      });
-    });
-
-    // Fechar modal
-    if (closeBtn) {
-      closeBtn.addEventListener("click", function() {
-        modal.style.display = "none";
-      });
-    }
-
-    // Fechar ao clicar fora da imagem
-    window.addEventListener("click", function(event) {
-      if (event.target === modal) {
-        modal.style.display = "none";
-      }
-    });
-
-    // =================================================================
-    // LÓGICA DE SELEÇÃO DE VARIAÇÃO E TROCA DE IMAGEM
-    // =================================================================
-
-    if (variacaoButtons.length > 0 && variacaoInput) {
-        
-        // 1. Inicialização: Seleciona a primeira variação disponível
-        const primeiraVariacaoDisponivel = Array.from(variacaoButtons).find(btn => !btn.disabled);
-
-        if (primeiraVariacaoDisponivel) {
-            simularCliqueVariacao(primeiraVariacaoDisponivel);
-        } else {
-            // Nenhuma variação disponível: desabilita a compra
-            atualizarAcoesCompra(0); 
-        }
-
-        // 2. Event Listeners para os cliques
-        variacaoButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                if (!this.disabled) {
-                    simularCliqueVariacao(this);
-                }
-            });
-        });
-    }
-const VARIACOES = JSON.parse(document.getElementById('variacoes-data').textContent);
-
-function atualizarVariaçãoSelecionada() {
-    const cor = document.querySelector('.btn-cor.selecionado')?.dataset.cor;
-    const tamanho = document.querySelector('.btn-tamanho.selecionado')?.dataset.valor;
-
-    const variacao = VARIACOES.find(v => v.cor === cor && v.tamanho === tamanho);
-    if (variacao) {
-        variacaoInput.value = variacao.id;
-        atualizarAcoesCompra(variacao.estoque);
-        if (mainImg && variacao.imagem) {
-            mainImg.src = variacao.imagem;
-        }
-    }
+  // ========= MODAL ZOOM =========
+  if (mainImg) {
+  mainImg.addEventListener("click", function () {
+    document.body.classList.add("modal-open"); // trava o layout
+    modal.style.display = "flex";
+    modalImg.src = mainImg.dataset.fullUrl || mainImg.src;
+  });
 }
 
+  if (closeBtn) {
+  closeBtn.addEventListener("click", () => {
+    modal.style.display = "none";
+    document.body.classList.remove("modal-open"); // destrava
+  });
+}
 
-    /**
-     * Função principal para lidar com a seleção de uma variação.
-     * @param {HTMLElement} clickedButton O botão de variação clicado/simulado.
-     */
-    function simularCliqueVariacao(clickedButton) {
-        const id = clickedButton.getAttribute('data-id');
-        const estoque = parseInt(clickedButton.getAttribute('data-estoque'), 10);
-        const imageUrl = clickedButton.getAttribute('data-imagem-url');
-        
-        // 1. Atualiza o estado visual do botão
-        variacaoButtons.forEach(btn => btn.classList.remove('selecionado'));
-        clickedButton.classList.add('selecionado');
+window.addEventListener("click", (e) => {
+  if (e.target === modal) {
+    modal.style.display = "none";
+    document.body.classList.remove("modal-open"); // destrava
+  }
+});
+  // Miniaturas: trocar imagem principal ao clicar
+thumbs.forEach((thumb) => {
+  thumb.addEventListener("click", function (e) {
+    e.preventDefault();
+    const url = this.dataset.fullUrl || this.src;
 
-        // 2. Atualiza o input hidden com o ID da variação
-        variacaoInput.value = id;
-        variacaoSelecionada = id;
+    // troca a imagem principal com transição suave
+    mainImg.style.opacity = 0;
+    setTimeout(() => {
+      mainImg.src = url;
+      mainImg.style.opacity = 1;
+    }, 150);
 
-        // 3. ATUALIZAÇÃO DA IMAGEM PRINCIPAL
-        if (mainImg && imageUrl) {
-            mainImg.src = imageUrl;
-            // Opcional: Rolagem suave para o topo do produto para focar na imagem
-            window.scrollTo({
-                top: document.querySelector('.produto-detalhe-container').offsetTop - 50,
-                behavior: 'smooth'
-            });
-        }
-        
-        // 4. Atualiza as ações de compra (Estoque, Quantidade e Botão Comprar)
-        atualizarAcoesCompra(estoque);
+    // marca a miniatura como selecionada
+    document.querySelectorAll(".miniatura").forEach(t => t.classList.remove("selecionado"));
+    this.classList.add("selecionado");
+  });
+});
 
-        // 5. ATUALIZAÇÃO DA GALERIA DE MINIATURAS (Opção mais avançada)
-        // Se a variação tiver uma imagem diferente da principal do produto,
-        // garantimos que essa imagem da variação seja a primeira miniatura selecionada.
-        if (galeriaMiniaturas) {
-            // Busca a miniatura na galeria usando a URL (se ela for de uma miniatura existente)
-            const miniaturaDaVariacao = galeriaMiniaturas.querySelector(`img[data-full-url="${imageUrl}"]`);
-            
-            // Remove a seleção de todas as miniaturas
-            galeriaMiniaturas.querySelectorAll('.miniatura').forEach(thumb => {
-                thumb.classList.remove('selecionado');
-            });
+  if (closeBtn) closeBtn.addEventListener("click", () => (modal.style.display = "none"));
+  window.addEventListener("click", (e) => {
+    if (e.target === modal) modal.style.display = "none";
+  });
 
-            if (miniaturaDaVariacao) {
-                // Marca a miniatura encontrada
-                miniaturaDaVariacao.classList.add('selecionado');
-            } else {
-                // Se a imagem da variação é nova (ex: URL externa) ou não está nas miniaturas,
-                // a imagem principal (que está mostrando a variação) é agora a "selecionada".
-                // Não marcamos nenhuma miniatura.
-            }
-        }
-    }
-    
-    /**
-     * Atualiza o status de estoque, o input de quantidade e o botão de compra.
-     * @param {number} estoque O estoque da variação selecionada.
-     */
-    function atualizarAcoesCompra(estoque) {
-        const estaDisponivel = estoque > 0;
-        
-        // Atualiza a quantidade máxima
-        quantidadeInput.max = estoque;
-        if (parseInt(quantidadeInput.value, 10) > estoque) {
-            quantidadeInput.value = estoque > 0 ? 1 : 0; // Reseta para 1 ou 0
-        }
-        
-        // Atualiza o estado do botão Comprar
-        btnComprar.disabled = !estaDisponivel;
-        btnComprar.style.opacity = !estaDisponivel ? 0.5 : 1;
-        btnComprar.textContent = estaDisponivel ? "Comprar" : "Esgotado";
+  // ========= VARIAÇÕES =========
+document.querySelectorAll(".btn-cor, .btn-tamanho").forEach((btn) => {
+  btn.addEventListener("click", function () {
+    // Limpa seleção anterior do mesmo tipo
+    if (this.classList.contains("btn-cor")) {
+      document.querySelectorAll(".btn-cor").forEach((c) => c.classList.remove("selecionado"));
+    } else {
+      document.querySelectorAll(".btn-tamanho").forEach((t) => t.classList.remove("selecionado"));
+    }
 
-        // Atualiza a mensagem de estoque
-        statusEstoque.textContent = estaDisponivel ? `Em estoque: ${estoque} unidades` : "Esgotado";
-        statusEstoque.style.color = estaDisponivel ? '#2e7d32' : '#d32f2f';
-    }
+    this.classList.add("selecionado");
+
+    // 🖼️ Se clicou em uma cor, troca a imagem principal para a primeira variação daquela cor
+    if (this.classList.contains("btn-cor")) {
+      const corSelecionada = this.dataset.cor;
+      const variacaoCor = VARIACOES.find(v => v.cor === corSelecionada && v.imagem);
+
+      if (variacaoCor && mainImg) {
+        // Efeito suave de transição (fade)
+        mainImg.style.transition = "opacity 0.3s ease";
+        mainImg.style.opacity = 0;
+        setTimeout(() => {
+          mainImg.src = variacaoCor.imagem;
+          mainImg.style.opacity = 1;
+        }, 200);
+      }
+    }
+
+    atualizarVariacaoSelecionada();
+  });
+});
 
 
-    // Opcional: Impedir o envio do formulário sem variação selecionada (se não for pré-selecionada)
-    if (formCarrinho) {
-        formCarrinho.addEventListener('submit', function(e) {
-            if (variacaoInput && !variacaoInput.value) {
-                e.preventDefault();
-                alert('Por favor, selecione uma opção de variação antes de adicionar ao carrinho.');
-            }
-        });
-    }
+  function atualizarVariacaoSelecionada() {
+    const cor = document.querySelector(".btn-cor.selecionado")?.dataset.cor;
+    const tamanho = document.querySelector(".btn-tamanho.selecionado")?.dataset.valor;
+    if (!cor || !tamanho) return; // espera ambos
 
+    const variacao = VARIACOES.find((v) => v.cor === cor && v.tamanho === tamanho);
+    if (variacao) {
+      variacaoInput.value = variacao.id;
+      atualizarAcoesCompra(variacao.estoque);
+      if (mainImg && variacao.imagem) {
+        mainImg.src = variacao.imagem;
+      }
+    } else {
+      atualizarAcoesCompra(0);
+    }
+  }
+
+  function atualizarAcoesCompra(estoque) {
+    // Quantidade
+    if (estoque > 0) {
+      quantidadeInput.disabled = false;
+      quantidadeInput.max = estoque;
+      quantidadeInput.min = 1;
+      if (parseInt(quantidadeInput.value, 10) > estoque) quantidadeInput.value = 1;
+    } else {
+      quantidadeInput.disabled = true;
+      quantidadeInput.max = 1;
+      quantidadeInput.min = 0;
+      quantidadeInput.value = 0;
+    }
+
+    // Botão
+    btnComprar.disabled = estoque <= 0;
+    btnComprar.style.opacity = estoque <= 0 ? 0.5 : 1;
+    btnComprar.textContent = estoque > 0 ? "Comprar" : "Esgotado";
+
+    // Mensagem
+    statusEstoque.textContent =
+      estoque > 0
+        ? `Em estoque: ${estoque} unidade${estoque > 1 ? "s" : ""}`
+        : "Esgotado";
+    statusEstoque.style.color = estoque > 0 ? "#2e7d32" : "#d32f2f";
+  }
+
+  // Impedir envio sem variação
+  if (formCarrinho) {
+    formCarrinho.addEventListener("submit", function (e) {
+      if (!variacaoInput.value) {
+        e.preventDefault();
+        alert("Por favor, selecione uma cor e tamanho antes de adicionar ao carrinho.");
+      }
+    });
+  }
 });
 </script>
 

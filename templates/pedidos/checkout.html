@@ -147,32 +147,39 @@
     </div>
 
     <div class="checkout-summary">
-        <h2>Resumo do Pedido</h2>
+    <h2>Resumo do Pedido</h2>
 
-        {% for item in itens_carrinho %}
-        <div class="summary-item">
-            <span>{{ item.produto.nome }} (x{{ item.quantidade }}) 
-                {% if item.variacao %} - ({{ item.variacao.valor }}){% endif %}
-            </span>
-            <strong>R$ {{ item.get_subtotal|floatformat:2 }}</strong>
-        </div>
-        {% endfor %}
+    {% for item in itens_carrinho %}
+    <div class="summary-item">
+        <span>
+            {{ item.produto.nome }} (x{{ item.quantidade }})
+            {% if item.variacao %} - ({{ item.variacao.valor }}){% endif %}
+        </span>
+        <strong>R$ {{ item.get_subtotal|floatformat:2 }}</strong>
+    </div>
+    {% endfor %}
 
-        <hr style="margin: 20px 0;">
+    <hr style="margin: 20px 0;">
 
-        <div class="summary-item" style="font-weight: bold; color: #333; font-size: 1.1rem;">
-            <span>Subtotal</span>
-            <strong>R$ {{ subtotal_carrinho|floatformat:2 }}</strong>
-        </div>
+    <div class="summary-item" style="font-weight: bold; color: #333; font-size: 1.1rem;">
+        <span>Subtotal</span>
+        <strong>R$ {{ subtotal_carrinho|floatformat:2 }}</strong>
+    </div>
 
-        <div class="summary-item" style="color: #666;">
-            <span>Frete (Retirada)</span>
-            <strong>R$ 0,00</strong>
-        </div>
+    {% if desconto_valor and desconto_valor|floatformat:2 != "0.00" %}
+    <div class="summary-item text-success" style="font-weight: 500;">
+        <span>Desconto{% if cupom_codigo %} ({{ cupom_codigo }}){% endif %}</span>
+        <strong>- R$ {{ desconto_valor|floatformat:2 }}</strong>
+    </div>
+    {% endif %}
 
-        <div class="total-line-checkout">
-            Total: <strong>R$ {{ subtotal_carrinho|floatformat:2 }}</strong>
-        </div>
+    <div class="summary-item" style="color: #666;">
+        <span>Frete (Retirada)</span>
+        <strong>R$ 0,00</strong>
+    </div>
+
+    <div class="total-line-checkout">
+        Total: <strong>R$ {{ total_com_desconto|default:subtotal_carrinho|floatformat:2 }}</strong>
     </div>
 </div>
 {% endblock %}
