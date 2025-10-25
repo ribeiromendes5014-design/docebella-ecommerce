@@ -66,7 +66,7 @@ def detalhe_produto(request, slug):
     # Busca o produto ou retorna 404
     produto = get_object_or_404(Produto, slug=slug, disponivel=True)
     
-    # Separa as variações por tipo (ex: 'Tamanho', 'Cor') para exibição
+    # Separa as variações por tipo (ex: 'Tamanho', 'Cor') para exibição antiga (ainda útil)
     variacoes_por_tipo = {}
     if produto.usa_variacoes:
         tipos_disponiveis = produto.variacoes.values('tipo').distinct()
@@ -74,10 +74,15 @@ def detalhe_produto(request, slug):
             nome_tipo = tipo['tipo']
             variacoes_por_tipo[nome_tipo] = produto.variacoes.filter(tipo=nome_tipo).order_by('valor')
 
+    # 🔹 NOVO BLOCO — obtém listas distintas de cores e tamanhos (sem chamar .values_list() no template)
+    variacoes = produto.variacoes.all()
+    cores = variacoes.values_list('cor', flat=True).distinct()
+    tamanhos = variacoes.values_list('valor', flat=True).distinct()
+
     # 🔹 Cálculo da simulação de parcelamento
     preco = produto.get_preco_final() or Decimal('0')
-    valor_final = preco / Decimal('0.8872')  # Corrige o valor com base na sua fórmula
-    valor_parcela = valor_final / Decimal('3')  # Divide em 3x
+    valor_final = preco / Decimal('0.8872')
+    valor_parcela = valor_final / Decimal('3')
 
     # 🔹 Busca promoção ativa (para o cronômetro)
     promo_ativa = None
@@ -86,7 +91,7 @@ def detalhe_produto(request, slug):
             promo_ativa = promo
             break
 
-    # >> NOVO: Lógica para Produtos Relacionados <<
+    # 🔹 Produtos relacionados
     produtos_relacionados = Produto.objects.filter(
         categoria=produto.categoria,
         disponivel=True,
@@ -99,9 +104,11 @@ def detalhe_produto(request, slug):
     context = {
         'produto': produto,
         'variacoes_por_tipo': variacoes_por_tipo,
+        'cores': cores,
+        'tamanhos': tamanhos,
         'produtos_relacionados': produtos_relacionados,
         'valor_parcela': valor_parcela,
-        'promo_ativa': promo_ativa,  # ✅ importante: envia a promoção ativa para o template
+        'promo_ativa': promo_ativa,
         'titulo': f'{produto.nome} | Doce & Bella',
     }
 
