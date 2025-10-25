@@ -22,13 +22,27 @@ urlpatterns = [
     path('pedido/', include('pedidos.urls', namespace='pedidos')),
 ]
 
+from django.contrib import admin
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns = [
+    path('painel-loja/', admin.site.urls),
+    path('_nested_admin/', include('nested_admin.urls')),
+    path('', include('produtos.urls')),
+    path('carrinho/', include('carrinho.urls')),
+    path('conta/', include('usuarios.urls')),
+    path('pedido/', include('pedidos.urls', namespace='pedidos')),
+]
+
 # -------------------------------------------------------------------------
-# ✅ CORREÇÃO AQUI: Garante que arquivos Estáticos E Mídia sejam servidos
+# ✅ CORREÇÃO: ADICIONE A LINHA DE STATIC_URL (Arquivos Estáticos: CSS/JS)
 # -------------------------------------------------------------------------
 if settings.DEBUG:
-    # 🚨 ESSA LINHA ESTAVA FALTANDO/INCOMPLETA: Serve arquivos Estáticos (CSS/JS)
+    # Esta linha serve o 'nested-admin.css' e 'nested-admin.js'
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) 
     
-    # Já estava correta: Serve arquivos de Mídia
+    # Esta linha serve arquivos de Mídia (Imagens)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 # -------------------------------------------------------------------------
