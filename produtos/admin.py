@@ -1,6 +1,18 @@
 # produtos/admin.py
 
 from django.contrib import admin
+# Importa todos os modelos necessários diretamente
+from .models import (
+    Banner, 
+    MensagemTopo, 
+    Categoria, 
+    Produto, 
+    Promocao, 
+    ImagemProduto,
+    # ATENÇÃO: Os novos modelos devem estar aqui!
+    VariacaoCor, 
+    VariacaoTamanho 
+) 
 from . import models  # Importa o módulo completo — seguro contra ImportError
 from django.utils.html import format_html
 
@@ -37,12 +49,34 @@ class ImagemProdutoInline(admin.TabularInline):
     preview_imagem.short_description = "Pré-visualização"
 
 
+# NOVO INLINE 1: Variações de Tamanho (nível mais interno)
+class VariacaoTamanhoInline(admin.TabularInline):
+    """Permite adicionar vários tamanhos/estoques por cor."""
+    model = VariacaoTamanho # Aponta para o novo modelo de Tamanho
+    extra = 1
+    # Note que o preço é o preço adicional da variação de tamanho/SKU
+    fields = ('tamanho', 'preco_adicional', 'estoque') 
+    verbose_name = 'Numeração/Estoque'
+    verbose_name_plural = 'Numerações/Estoques'
+
+# NOVO INLINE 2: Variações de Cor (nível intermediário, aninha os tamanhos)
+class VariacaoCorInline(admin.StackedInline): # StackedInline é melhor para aninhar
+    """Permite agrupar variações de tamanho por cor no admin do produto."""
+    model = VariacaoCor # Aponta para o novo modelo de Cor
+    extra = 1
+    fields = ('cor', 'imagem', 'imagem_url_externa')
+    
+    # ANINHAMENTO: A Cor contém a lista de Tamanhos
+    inlines = [VariacaoTamanhoInline] 
+    
+    verbose_name = 'Variação de Cor'
+    verbose_name_plural = 'Variações de Cores'
+
+
 
 # -----------------------------------------------------------------
 #Texto admin
 # -----------------------------------------------------------------
-from django.contrib import admin
-from .models import Banner, MensagemTopo
 
 @admin.register(MensagemTopo)
 class MensagemTopoAdmin(admin.ModelAdmin):
@@ -72,15 +106,6 @@ class CategoriaAdmin(admin.ModelAdmin):
 
 
 
-# -----------------------------------------------------------------
-#   variação
-# -----------------------------------------------------------------
-
-class VariacaoInline(admin.TabularInline):
-    """Permite editar variações diretamente no admin do produto."""
-    model = models.Variacao
-    extra = 1
-    fields = ('tipo', 'valor', 'estoque', 'imagem', 'imagem_url_externa')
 
 
 # -----------------------------------------------------------------
