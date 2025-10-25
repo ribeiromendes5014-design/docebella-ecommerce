@@ -88,7 +88,14 @@ class SubVariacaoInline(nested_admin.NestedTabularInline):
     model = models.Variacao
     fk_name = 'parent'
     extra = 1
-    fields = ('tipo', 'valor', 'estoque', 'imagem', 'imagem_url_externa')
+    fields = (
+        'tipo',
+        'valor',
+        'estoque',
+        'imagem',
+        'imagem_url_externa',
+        'parent',  # 👈 o parent fica aqui, nas subvariações
+    )
     verbose_name = "Subvariação"
     verbose_name_plural = "Subvariações"
 
@@ -104,8 +111,8 @@ class VariacaoInline(nested_admin.NestedTabularInline):
         'estoque',
         'imagem',
         'imagem_url_externa',
-        'parent',  # 👈 Adicionado
     )
+    inlines = [SubVariacaoInline]  # 👈 mantém a hierarquia
     verbose_name = "Variação"
     verbose_name_plural = "Variações"
 
@@ -117,11 +124,9 @@ class VariacaoInline(nested_admin.NestedTabularInline):
 
 @admin.register(models.Variacao)
 class VariacaoAdmin(admin.ModelAdmin):
-    """Admin para gerenciar variações de forma hierárquica."""
     list_display = ('produto', 'tipo', 'valor', 'estoque', 'parent')
     list_filter = ('produto', 'tipo')
     search_fields = ('valor', 'produto__nome')
-    exclude = ('parent',)
 
 
 
