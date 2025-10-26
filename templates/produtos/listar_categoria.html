@@ -46,8 +46,8 @@
                 <!-- Se tiver promoção, adiciona classe 'promo-ativo' -->
                 <div class="product-card {% if produto.preco_promocional %}promo-ativo{% endif %}">
                     <a href="{% url 'detalhe_produto' slug=produto.slug %}">
-                        {% if produto.imagem %}
-                            <img src="{{ produto.imagem.url }}" alt="{{ produto.nome }}" loading="lazy">
+                        {% if produto.get_imagem_url %}
+                            <img src="{{ produto.get_imagem_url }}" alt="{{ produto.nome }}" loading="lazy">
                         {% else %}
                             <img src="{% static 'img/placeholder.png' %}" alt="Sem Imagem" loading="lazy">
                         {% endif %}
