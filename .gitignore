@@ -1,0 +1,10 @@
+# 1. Crie o arquivo .gitignore (ou limpe se já existir)
+New-Item .gitignore -Force
+
+# 2. Adicione os itens essenciais a serem ignorados para projetos Python/Django
+Add-Content .gitignore "venv_clean/"
+Add-Content .gitignore ".env"
+Add-Content .gitignore "db.sqlite3"
+Add-Content .gitignore "__pycache__/"
+Add-Content .gitignore "*.pyc"
+Add-Content .gitignore "staticfiles/" # A menos que você tenha uma razão específica para incluir estáticos

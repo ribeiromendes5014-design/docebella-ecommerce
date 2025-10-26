@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<h1 class="page-title">{{ titulo }} ({{ total_itens }} Itens)</h1>
+
+{% if itens_carrinho %}
+<div class="cart-container">
+    <table class="cart-table">
+        <thead>
+            <tr>
+                <th>Produto</th>
+                <th>Preço Unitário</th>
+                <th>Quantidade</th>
+                <th>Total</th>
+                <th>Ação</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in itens_carrinho %}
+            <tr>
+                <td>
+                    <div class="product-info-carrinho">
+                        <img src="{% if item.produto.imagem %}{{ item.produto.imagem.url }}{% else %}{% static 'img/placeholder.png' %}{% endif %}" alt="{{ item.produto.nome }}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 4px;">
+                        
+                        <div>
+                            <a href="{% url 'detalhe_produto' slug=item.produto.slug %}">{{ item.produto.nome }}</a>
+                            {% if item.variacao %}
+                                <p style="font-size: 0.9rem; color: #6c757d;">({{ item.variacao.tipo }}: {{ item.variacao.valor }})</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </td>
+                
+                <td>R$ {{ item.get_preco_unitario|floatformat:2 }}</td>
+                
+                <td>
+                    <form action="{% url 'atualizar_carrinho' %}" method="POST" style="display: flex; align-items: center; gap: 5px;">
+                        {% csrf_token %}
+                        <input type="hidden" name="item_id" value="{{ item.id }}">
+                        <input type="number" name="quantidade" value="{{ item.quantidade }}" min="1" max="99" style="width: 50px; text-align: center;">
+                        <button type="submit" class="btn-sm" style="background-color: #6c757d;">
+                            Atualizar
+                        </button>
+                    </form>
+                </td>
+
+                <td>R$ {{ item.get_subtotal|floatformat:2 }}</td>
+                
+                <td>
+                    <form action="{% url 'remover_item' item_id=item.id %}" method="POST" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-sm btn-danger">Remover</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="cart-summary">
+        <h2>Resumo do Pedido</h2>
+        
+        <div style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+            <p style="font-weight: bold; margin-bottom: 10px;">Cupom de Desconto:</p>
+            
+            <form action="{% url 'aplicar_cupom' %}" method="POST" style="display: flex; gap: 5px;">
+                {% csrf_token %}
+                <input type="text" name="cupom_codigo" placeholder="Digite o código" style="flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <button type="submit" class="btn-sm" style="background-color: #28a745;">Aplicar</button>
+            </form>
+        </div>
+
+        <p>Subtotal: <strong>R$ {{ subtotal_carrinho|floatformat:2 }}</strong></p>
+        <p>Total de Itens: <strong>{{ total_itens }}</strong></p>
+        <p style="color: #dc3545;">Desconto: <strong>R$ 0,00</strong></p>
+        
+        <div class="total-line" style="border-top: 2px solid var(--cor-principal); padding-top: 10px; margin-top: 15px; font-size: 1.5rem; color: var(--cor-principal);">
+            Total: <strong>R$ {{ subtotal_carrinho|floatformat:2 }}</strong>
+        </div>
+
+        <a href="{% url 'pedidos:checkout' %}" class="btn-principal" style="width: 100%; text-align: center; margin-top: 20px; font-size: 1.1rem; padding: 12px;">Finalizar Compra</a>
+    </div>
+</div>
+{% else %}
+<p style="text-align: center; font-size: 1.2em;">Seu carrinho está vazio.</p>
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{% url 'home' %}" class="btn-principal">Voltar às Compras</a>
+</div>
+{% endif %}
+
+{% endblock %}
+
+
+{% block extra_css %}
+<style>
+    /* Estilos básicos para o carrinho (Sem alteração) */
+    .page-title {
+        text-align: center;
+        margin-bottom: 40px;
+        color: var(--cor-principal);
+    }
+    .cart-container {
+        display: flex;
+        gap: 30px;
+        flex-wrap: wrap;
+    }
+    .cart-table {
+        flex: 3;
+        min-width: 60%;
+        border-collapse: collapse;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        background: #fff;
+    }
+    .cart-table th, .cart-table td {
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        text-align: left;
+    }
+    .cart-table th {
+        background-color: var(--cor-secundaria);
+        color: white;
+        font-weight: bold;
+    }
+    .cart-summary {
+        flex: 1;
+        min-width: 300px;
+        padding: 20px;
+        border: 1px solid #ddd;
+        background: #fcfcfc;
+        height: fit-content;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    .cart-summary h2 {
+        border-bottom: 2px solid var(--cor-principal);
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        font-size: 1.5em;
+        color: var(--cor-principal);
+    }
+    .btn-sm {
+        padding: 5px 10px;
+        font-size: 0.8em;
+        border: none;
+        cursor: pointer;
+        background-color: var(--cor-principal);
+        color: white;
+        border-radius: 4px;
+        margin-left: 5px;
+    }
+    .btn-danger {
+        background-color: #dc3545;
+    }
+    .product-info-carrinho {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+</style>
+{% endblock %}

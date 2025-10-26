@@ -1,0 +1,46 @@
+{% load static %}
+
+<div class="sidebar-header">
+    <h3>Carrinho de compras</h3>
+    <button class="close-sidebar-btn" onclick="fecharCarrinho()">✖</button>
+</div>
+
+{% if itens_carrinho %}
+<div class="sidebar-items">
+    {% for item in itens_carrinho %}
+    <div class="cart-item">
+        <img src="{% if item.produto.imagem %}{{ item.produto.imagem.url }}{% else %}{% static 'img/placeholder.png' %}{% endif %}" alt="{{ item.produto.nome }}">
+        <div class="item-details">
+            <span class="item-name">{{ item.produto.nome }} 
+                {% if item.variacao %} ({{ item.variacao.valor }}){% endif %}
+            </span>
+            <span class="item-price">R$ {{ item.get_preco_unitario|floatformat:2|replace:".","," }}</span>
+            <span class="item-qty">Qtd: {{ item.quantidade }}</span>
+        </div>
+        <form action="{% url 'remover_item' item.id %}" method="POST" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="remove-item-btn" title="Remover item">Apagar</button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="sidebar-resumo">
+    <div class="resumo-linha">
+        <p>Subtotal (sem frete):</p>
+        <p class="total-valor">R$ {{ subtotal_carrinho|floatformat:2|replace:".","," }}</p>
+    </div>
+    <div class="resumo-linha total">
+        <h3>Total:</h3>
+        <h3>R$ {{ subtotal_carrinho|floatformat:2|replace:".","," }}</h3>
+    </div>
+    
+    <a href="{% url 'checkout' %}" class="btn-checkout-sidebar">
+        Iniciar Compra
+    </a>
+    <a href="{% url 'ver_carrinho' %}" class="btn-ver-carrinho">Ver página completa</a>
+</div>
+
+{% else %}
+<p class="carrinho-vazio">Seu carrinho está vazio.</p>
+{% endif %}

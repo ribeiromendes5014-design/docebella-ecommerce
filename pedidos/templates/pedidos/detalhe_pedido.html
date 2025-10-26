@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="detalhe-pedido-container">
+  <div class="pedido-card-detalhe">
+    <h2 class="pedido-titulo">{{ titulo }}</h2>
+
+    <div class="pedido-info">
+      <p><strong>Status:</strong> {{ pedido.status }}</p>
+      <p><strong>Data:</strong> {{ pedido.data_criacao|date:"d/m/Y H:i" }}</p>
+      
+      {% if pedido.cupom_aplicado %}
+        <p><strong>Cupom aplicado:</strong> {{ pedido.cupom_aplicado }}</p>
+      {% endif %}
+
+      {% if pedido.desconto_aplicado and pedido.desconto_aplicado > 0 %}
+        <p><strong>Desconto:</strong> - R$ {{ pedido.desconto_aplicado|floatformat:2 }}</p>
+      {% endif %}
+
+      <p><strong>Total:</strong> 
+        <span style="color: #e83e8c; font-weight: bold;">
+          R$ {{ pedido.valor_total|floatformat:2 }}
+        </span>
+      </p>
+    </div>
+
+    <hr>
+
+    <h3 class="subtitulo-itens">🛍 Itens do Pedido</h3>
+    <ul class="lista-itens">
+      {% for item in pedido.itens.all %}
+        <li class="item-pedido">
+          <span>
+            {{ item.produto.nome }}
+            {% if item.variacao %}
+              <small>({{ item.variacao.valor }})</small>
+            {% endif %}
+          </span>
+          <span>{{ item.quantidade }}x</span>
+          <span>R$ {{ item.preco_unitario|floatformat:2 }}</span>
+          <span>= R$ {{ item.get_subtotal|floatformat:2 }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <hr>
+
+    {% if pedido.metodo_envio %}
+      <p><strong>Entrega:</strong> {{ pedido.metodo_envio }}</p>
+    {% endif %}
+
+    <a href="{% url 'pedidos:meus_pedidos' %}" class="voltar-link">
+      <i class="fa fa-arrow-left"></i> Voltar para Meus Pedidos
+    </a>
+  </div>
+</section>
+{% endblock %}

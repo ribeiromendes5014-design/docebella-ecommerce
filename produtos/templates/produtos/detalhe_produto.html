@@ -1,0 +1,868 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% load produto_extras %}
+
+{% block extra_css %}
+<style>
+.produto-detalhe-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 40px;
+  max-width: 1100px;
+  margin: 2rem auto;
+  background: #fff;
+  border-radius: 12px;
+  padding: 30px;
+}
+
+/* === Galeria com miniaturas abaixo === */
+.produto-galeria {
+  text-align: center;
+}
+
+
+.main-image-wrapper {
+  border: 1px solid #eee;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+#main-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  transition: opacity .3s ease;
+}
+
+/* Miniaturas em linha abaixo da imagem */
+.thumbs-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.thumbs-row .miniatura {
+  width: 80px;
+  height: 80px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform .15s ease, border-color .15s ease;
+}
+
+.thumbs-row .miniatura:hover {
+  transform: translateY(-2px);
+}
+
+.thumbs-row .miniatura.selecionado {
+  border: 2px solid #f26b7f;
+}
+/*
+   ============================================
+   REGRAS AJUSTADAS PARA TAMANHOS ESGOTADOS (RISCO E DESABILITAÇÃO)
+   ============================================
+*/
+
+/* Estilo Base para o Botão Esgotado (Desabilita e 'apaga' o botão) */
+.botoes-tamanho .btn-tamanho.esgotado {
+    opacity: 0.55 !important;
+    color: #999 !important;
+    background: #f5f5f5 !important;
+    border-color: #ccc !important;
+    position: relative;
+    cursor: not-allowed !important;
+    pointer-events: none !important; /* Essencial para desabilitar o clique */
+    box-shadow: none !important;
+}
+
+/* Linha vermelha atravessando o botão */
+.botoes-tamanho .btn-tamanho.esgotado::after {
+    content: "";
+    position: absolute;
+    top: 50%; /* Centraliza verticalmente */
+    left: 5%; /* Inicia quase na borda */
+    width: 90%; /* Quase toda a largura */
+    height: 2px;
+    background: #d32f2f; /* Vermelho escuro */
+    /* Rotação em -45 graus para o risco diagonal */
+    transform: rotate(-45deg); 
+    transform-origin: center center;
+    opacity: 0.8;
+    z-index: 10; 
+}
+
+/* Garante que o botão esgotado não mude no hover/seleção */
+.botoes-tamanho .btn-tamanho.esgotado:hover,
+.botoes-tamanho .btn-tamanho.esgotado.selecionado {
+    background: #f5f5f5 !important;
+    color: #999 !important;
+    border-color: #ccc !important;
+    box-shadow: none !important;
+}
+
+.galeria-miniaturas {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.miniatura {
+  width: 70px;
+  height: 70px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  object-fit: cover;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.miniatura:hover,
+.miniatura.selecionado {
+  border: 2px solid #f26b7f;
+}
+
+.produto-info {
+  flex: 1 1 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.produto-info h1 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #222;
+}
+
+.preco-principal {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111;
+}
+
+.parcelamento {
+  color: #777;
+  font-size: 0.9rem;
+}
+
+.status-estoque {
+  font-weight: 600;
+  margin-top: 6px;
+  color: #2e7d32;
+}
+
+.btn-variacao,
+.botoes-cor button,
+.botoes-tamanho button {
+  background: #f7f7f7;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-variacao:hover,
+.btn-variacao.selecionado,
+.botoes-cor button:hover,
+.botoes-tamanho button:hover,
+.botoes-cor button.selecionado,
+.botoes-tamanho button.selecionado {
+  background: #f26b7f;
+  color: #fff;
+  border-color: #f26b7f;
+}
+
+.acoes-compra {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+#quantidade {
+  width: 60px;
+  text-align: center;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.btn-comprar {
+  background: #f26b7f;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 60px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-comprar:hover {
+  background: #e2546d;
+}
+
+.descricao-completa {
+  border-top: 1px solid #eee;
+  margin-top: 30px;
+  padding-top: 15px;
+}
+
+@media (max-width: 768px) {
+  .produto-detalhe-container {
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .galeria-miniaturas {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .miniatura {
+    width: 60px;
+    height: 60px;
+  }
+
+  .btn-comprar {
+    width: 100%;
+  }
+}
+
+/* === Layout da galeria: miniaturas à esquerda === */
+.galeria-grid {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.thumbs-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.thumbs-col .miniatura {
+  width: 90px;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform .15s ease, border-color .15s ease;
+}
+
+.thumbs-col .miniatura:hover {
+  transform: translateY(-2px);
+}
+
+.thumbs-col .miniatura.selecionado {
+  border: 2px solid #f26b7f;
+}
+
+/* ======== MODAL ZOOM ========= */
+.modal {
+  display: none;
+  position: fixed !important;
+  inset: 0;
+  z-index: 1000;
+  padding-top: 5vh;
+  background-color: rgba(0, 0, 0, 0.85);
+  justify-content: center;
+  align-items: center;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+.modal-content {
+  margin: auto;
+  display: block;
+  max-width: 90%;
+  max-height: 85vh;
+  border-radius: 10px;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+  animation: zoomIn 0.3s ease;
+  cursor: zoom-out;
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.close {
+  position: fixed;
+  top: 20px;
+  right: 40px;
+  color: #fff;
+  font-size: 40px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.2s;
+  z-index: 1001;
+}
+
+.close:hover {
+  color: #f26b7f;
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    max-width: 95%;
+    max-height: 80vh;
+  }
+
+  .galeria-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .thumbs-col {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .thumbs-col .miniatura {
+    width: 64px;
+  }
+}
+
+.thumbs-col .miniatura.selecionado {
+  border: 2px solid #f26b7f;
+}
+/* ======== MODAL ZOOM ========= */
+.modal {
+  display: none; /* escondido por padrão */
+  position: fixed;
+  z-index: 1000;
+  padding-top: 5vh;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.85); /* fundo escuro */
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  position: fixed !important;
+  inset: 0; /* garante que ocupe a tela toda */
+}
+body.modal-open {
+  overflow: hidden; /* impede que o corpo role ou se mova */
+}
+
+
+.modal-content {
+  margin: auto;
+  display: block;
+  max-width: 90%;
+  max-height: 85vh;
+  border-radius: 10px;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+  animation: zoomIn 0.3s ease;
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.close {
+  position: fixed;
+  top: 20px;
+  right: 40px;
+  color: #fff;
+  font-size: 40px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.2s;
+  z-index: 1001;
+}
+
+.close:hover {
+  color: #f26b7f;
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    max-width: 95%;
+    max-height: 80vh;
+  }
+
+.main-image-wrapper {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+#main-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  transition: opacity .3s ease;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .galeria-grid {
+    grid-template-columns: 1fr;
+  }
+  .thumbs-col {
+    flex-direction: row;
+    justify-content: center;
+  }
+  .thumbs-col .miniatura {
+    width: 64px;
+  }
+}
+</style>
+{% endblock %}
+
+
+{% block content %}
+<p class="breadcrumb">
+  <a href="{% url 'home' %}">Início</a> > 
+  <a href="#">{{ produto.categoria.nome }}</a> > 
+  {{ produto.nome }}
+</p>
+
+<div class="produto-detalhe-container {% if produto.preco_promocional %}promo-ativo{% endif %}">
+
+    <div class="produto-galeria">
+      <!-- Imagem principal -->
+  <div class="main-image-wrapper">
+    <img id="main-image"
+         src="{{ produto.get_imagem_url }}"
+         data-full-url="{{ produto.get_imagem_url }}"
+         alt="{{ produto.nome }}">
+  </div>
+
+  <!-- Miniaturas abaixo -->
+  <div class="thumbs-row">
+    <img class="miniatura selecionado"
+         src="{{ produto.get_imagem_url }}"
+         data-full-url="{{ produto.get_imagem_url }}"
+         alt="Miniatura principal">
+
+    {% for imagem_galeria in produto.galeria_imagens.all %}
+      {% if imagem_galeria.imagem and imagem_galeria.imagem.name %}
+        <img class="miniatura"
+             src="{{ imagem_galeria.imagem.url }}"
+             data-full-url="{{ imagem_galeria.imagem.url }}"
+             alt="{{ imagem_galeria.descricao|default:'Miniatura' }}">
+      {% elif imagem_galeria.imagem_url_externa %}
+        <img class="miniatura"
+             src="{{ imagem_galeria.imagem_url_externa }}"
+             data-full-url="{{ imagem_galeria.imagem_url_externa }}"
+             alt="{{ imagem_galeria.descricao|default:'Miniatura' }}">
+      {% endif %}
+    {% endfor %}
+  </div>
+</div> <!-- fecha .produto-galeria -->
+<!-- Modal de zoom (fora da galeria) -->
+<div id="modalZoom" class="modal">
+  <span class="close">&times;</span>
+  <img class="modal-content" id="imgZoomed" alt="Zoom da imagem">
+</div>
+
+
+
+    <div class="produto-info">
+    <h1>{{ produto.nome }}</h1>
+    <p class="preco-principal">{{ produto.get_display_price }}</p>
+
+    <p style="font-size: 1rem; color: #777;">
+      ou 3x de R$ {{ valor_parcela|floatformat:2|intcomma }} sem juros
+    </p>
+
+    {% if promo_ativa %}
+  <div class="timer-container">
+    <strong>🔥 Promoção até:</strong>
+    <div class="timer" id="contador-promocao" data-fim="{{ promo_ativa.data_fim|date:'Y-m-d H:i:s' }}">
+      Carregando contador...
+    </div>
+  </div>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const contador = document.getElementById('contador-promocao');
+    if (!contador) return;
+
+    const dataFimStr = contador.getAttribute('data-fim');
+    if (!dataFimStr) return;
+
+    const dataFim = new Date(dataFimStr.replace(' ', 'T'));
+
+    function atualizarContador() {
+      const agora = new Date();
+      const diff = dataFim - agora;
+
+      if (diff <= 0) {
+        contador.innerHTML = "🔥 Promoção encerrada!";
+        clearInterval(intervalo);
+        return;
+      }
+
+      const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const horas = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutos = Math.floor((diff / (1000 * 60)) % 60);
+      const segundos = Math.floor((diff / 1000) % 60);
+
+      contador.textContent = `${dias}d ${horas}h ${minutos}m ${segundos}s`;
+    }
+
+    atualizarContador();
+    const intervalo = setInterval(atualizarContador, 1000);
+  });
+  </script>
+{% endif %}
+
+
+    {% with total=estoque_total|default:0 %}
+<p class="status-estoque"
+   style="font-weight:600;
+          margin-top:6px;
+          color:{% if total|floatformat:0 <= 0 %}#d32f2f{% else %}#2e7d32{% endif %};">
+  {% if total|floatformat:0 <= 0 %}
+    Esgotado
+  {% else %}
+    Em estoque: {{ total }} unidade{{ total|pluralize }}
+  {% endif %}
+</p>
+{% endwith %}
+
+<form id="form-adicionar-carrinho" action="{% url 'carrinho:adicionar_ao_carrinho' produto.slug %}" method="POST">
+  {% csrf_token %}
+  
+  {% if produto.usa_variacoes %}
+    <div class="variacao-selector">
+
+      {# ==== Seletor de COR ==== #}
+      {% if cores %}
+        <h4>Cor:</h4>
+        <div class="botoes-cor">
+          {% for cor in cores %}
+            <button type="button"
+                    class="btn-variacao btn-cor"
+                    data-tipo="cor"
+                    data-cor="{{ cor|default:'Única' }}">
+              {{ cor|default:"Única" }}
+            </button>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {# ==== Seletor de TAMANHO ==== #}
+      {% if tamanhos %}
+  <h4 style="margin-top: 15px;">Tamanho:</h4>
+  <div class="botoes-tamanho">
+    {% for tamanho in tamanhos %}
+      {% with estoque_tamanho=variacoes|get_estoque_por_tamanho:tamanho %}
+        <button type="button"
+                class="btn-variacao btn-tamanho {% if estoque_tamanho <= 0 %}esgotado{% endif %}"
+                data-tipo="tamanho"
+                data-valor="{{ tamanho }}"
+                data-estoque="{{ estoque_tamanho }}"
+                {% if estoque_tamanho <= 0 %}disabled{% endif %}>
+          {{ tamanho }}
+        </button>
+      {% endwith %}
+    {% endfor %}
+  </div>
+{% endif %}
+
+      
+    </div>
+
+    <input type="hidden" name="variacao_id" id="variacao-input" value="">
+  {% endif %}
+  <script id="variacoes-data" type="application/json">
+    {{ variacoes_json|safe }}
+</script>
+
+  <script id="variacoes-data" type="application/json">
+  {{ variacoes_json|safe }}
+</script>
+
+<div class="acoes-compra">
+    <input type="number" name="quantidade" id="quantidade" value="1" min="1" max="{{ estoque_total }}">
+    {% if estoque_total > 0 %}
+      <button type="submit" class="btn-principal btn-comprar">Comprar</button>
+    {% else %}
+      <button class="btn-principal btn-comprar" disabled style="opacity: 0.5;">Esgotado</button>
+    {% endif %}
+</div>
+</form>
+
+
+<div class="descricao-completa">
+  <h3>Descrição do Produto</h3>
+  <p>{{ produto.descricao|linebreaksbr }}</p>
+</div>
+
+
+{% if produtos_relacionados %}
+<div class="produtos-relacionados" style="margin-top:50px; border-top:1px solid #eee; padding-top:30px;">
+  <h3 style="font-size:1.4rem; font-weight:600; margin-bottom:20px; color:#222;">Produtos Relacionados</h3>
+  <div style="display:flex; flex-wrap:wrap; gap:20px;">
+    {% for item in produtos_relacionados %}
+      <div style="flex:1 1 200px; max-width:220px; text-align:center;">
+        <a href="{% url 'detalhe_produto' item.slug %}" style="text-decoration:none; color:inherit;">
+          <img src="{{ item.get_imagem_url }}" alt="{{ item.nome }}" style="width:100%; border-radius:8px; border:1px solid #eee; object-fit:cover; margin-bottom:10px;">
+          <p style="font-size:1rem; font-weight:500;">{{ item.nome }}</p>
+          <p style="color:#111; font-weight:600;">{{ item.get_display_price }}</p>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock content %}
+
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("modalZoom");
+    const modalImg = document.getElementById("imgZoomed");
+    const closeBtn = document.querySelector(".close");
+    const mainImg = document.getElementById("main-image");
+    const thumbs = document.querySelectorAll(".miniatura");
+    const variacaoInput = document.getElementById("variacao-input");
+    const formCarrinho = document.getElementById("form-adicionar-carrinho");
+    const quantidadeInput = document.getElementById("quantidade");
+    const btnComprar = document.querySelector(".btn-comprar");
+    const statusEstoque = document.querySelector(".status-estoque");
+    const VARIACOES = JSON.parse(document.getElementById("variacoes-data").textContent);
+
+
+    // #######################################################
+    // # FUNÇÃO PRINCIPAL: ATUALIZA ESTADO DOS BOTÕES DE TAMANHO COM BASE NA COR
+    // #######################################################
+    function atualizarDisponibilidadeTamanhos(corSelecionada) {
+        const botoesTamanho = document.querySelectorAll(".btn-tamanho");
+        
+        // 1. Limpa todas as classes 'esgotado' de todos os botões de tamanho
+        botoesTamanho.forEach(btn => {
+            btn.classList.remove("esgotado");
+            btn.disabled = false;
+        });
+
+        // 2. Itera sobre os botões de tamanho para checar o estoque na cor selecionada
+        botoesTamanho.forEach(btn => {
+            const tamanho = btn.dataset.valor;
+            
+            // Filtra a variação específica (Cor + Tamanho)
+            const variacaoEspecifica = VARIACOES.find(v => 
+                v.cor === corSelecionada && v.tamanho === tamanho
+            );
+            
+            // Obtém o estoque. Se a variação não for encontrada, considera 0.
+            const estoque = variacaoEspecifica ? variacaoEspecifica.estoque : 0;
+
+            // 3. Aplica a classe 'esgotado' e desabilita se o estoque for 0
+            if (estoque <= 0) {
+                btn.classList.add('esgotado');
+                btn.disabled = true;
+                
+                // Se o tamanho que acabou de ser riscado estava selecionado, desmarca.
+                if (btn.classList.contains("selecionado")) {
+                    btn.classList.remove("selecionado");
+                    // Força a atualização da variação (para Esgotado/Não Selecionado)
+                    atualizarVariacaoSelecionada(); 
+                }
+            }
+        });
+    }
+
+    // #######################################################
+    // # LÓGICA DE CLIQUE NAS VARIAÇÕES
+    // #######################################################
+
+    document.querySelectorAll(".btn-variacao").forEach(btn => {
+        btn.addEventListener("click", function () {
+            const tipo = this.dataset.tipo;
+            
+            // Desseleciona todos os botões do mesmo tipo e seleciona o clicado
+            document.querySelectorAll(`.btn-${tipo}`).forEach(el => el.classList.remove("selecionado"));
+            this.classList.add("selecionado");
+
+            if (tipo === "cor") {
+                const corSelecionada = this.dataset.cor;
+                
+                // CHAMA A FUNÇÃO: Atualiza o estado dos botões de TAMANHO
+                atualizarDisponibilidadeTamanhos(corSelecionada); 
+
+                // Lógica de troca de imagem (já existente)
+                const variacaoCor = VARIACOES.find(v => v.cor === corSelecionada && v.imagem);
+                if (variacaoCor && mainImg) {
+                    mainImg.style.opacity = 0;
+                    setTimeout(() => {
+                        mainImg.src = variacaoCor.imagem;
+                        mainImg.dataset.fullUrl = variacaoCor.imagem;
+                        mainImg.style.opacity = 1;
+                    }, 200);
+                }
+            }
+            
+            // Tenta encontrar a variação final (Cor + Tamanho) e atualizar as ações de compra
+            atualizarVariacaoSelecionada();
+        });
+    });
+
+    // Função para encontrar a variação correta e atualizar o estoque
+    function atualizarVariacaoSelecionada() {
+        const cor = document.querySelector(".btn-cor.selecionado")?.dataset.cor || "";
+        const tamanho = document.querySelector(".btn-tamanho.selecionado")?.dataset.valor || "";
+        const outro = document.querySelector(".btn-outro.selecionado")?.dataset.valor || "";
+
+        let variacao = VARIACOES.find(v =>
+            (v.cor === cor || !v.cor) &&
+            (v.tamanho === tamanho || !v.tamanho) &&
+            (v.outro === outro || !v.outro)
+        );
+
+        // Se houver opções de cor E tamanho, e apenas uma foi selecionada, não atualiza a variação final.
+        const temCorETamanho = document.querySelectorAll(".btn-cor").length > 0 && document.querySelectorAll(".btn-tamanho").length > 0;
+        const selecaoIncompleta = temCorETamanho && (!cor || !tamanho);
+        
+        if (variacao && !selecaoIncompleta) {
+            variacaoInput.value = variacao.id;
+            atualizarAcoesCompra(variacao.estoque);
+            if (variacao.imagem) {
+                mainImg.src = variacao.imagem;
+                mainImg.dataset.fullUrl = variacao.imagem;
+            }
+        } else {
+            // Se seleção incompleta ou variação não encontrada (sem estoque ou inválida)
+            variacaoInput.value = "";
+            atualizarAcoesCompra(0);
+        }
+    }
+
+
+    function atualizarAcoesCompra(estoque) {
+        if (estoque > 0) {
+            quantidadeInput.disabled = false;
+            quantidadeInput.max = estoque;
+            if (parseInt(quantidadeInput.value) > estoque) {
+                 quantidadeInput.value = estoque; // Ajusta a quantidade se for maior que o novo estoque
+            }
+            btnComprar.disabled = false;
+            btnComprar.style.opacity = 1;
+            btnComprar.textContent = "Comprar";
+            statusEstoque.textContent = `Em estoque: ${estoque} unidade${estoque > 1 ? "s" : ""}`;
+            statusEstoque.style.color = "#2e7d32";
+        } else {
+            quantidadeInput.disabled = true;
+            quantidadeInput.max = 1;
+            quantidadeInput.value = 1; // Reseta a quantidade
+            btnComprar.disabled = true;
+            btnComprar.style.opacity = 0.5;
+            btnComprar.textContent = "Esgotado";
+            statusEstoque.textContent = "Esgotado";
+            statusEstoque.style.color = "#d32f2f";
+        }
+    }
+    
+    // #######################################################
+    // # INICIALIZAÇÃO E FUNÇÕES AUXILIARES
+    // #######################################################
+
+    // No carregamento inicial, aplicamos a lógica de estoque para a primeira cor (ou estado padrão)
+    // Se o Django já aplica a classe 'esgotado' com base no estoque total, podemos confiar nisso.
+    // A função `atualizarDisponibilidadeTamanhos` só será chamada quando uma cor for clicada.
+
+    // Remove o listener que previne o clique (pois o CSS `pointer-events: none` e o `disabled` no HTML já fazem isso)
+    // document.querySelectorAll(".btn-tamanho.esgotado").forEach(btn => {
+    //     btn.addEventListener("click", e => e.preventDefault());
+    // });
+    
+    // ====== Zoom e Miniaturas (Mantenha o resto das suas funções aqui) ======
+
+    // ====== ZOOM ======
+    if (mainImg) {
+        mainImg.addEventListener("click", function () {
+            document.body.classList.add("modal-open");
+            modal.style.display = "flex";
+            modalImg.src = this.dataset.fullUrl || this.src;
+        });
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener("click", () => {
+            modal.style.display = "none";
+            document.body.classList.remove("modal-open");
+        });
+    }
+
+    modal.addEventListener("click", e => {
+        if (e.target === modal) {
+            modal.style.display = "none";
+            document.body.classList.remove("modal-open");
+        }
+    });
+    
+    // ====== MINIATURAS ======
+    thumbs.forEach(thumb => {
+        thumb.addEventListener("click", function (e) {
+            e.preventDefault();
+            const url = this.dataset.fullUrl || this.src;
+            mainImg.style.opacity = 0;
+            setTimeout(() => {
+                mainImg.src = url;
+                mainImg.dataset.fullUrl = url;
+                mainImg.style.opacity = 1;
+            }, 150);
+            document.querySelectorAll(".miniatura").forEach(t => t.classList.remove("selecionado"));
+            this.classList.add("selecionado");
+        });
+    });
+
+
+    // ====== VALIDAÇÃO FLEXÍVEL ======
+    if (formCarrinho) {
+        formCarrinho.addEventListener("submit", function (e) {
+            const temCor = document.querySelectorAll(".btn-cor").length > 0;
+            const temTamanho = document.querySelectorAll(".btn-tamanho").length > 0;
+            const temOutro = document.querySelectorAll(".btn-outro").length > 0;
+
+            const corSel = document.querySelector(".btn-cor.selecionado");
+            const tamSel = document.querySelector(".btn-tamanho.selecionado");
+            const outroSel = document.querySelector(".btn-outro.selecionado");
+
+            if ((temCor && !corSel) || (temTamanho && !tamSel) || (temOutro && !outroSel)) {
+                e.preventDefault();
+                alert("Por favor, selecione todas as opções disponíveis antes de adicionar ao carrinho.");
+                return false;
+            }
+
+            // Garante que uma variação foi detectada
+            if (!variacaoInput.value && VARIACOES.length > 0) {
+                e.preventDefault();
+                alert("Por favor, selecione uma variação válida antes de adicionar ao carrinho.");
+                return false;
+            }
+        });
+    }
+});
+</script>
+
+{% endblock %}
+

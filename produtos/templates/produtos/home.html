@@ -1,0 +1,340 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* === Banner === */
+    .full-width-banner-wrapper {
+        width: 100vw; 
+        position: relative;
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw;
+        margin-right: -50vw;
+        margin-bottom: 40px;
+    }
+
+    .main-banner-image {
+        background-image: url("{% static 'img/banner_principal.png' %}"); 
+        background-size: cover; 
+        background-repeat: no-repeat;
+        background-position: center top 20%;
+        height: 550px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .banner-text h1 {
+        font-size: 3rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    /* === Seção de Destaques === */
+    .secao-destaques h2 {
+        text-align: center;
+        font-size: 2rem;
+        margin-bottom: 30px;
+        color: var(--cor-secundaria);
+    }
+    
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+        gap: 20px;
+    }
+
+    .product-card {
+        background: #fff;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .product-card img {
+        width: 100%;
+        border-radius: 8px;
+        object-fit: cover;
+    }
+
+    .product-card h3 {
+        margin-top: 10px;
+        font-size: 1.1rem;
+        color: #333;
+    }
+
+    .price {
+        font-size: 1.1rem;
+        margin: 8px 0;
+    }
+
+    .price del {
+        color: #999;
+        font-size: 0.9rem;
+        margin-right: 5px;
+    }
+
+    .price strong {
+        color: #f45ca5;
+    }
+
+    .btn-principal {
+        display: inline-block;
+        background: #f45ca5;
+        color: #fff;
+        padding: 10px 15px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+
+    .btn-principal:hover {
+        background: #e3358b;
+    }
+    
+/* === Corrige sobreposição de banners === */
+    {% if banners %}
+    .main-banner-image {
+        display: none !important;
+   }
+    {% endif %}
+
+/* Ajusta os banners do admin */
+   .banner-admin {
+      max-height: 550px;
+      object-fit: cover;
+      width: 100%;
+      display: block;
+  }
+
+   .carousel,
+   .banner-admin {
+     position: relative;
+     z-index: 1;
+  }
+
+    .full-width-banner-wrapper {
+      margin-bottom: 40px;
+ }
+
+
+    /* === Timer de promoção === */
+    .timer-box {
+        background: #fff0f6;
+        border: 2px solid #ff66a3;
+        color: #ff3399;
+        border-radius: 8px;
+        padding: 8px 12px;
+        display: inline-block;
+        margin-top: 8px;
+        font-weight: bold;
+        text-align: center;
+        box-shadow: 0 0 6px rgba(255, 102, 163, 0.2);
+    }
+    
+
+    .timer-title {
+        display: block;
+        font-size: 0.8rem;
+        color: #ff3399;
+    }
+
+    .countdown {
+        font-size: 1rem;
+        letter-spacing: 1px;
+    }
+    /* === Destaque neon para produtos em promoção === */
+     .product-card.promo-ativo {
+        border: 2px solid #ff4da6;
+        box-shadow: 0 0 10px rgba(255, 77, 166, 0.4);
+        animation: glowNeon 2s ease-in-out infinite alternate;
+        transform: scale(1.01);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+     .product-card.promo-ativo:hover {
+        transform: scale(1.03);
+        box-shadow: 0 0 22px rgba(255, 77, 166, 0.8);
+    }
+
+     @keyframes glowNeon {
+     from { box-shadow: 0 0 10px rgba(255, 77, 166, 0.3); }
+     to   { box-shadow: 0 0 20px rgba(255, 77, 166, 0.8); }
+    }
+
+      @keyframes glowNeon {
+      from { box-shadow: 0 0 10px rgba(255, 77, 166, 0.3); }
+      to { box-shadow: 0 0 20px rgba(255, 77, 166, 0.8); }
+    }
+
+
+    /* === Efeito visual quando a promoção está acabando === */
+    .timer-box.warning {
+        background: #ffeaea;
+        border-color: #ff0000;
+        color: #d60000;
+        animation: piscar 1s infinite alternate;
+    }
+
+    @keyframes piscar {
+        from { opacity: 1; }
+        to { opacity: 0.5; }
+    }
+</style>
+{% endblock %}
+
+
+{% block hero_banner %}
+<div class="full-width-banner-wrapper">
+  {% if banners %}
+    {% if banners|length > 1 %}
+      <!-- Carrossel de múltiplos banners -->
+      <div id="bannerCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          {% for banner in banners %}
+            {% if banner.ativo %}
+              <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                <a href="{{ banner.link|default:'#' }}">
+                  <img src="{{ banner.imagem.url }}" class="d-block w-100 banner-admin" alt="{{ banner.titulo }}">
+                </a>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon"></span>
+        </button>
+      </div>
+    {% else %}
+      <!-- Banner único -->
+      {% for banner in banners %}
+        {% if banner.ativo %}
+          <a href="{{ banner.link|default:'#' }}">
+            <img src="{{ banner.imagem.url }}" class="img-fluid w-100 banner-admin" alt="{{ banner.titulo }}">
+          </a>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% else %}
+    <!-- Banner padrão -->
+    <div class="main-banner-image">
+      <div class="banner-text"></div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+
+
+
+{% block content %}
+<div class="secao-destaques">
+    <h2>Destaques</h2>
+    
+    {% if produtos %}
+        <div class="product-grid">
+            {% for produto in produtos %}
+                <div class="product-card {% if produto.promocoes.first and produto.promocoes.first.esta_vigente %}promo-ativo{% endif %}">
+                    <a href="{% url 'detalhe_produto' slug=produto.slug %}">
+                        <img src="{{ produto.get_imagem_url }}"
+                             alt="{{ produto.nome }}"
+                             loading="lazy"
+                             onerror="this.onerror=null;this.src='{% static 'img/placeholder.png' %}';">
+                    </a>
+
+                    <h3>{{ produto.nome }}</h3>
+                    
+                    {% with promo=produto.promocoes.first %}
+                        {% if promo and promo.esta_vigente %}
+                            <p class="price">
+                                <del>R$ {{ produto.preco }}</del>
+                                <strong>{{ produto.get_display_price }}</strong>
+                            </p>
+
+                            {% if promo.data_fim %}
+                                <div class="timer" data-end-time="{{ promo.data_fim|date:'Y-m-d H:i:s' }}">
+                                    <div class="timer-box">
+                                        <span class="timer-title">TERMINA EM:</span>
+                                        <span class="countdown">00D 00:00:00</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <p class="price"><strong>{{ produto.get_display_price }}</strong></p>
+                        {% endif %}
+                    {% endwith %}
+
+                    <p style="font-size: 0.9em; color: {% if produto.get_estoque_total == 0 %}red{% else %}green{% endif %}; margin-bottom: 10px;">
+                        {{ produto.get_status_estoque }}
+                    </p>
+
+                    {% if produto.get_estoque_total > 0 %}
+                        <a href="{% url 'detalhe_produto' slug=produto.slug %}" class="btn-principal">Comprar</a>
+                    {% else %}
+                        <button class="btn-principal" disabled style="opacity: 0.5; background-color: #dc3545;">Esgotado</button>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p style="text-align: center;">Nenhum produto em destaque encontrado.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    function atualizarTimers() {
+        const timers = document.querySelectorAll(".timer");
+        timers.forEach(timer => {
+            const endTime = new Date(timer.dataset.endTime).getTime();
+            const agora = new Date().getTime();
+            const diff = endTime - agora;
+
+            const box = timer.querySelector(".timer-box");
+            const countdown = timer.querySelector(".countdown");
+
+            if (diff <= 0) {
+                countdown.innerText = "ENCERRADA";
+                box.classList.add("warning");
+                return;
+            }
+
+            const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const horas = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const segundos = Math.floor((diff % (1000 * 60)) / 1000);
+
+            const formatado = 
+                (dias > 0 ? String(dias).padStart(2, '0') + "D " : "") +
+                String(horas).padStart(2, '0') + ":" +
+                String(minutos).padStart(2, '0') + ":" +
+                String(segundos).padStart(2, '0');
+
+            countdown.innerText = formatado;
+
+            // ⚠️ Se faltar menos de 2 horas, pisca em vermelho
+            if (diff < 2 * 60 * 60 * 1000) {
+                box.classList.add("warning");
+            }
+        });
+    }
+
+    atualizarTimers();
+    setInterval(atualizarTimers, 1000);
+});
+</script>
+{% endblock %}

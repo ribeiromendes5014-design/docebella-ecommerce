@@ -1,0 +1,49 @@
+{% if mensagens_topo %}
+<style>
+  .marquee-container {
+    background-color: #f45ca5;
+    color: #fff;
+    overflow: hidden;
+    white-space: nowrap;
+    text-align: center;
+    padding: 8px 0;
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+
+    /* 🔧 Ajustes principais */
+    position: relative; /* mantém fluxo normal */
+    z-index: 10; /* fica abaixo do header fixo */
+    margin-top: 60px; /* se seu header for fixo, ajusta conforme altura */
+  }
+
+  header, .navbar, .site-header {
+    position: relative;
+    z-index: 1000; /* header sempre acima */
+  }
+
+  .marquee {
+    display: inline-block;
+    animation: scrollText 15s linear infinite;
+  }
+
+  .marquee span {
+    margin: 0 50px;
+  }
+
+  @keyframes scrollText {
+    from { transform: translateX(100%); }
+    to { transform: translateX(-100%); }
+  }
+</style>
+
+<div class="marquee-container">
+  <div class="marquee">
+    {% for msg in mensagens_topo %}
+      {% if msg.esta_ativa %}
+        <span>{{ msg.texto }}</span>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
