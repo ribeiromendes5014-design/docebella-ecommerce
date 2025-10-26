@@ -81,6 +81,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 # Context Processor do Carrinho
                 'docebella_project.context_processors.carrinho_contador',
+                'produtos.context_processors.categorias_header',
             ],
         },
     },

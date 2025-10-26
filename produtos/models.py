@@ -14,6 +14,10 @@ import os
 class Categoria(models.Model):
     nome = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(unique=True)
+    show_in_header = models.BooleanField(
+        default=False,
+        verbose_name="Mostrar no cabeçalho"
+    )
 
     class Meta:
         verbose_name = "Categoria"
@@ -189,9 +193,7 @@ class Banner(models.Model):
 
 
 
-# ======================
-# VARIAÇÃO
-# ======================
+
 # ======================
 # VARIAÇÃO
 # ======================

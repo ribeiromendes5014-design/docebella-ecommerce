@@ -26,12 +26,20 @@
         </div>
 
         <div class="menu-nav-unificado">
-          <ul>
-            <li><a href="{% url 'home' %}">Início</a></li>
-            <li><a href="{% url 'listar_categoria' 'perfumes' %}">Perfumes</a></li>
-            <li><a href="{% url 'home' %}">Todos os Produtos</a></li>
-          </ul>
-        </div>
+  <ul>
+    <li><a href="{% url 'home' %}">Início</a></li>
+
+    {% for categoria in categorias_header %}
+      <li>
+        <a href="{% url 'listar_categoria' categoria.slug %}">
+          {{ categoria.nome }}
+        </a>
+      </li>
+    {% endfor %}
+
+    <li><a href="{% url 'home' %}">Todos os Produtos</a></li>
+  </ul>
+</div>
 
         <div class="search-bar">
           <form method="GET" action="{% url 'home' %}">
@@ -120,19 +128,16 @@
         </a>
       </li>
 
-      {% if categorias %}
-        {% for categoria in categorias %}
-          <li>
-            <a href="{% url 'listar_categoria' categoria.slug %}">
-              <i class="fa fa-heart"></i>
-              {{ categoria.nome }}
-            </a>
-          </li>
-        {% endfor %}
-      {% else %}
-        <!-- Fallback seguro caso o contexto não traga 'categorias' -->
-        <li><a href="{% url 'listar_categoria' 'perfumes' %}"><i class="fa fa-heart"></i> Perfumes</a></li>
-      {% endif %}
+      {% for categoria in categorias_header %}
+  <li>
+    <a href="{% url 'listar_categoria' categoria.slug %}">
+      <i class="fa fa-heart"></i>
+      {{ categoria.nome }}
+    </a>
+  </li>
+{% empty %}
+  <li><a href="{% url 'listar_categoria' 'perfumes' %}"><i class="fa fa-heart"></i> Perfumes</a></li>
+{% endfor %}
     </ul>
   </nav>
   <div id="menu-overlay" class="menu-overlay" hidden></div>
