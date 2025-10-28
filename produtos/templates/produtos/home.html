@@ -213,9 +213,13 @@
                     {% if banner.imagem %}
                       <source media="(min-width: 769px)" srcset="{{ banner.imagem.url }}?v={{ banner.atualizado_em|date:'U' }}">
                     {% endif %}
-                    <img src="{{ banner.imagem.url|default:banner.imagem_mobile.url }}"
-                         class="d-block w-100 banner-admin"
-                         alt="{{ banner.titulo }}">
+                    {% if banner.imagem %}
+                       <img src="{{ banner.imagem.url }}" class="img-fluid w-100 banner-admin" alt="{{ banner.titulo }}">
+                    {% elif banner.imagem_mobile %}
+                      <img src="{{ banner.imagem_mobile.url }}" class="img-fluid w-100 banner-admin" alt="{{ banner.titulo }}">
+                    {% else %}
+                      <img src="{% static 'img/banner-placeholder.png' %}" class="img-fluid w-100 banner-admin" alt="Banner padrão">
+                    {% endif %} 
                   </picture>
                 </a>
               </div>
