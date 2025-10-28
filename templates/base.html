@@ -182,6 +182,47 @@
   margin-bottom: 10px;
 }
 
+/* 1. Efeito Pulsante (CSS Animation) */
+.pulse-animate {
+    animation: pulse 1.5s infinite; /* Aplica a animação */
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); /* Cor verde do WhatsApp */
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(37, 211, 102, 0); /* Expande a sombra */
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+    }
+}
+
+/* 2. Estilo do Balão de Saudação */
+.whatsapp-greeting-bubble {
+    position: fixed;
+    right: 95px; /* Posição para o balão ficar ao lado do botão */
+    bottom: 35px;
+    background-color: white;
+    color: #333;
+    padding: 10px 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    font-size: 0.9rem;
+    max-width: 180px;
+    text-align: center;
+    cursor: pointer;
+    opacity: 0; /* Esconde por padrão */
+    transform: scale(0.8); /* Inicia pequeno */
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 9998;
+}
+.whatsapp-greeting-bubble.show {
+    opacity: 1; /* Mostra */
+    transform: scale(1); /* Traz ao tamanho normal */
+}
+
 .perfil-subtext {
   color: #555;
   margin-bottom: 25px;
@@ -263,6 +304,8 @@
       #mobile-menu,
       #menu-overlay { display: none !important; }
     }
+
+    
 
     /* ===== Header mobile ===== */
     .header-mobile {
@@ -416,7 +459,48 @@
     .mobile-category-list a:hover{ color:var(--rosa); }
     .mobile-category-list .ver-tudo a{ font-weight:700; }
   </style>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const bubble = document.getElementById('whatsapp-greeting-bubble');
+        const floatButton = document.querySelector('.whatsapp-float');
+        
+        // 1. Função para mostrar o balão
+        const showBubble = () => {
+            bubble.classList.add('show');
+            // Remove o efeito pulsante para focar no balão
+            floatButton.classList.remove('pulse-animate'); 
+        };
 
+        // 2. Função para esconder o balão
+        const hideBubble = () => {
+            bubble.classList.remove('show');
+            // Volta o efeito pulsante
+            floatButton.classList.add('pulse-animate');
+        };
+
+        // 3. Mostra o balão após 5 segundos
+        const timeoutId = setTimeout(showBubble, 5000); 
+
+        // 4. Se o usuário clicar no balão, esconde e redireciona
+        bubble.addEventListener('click', function() {
+            hideBubble();
+            window.open(floatButton.href, '_blank'); 
+            clearTimeout(timeoutId); 
+        });
+
+        // 5. Se o usuário clicar no botão flutuante, apenas esconde o balão
+        floatButton.addEventListener('click', function() {
+            hideBubble();
+            clearTimeout(timeoutId);
+        });
+
+        // 6. Esconde o balão após 15 segundos, se o usuário não interagir
+        setTimeout(hideBubble, 20000); 
+    });
+</script>
+  
+  
   <!-- =========================================================
        JS do menu mobile (leve e sem conflitos)
        ========================================================= -->
@@ -534,11 +618,15 @@
   </footer>
 
   <!-- WhatsApp flutuante (seu original) -->
-  <a href="https://wa.me/5541987876191?text=Olá!%20Gostaria%20de%20ajuda%20com%20um%20produto%20da%20Doce%20%26%20Bella."
-     class="whatsapp-float" target="_blank" title="Fale conosco pelo WhatsApp"
-     style="position:fixed;width:60px;height:60px;bottom:25px;right:25px;background:#25d366;color:#fff;border-radius:50%;text-align:center;font-size:32px;box-shadow:0 3px 10px rgba(0,0,0,.2);z-index:9999;">
+  <div class="whatsapp-greeting-bubble" id="whatsapp-greeting-bubble">
+    Precisa de ajuda? Fale conosco!
+</div>
+
+<a href="https://wa.me/5541987876191?text=Olá!%20Gostaria%20de%20ajuda%20com%20um%20produto%20da%20Doce%20%26%20Bella."
+    class="whatsapp-float pulse-animate" target="_blank" title="Fale conosco pelo WhatsApp"
+    style="position:fixed;width:60px;height:60px;bottom:25px;right:25px;background:#25d366;color:#fff;border-radius:50%;text-align:center;font-size:32px;box-shadow:0 3px 10px rgba(0,0,0,.2);z-index:9999;">
     <i class="fab fa-whatsapp" style="margin-top:14px;"></i>
-  </a>
+</a>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
   <!-- Cadastre-se (JS) -->
