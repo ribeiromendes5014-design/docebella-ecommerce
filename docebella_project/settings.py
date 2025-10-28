@@ -101,8 +101,12 @@ import dj_database_url
 DATABASES = {
     'default': dj_database_url.config(
         default='postgresql://postgres_ysv1_user:vQqFme7kHwGUssrtu4YiUNaUogwc0Ncy@dpg-d3s6g7q4d50c738ilvhg-a.oregon-postgres.render.com/postgres_ysv1',
-        conn_max_age=600,
+        # REDUZA ESTE VALOR: Fecha a conexão após 30 segundos de inatividade
+        conn_max_age=30,
         ssl_require=True,
+        # Adicione health checks (disponível em Django 4.1+)
+        # Força o Django a verificar se a conexão está OK antes de reutilizá-la
+        CONN_HEALTH_CHECKS=True,
     )
 }
 
