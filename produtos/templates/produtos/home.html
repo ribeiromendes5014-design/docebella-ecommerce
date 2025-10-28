@@ -196,36 +196,42 @@
 <div class="full-width-banner-wrapper">
   {% if banners %}
     {% if banners|length > 1 %}
-      <!-- Carrossel de múltiplos banners -->
-      <div id="bannerCarousel" class="carousel slide" data-bs-ride="carousel">
-        <div class="carousel-inner">
-          {% for banner in banners %}
-            {% if banner.ativo %}
-              <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                <a href="{{ banner.link|default:'#' }}">
-                  <img src="{{ banner.imagem.url }}" class="d-block w-100 banner-admin" alt="{{ banner.titulo }}">
-                </a>
-              </div>
-            {% endif %}
-          {% endfor %}
-        </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
-          <span class="carousel-control-prev-icon"></span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
-          <span class="carousel-control-next-icon"></span>
-        </button>
-      </div>
-    {% else %}
-      <!-- Banner único -->
+  <!-- Carrossel de múltiplos banners -->
+  <div id="bannerCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner">
       {% for banner in banners %}
         {% if banner.ativo %}
-          <a href="{{ banner.link|default:'#' }}">
-            <img src="{{ banner.imagem.url }}" class="img-fluid w-100 banner-admin" alt="{{ banner.titulo }}">
-          </a>
+          <div class="carousel-item {% if forloop.first %}active{% endif %}">
+            <a href="{{ banner.link|default:'#' }}">
+              {% if banner.imagem %}
+                <img src="{{ banner.imagem.url }}" class="d-block w-100 banner-admin" alt="{{ banner.titulo }}">
+              {% elif banner.link %}
+                <img src="{{ banner.link }}" class="d-block w-100 banner-admin" alt="{{ banner.titulo }}">
+              {% else %}
+                <img src="{% static 'img/banner_principal.png' %}" class="d-block w-100 banner-admin" alt="Banner padrão">
+              {% endif %}
+            </a>
+          </div>
         {% endif %}
       {% endfor %}
+    </div>
+    ...
+{% else %}
+  <!-- Banner único -->
+  {% for banner in banners %}
+    {% if banner.ativo %}
+      <a href="{{ banner.link|default:'#' }}">
+        {% if banner.imagem %}
+          <img src="{{ banner.imagem.url }}" class="img-fluid w-100 banner-admin" alt="{{ banner.titulo }}">
+        {% elif banner.link %}
+          <img src="{{ banner.link }}" class="img-fluid w-100 banner-admin" alt="{{ banner.titulo }}">
+        {% else %}
+          <img src="{% static 'img/banner_principal.png' %}" class="img-fluid w-100 banner-admin" alt="Banner padrão">
+        {% endif %}
+      </a>
     {% endif %}
+  {% endfor %}
+{% endif %}
   {% else %}
     <!-- Banner padrão -->
     <div class="main-banner-image">
