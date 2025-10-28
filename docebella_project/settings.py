@@ -92,19 +92,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 import dj_database_url
 
-# 1. Definir a URL do banco de dados (A URL que você usou com sucesso)
+# 1. Definir a URL do banco de dados (a mesma que você já usa)
 DATABASE_URL = 'postgresql://postgres_ysv1_user:vQqFme7kHwGUssrtu4YiUNaUogwc0Ncy@dpg-d3s6g7q4d50c738ilvhg-a.oregon-postgres.render.com/postgres_ysv1'
 
-# 2. Configurar a URL e o CONN_MAX_AGE
-# conn_max_age é passado para dj_database_url.config()
+# 2. Configurar a URL e desligar o pool de conexões
 db_config = dj_database_url.config(
     default=DATABASE_URL,
-    conn_max_age=30,  # OK: Passa para dj_database_url
-    ssl_require=True, # OK: Passa para dj_database_url
+    conn_max_age=0,        # ✅ Fecha a conexão após cada request
+    ssl_require=True,
 )
 
-# 3. Configurar CONN_HEALTH_CHECKS diretamente no dicionário do Django
-# CORRIGIDO: Este parâmetro DEVE ser aplicado DEPOIS que dj_database_url.config() retorna.
+# 3. Opcional: ainda pode manter o health check (não faz mal)
 db_config['CONN_HEALTH_CHECKS'] = True
 
 DATABASES = {
