@@ -179,10 +179,23 @@ from django.core.exceptions import ValidationError
 class Banner(models.Model):
     titulo = models.CharField(max_length=100, blank=True, null=True)
     imagem = models.ImageField(upload_to='banners/', blank=True, null=True)
-    link = models.URLField(blank=True, null=True, help_text="Link opcional para o banner.")
+    imagem_mobile = models.ImageField(
+        upload_to='banners/mobile/',
+        blank=True,
+        null=True,
+        help_text="Versão otimizada para celular"
+    )
+    link = models.URLField(
+        blank=True,
+        null=True,
+        help_text="Link opcional para o banner (ex: URL de um produto ou categoria)"
+    )
     ativo = models.BooleanField(default=True)
     ordem = models.PositiveIntegerField(default=1)
-    usar_em_carrossel = models.BooleanField(default=True, help_text="Se falso, exibe apenas um banner fixo.")
+    usar_em_carrossel = models.BooleanField(
+        default=True,
+        help_text="Se falso, exibe apenas um banner fixo."
+    )
 
     class Meta:
         ordering = ['ordem']
@@ -195,6 +208,7 @@ class Banner(models.Model):
     def clean(self):
         if not self.imagem and not self.link:
             raise ValidationError("Informe uma imagem ou um link para o banner.")
+
 
 
 
