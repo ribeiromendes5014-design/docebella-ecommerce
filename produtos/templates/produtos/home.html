@@ -203,13 +203,13 @@
         {% if banner.ativo %}
           <div class="carousel-item {% if forloop.first %}active{% endif %}">
             <a href="{{ banner.link|default:'#' }}">
-              {% if banner.imagem %}
+              <picture>
+                {% if banner.imagem_mobile %}
+                  <source media="(max-width: 768px)" srcset="{{ banner.imagem_mobile.url }}">
+                {% endif %}
+                <source media="(min-width: 769px)" srcset="{{ banner.imagem.url }}">
                 <img src="{{ banner.imagem.url }}" class="d-block w-100 banner-admin" alt="{{ banner.titulo }}">
-              {% elif banner.link %}
-                <img src="{{ banner.link }}" class="d-block w-100 banner-admin" alt="{{ banner.titulo }}">
-              {% else %}
-                <img src="{% static 'img/banner_principal.png' %}" class="d-block w-100 banner-admin" alt="Banner padrão">
-              {% endif %}
+              </picture>
             </a>
           </div>
         {% endif %}
@@ -221,13 +221,13 @@
   {% for banner in banners %}
     {% if banner.ativo %}
       <a href="{{ banner.link|default:'#' }}">
-        {% if banner.imagem %}
+        <picture>
+          {% if banner.imagem_mobile %}
+            <source media="(max-width: 768px)" srcset="{{ banner.imagem_mobile.url }}">
+          {% endif %}
+          <source media="(min-width: 769px)" srcset="{{ banner.imagem.url }}">
           <img src="{{ banner.imagem.url }}" class="img-fluid w-100 banner-admin" alt="{{ banner.titulo }}">
-        {% elif banner.link %}
-          <img src="{{ banner.link }}" class="img-fluid w-100 banner-admin" alt="{{ banner.titulo }}">
-        {% else %}
-          <img src="{% static 'img/banner_principal.png' %}" class="img-fluid w-100 banner-admin" alt="Banner padrão">
-        {% endif %}
+        </picture>
       </a>
     {% endif %}
   {% endfor %}
