@@ -94,7 +94,7 @@ def listar_por_categoria(request, categoria_slug):
 # --------------------------------------------------------------------------------------
 # 🎯 OTIMIZAÇÃO 2: Detalhe do Produto (N+1 Resolvido + Cache)
 # --------------------------------------------------------------------------------------
-@cache_page(300) # Cacheia a página de detalhes por 5 minutos
+@cache_page(600) # Cacheia a página de detalhes por 5 minutos
 def detalhe_produto(request, slug):
     # 🛑 OTIMIZAÇÃO PRINCIPAL: select_related para Categoria e prefetch_related para Variações e Promoções
     produto = get_object_or_404(
