@@ -87,27 +87,28 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'docebella_project.wsgi.application'
-
-
-POSTGRES_URL = 'postgresql://catalagobase_user:yCprqleHZ162Ns5rThnnx0Om60TZTa9C@dpg-d3pv0sogjchc73aucffg-a.oregon-postgres.render.com/catalagobase'
-
-
 import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 import dj_database_url
 
+# 1. Definir a URL do banco de dados (A URL que você usou com sucesso)
+DATABASE_URL = 'postgresql://postgres_ysv1_user:vQqFme7kHwGUssrtu4YiUNaUogwc0Ncy@dpg-d3s6g7q4d50c738ilvhg-a.oregon-postgres.render.com/postgres_ysv1'
+
+# 2. Configurar a URL e o CONN_MAX_AGE
+# conn_max_age é passado para dj_database_url.config()
+db_config = dj_database_url.config(
+    default=DATABASE_URL,
+    conn_max_age=30,  # OK: Passa para dj_database_url
+    ssl_require=True, # OK: Passa para dj_database_url
+)
+
+# 3. Configurar CONN_HEALTH_CHECKS diretamente no dicionário do Django
+# CORRIGIDO: Este parâmetro DEVE ser aplicado DEPOIS que dj_database_url.config() retorna.
+db_config['CONN_HEALTH_CHECKS'] = True
+
 DATABASES = {
-    'default': dj_database_url.config(
-        default='postgresql://postgres_ysv1_user:vQqFme7kHwGUssrtu4YiUNaUogwc0Ncy@dpg-d3s6g7q4d50c738ilvhg-a.oregon-postgres.render.com/postgres_ysv1',
-        # REDUZA ESTE VALOR: Fecha a conexão após 30 segundos de inatividade
-        conn_max_age=30,
-        ssl_require=True,
-        # Adicione health checks (disponível em Django 4.1+)
-        # Força o Django a verificar se a conexão está OK antes de reutilizá-la
-        CONN_HEALTH_CHECKS=True,
-    )
+    'default': db_config
 }
 
 
