@@ -94,7 +94,7 @@ def listar_por_categoria(request, categoria_slug):
 # --------------------------------------------------------------------------------------
 # 🎯 OTIMIZAÇÃO 2: Detalhe do Produto (N+1 Resolvido + Cache)
 # --------------------------------------------------------------------------------------
-@cache_page(600) # Cacheia a página de detalhes por 5 minutos
+@cache_page(600) # Cacheia a página de detalhes por 600 segundos (10 minutos)
 def detalhe_produto(request, slug):
     # 🛑 OTIMIZAÇÃO PRINCIPAL: select_related para Categoria e prefetch_related para Variações e Promoções
     produto = get_object_or_404(
@@ -118,6 +118,7 @@ def detalhe_produto(request, slug):
     outros = sorted(set(v.outro for v in variacoes if v.outro))
 
     # 2. MONTA O JSON DE VARIAÇÕES (RÁPIDO)
+    from django.core.serializers.json import DjangoJSONEncoder
     variacoes_json = json.dumps([
         {
             "id": v.id,
@@ -131,8 +132,7 @@ def detalhe_produto(request, slug):
     ], cls=DjangoJSONEncoder)
 
     # 3. CÁLCULO DE PARCELAMENTO (Lógica Python)
-    # OBS: Recomenda-se usar p.get_preco_final, que deve estar otimizado com @cached_property na Model.
-    preco = produto.get_preco_final or Decimal('0') # Se usar @cached_property, é acessado como atributo
+    preco = produto.get_preco_final or Decimal('0')
     valor_final = preco / Decimal('0.8872')
     valor_parcela = valor_final / Decimal('3')
 
@@ -143,16 +143,22 @@ def detalhe_produto(request, slug):
             promo_ativa = promo
             break
 
-    # 5. PRODUTOS RELACIONADOS (OTIMIZADOS)
-    # Adicionando prefetch_related para carregar promoções e variações dos relacionados também.
+    # 5. PRODUTOS RELACIONADOS (SINTAXE CORRIGIDA E OTIMIZADA)
+    
+    # 🎯 CORREÇÃO DE SINTAXE: O objeto Q deve vir APÓS argumentos nomeados,
+    # OU os argumentos nomeados devem estar em Q, mas a forma mais limpa é:
+    
+    # Define o filtro de estoque dinâmico
+    estoque_disponivel_q = Q(estoque__gt=0) | Exists(
+         Variacao.objects.filter(produto=OuterRef('pk'), estoque__gt=0)
+    )
+
     produtos_relacionados = Produto.objects.filter(
+        # Argumentos nomeados
         categoria=produto.categoria,
         disponivel=True,
-        # Filtro de estoque removido aqui se o filtro de produtos_list (acima) já é suficiente, 
-        # mas mantido para garantir só relacionados disponíveis.
-        Q(estoque__gt=0) | Exists(
-             Variacao.objects.filter(produto=OuterRef('pk'), estoque__gt=0)
-        )
+        # Argumento posicional (Q object)
+        estoque_disponivel_q 
     ).exclude(
         id=produto.id
     ).order_by('?')[:4].prefetch_related('promocoes', 'variacoes') # <-- OTIMIZAÇÃO
