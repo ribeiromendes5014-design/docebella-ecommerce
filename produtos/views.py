@@ -11,17 +11,22 @@ from produtos.models import Produto, Categoria
 from django.utils import timezone
 import json
 from collections import defaultdict
+from django.views.decorators.cache import cache_page
 
+@cache_page(600)
 def home(request):
     query = request.GET.get('q', '')
 
+    # 🛑 OTIMIZAÇÃO CRÍTICA (N+1 Solution)
+    # prefetch_related carrega promoções e variações em poucas consultas eficientes,
+    # em vez de uma consulta separada para CADA produto no loop.
     produtos_list = Produto.objects.filter(
         disponivel=True
     ).filter(
         Q(estoque__gt=0) | Exists(
             Variacao.objects.filter(produto=OuterRef('pk'), estoque__gt=0)
         )
-    )
+    ).prefetch_related('promocoes', 'variacoes') # <-- 2. A CHAVE DA VELOCIDADE
 
     if query:
         produtos_list = produtos_list.filter(nome__icontains=query)
@@ -31,22 +36,24 @@ def home(request):
     page = request.GET.get('page')
     produtos = paginator.get_page(page)
 
-    # 🔹 Novo: adiciona flag "tem_promocao" para destacar no template
+    # O loop abaixo agora é RÁPIDO porque as promoções já foram pré-carregadas
     agora = timezone.now()
     for p in produtos:
+        # Acessar p.promocoes.all() é rápido aqui
         p.tem_promocao = any(
             promo.esta_vigente() for promo in p.promocoes.all()
         )
 
-    # 🆕 Adicione estas duas linhas:
-    mensagens_topo = MensagemTopo.objects.filter(ativo=True)
-    banners = Banner.objects.filter(ativo=True)
+    # 💡 Otimização Adicional: Use .only() para Banners/Mensagens, carregando apenas campos essenciais
+    mensagens_topo = MensagemTopo.objects.filter(ativo=True).only('texto', 'ordem')
+    banners = Banner.objects.filter(ativo=True).only('titulo', 'imagem', 'imagem_mobile', 'link', 'link_mobile')
+
 
     return render(request, 'produtos/home.html', {
         'produtos': produtos,
         'query': query,
         'titulo': 'Doce & Bella E-commerce',
-        # 🆕 envia os dados para o template:
+        # envia os dados para o template:
         'mensagens_topo': mensagens_topo,
         'banners': banners,
     })
