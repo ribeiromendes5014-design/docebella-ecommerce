@@ -94,20 +94,20 @@ def listar_por_categoria(request, categoria_slug):
 # --------------------------------------------------------------------------------------
 # 🎯 OTIMIZAÇÃO 2: Detalhe do Produto (N+1 Resolvido + Cache)
 # --------------------------------------------------------------------------------------
-@cache_page(600) # Cacheia a página de detalhes por 600 segundos (10 minutos)
+@cache_page(600)  # Cacheia a página de detalhes por 600 segundos (10 minutos)
 def detalhe_produto(request, slug):
     # 🛑 OTIMIZAÇÃO PRINCIPAL: select_related para Categoria e prefetch_related para Variações e Promoções
     produto = get_object_or_404(
-        Produto.objects.select_related('categoria').prefetch_related('variacoes', 'promocoes', 'galeria_imagens'), 
-        slug=slug, 
+        Produto.objects.select_related('categoria').prefetch_related('variacoes', 'promocoes', 'galeria_imagens'),
+        slug=slug,
         disponivel=True
     )
 
     # O código abaixo é RÁPIDO porque as variações, promoções e galeria já foram carregadas
-    
+
     # 1. ESTOQUE TOTAL E VARIAÇÕES
-    variacoes = produto.variacoes.all() # RÁPIDO!
-    
+    variacoes = produto.variacoes.all()  # RÁPIDO!
+
     if produto.usa_variacoes:
         estoque_total = sum(v.estoque for v in variacoes)
     else:
@@ -138,30 +138,26 @@ def detalhe_produto(request, slug):
 
     # 4. PROMOÇÃO ATIVA (RÁPIDO)
     promo_ativa = None
-    for promo in produto.promocoes.all(): # RÁPIDO!
+    for promo in produto.promocoes.all():  # RÁPIDO!
         if promo.esta_vigente():
             promo_ativa = promo
             break
 
     # 5. PRODUTOS RELACIONADOS (SINTAXE CORRIGIDA E OTIMIZADA)
-    
-    # 🎯 CORREÇÃO DE SINTAXE: O objeto Q deve vir APÓS argumentos nomeados,
-    # OU os argumentos nomeados devem estar em Q, mas a forma mais limpa é:
-    
+
     # Define o filtro de estoque dinâmico
     estoque_disponivel_q = Q(estoque__gt=0) | Exists(
-         Variacao.objects.filter(produto=OuterRef('pk'), estoque__gt=0)
+        Variacao.objects.filter(produto=OuterRef('pk'), estoque__gt=0)
     )
 
+    # ✅ CORREÇÃO: Q object vem antes dos argumentos nomeados
     produtos_relacionados = Produto.objects.filter(
-        # Argumentos nomeados
+        estoque_disponivel_q,
         categoria=produto.categoria,
         disponivel=True,
-        # Argumento posicional (Q object)
-        estoque_disponivel_q 
     ).exclude(
         id=produto.id
-    ).order_by('?')[:4].prefetch_related('promocoes', 'variacoes') # <-- OTIMIZAÇÃO
+    ).order_by('?')[:4].prefetch_related('promocoes', 'variacoes')  # <-- OTIMIZAÇÃO
 
     # Contexto
     context = {
@@ -175,11 +171,12 @@ def detalhe_produto(request, slug):
         'promo_ativa': promo_ativa,
         'variacoes_json': variacoes_json,
         'estoque_total': estoque_total,
-        'galeria_imagens': produto.galeria_imagens.all(), # RÁPIDO!
+        'galeria_imagens': produto.galeria_imagens.all(),  # RÁPIDO!
         'titulo': f'{produto.nome} | Doce & Bella',
     }
 
     return render(request, 'produtos/detalhe_produto.html', context)
+
 
 
 
