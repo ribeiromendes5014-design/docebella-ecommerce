@@ -174,9 +174,11 @@ class Produto(models.Model):
 # Banner
 # ======================
 
+from django.core.exceptions import ValidationError
+
 class Banner(models.Model):
     titulo = models.CharField(max_length=100, blank=True, null=True)
-    imagem = models.ImageField(upload_to='banners/')
+    imagem = models.ImageField(upload_to='banners/', blank=True, null=True)
     link = models.URLField(blank=True, null=True, help_text="Link opcional para o banner.")
     ativo = models.BooleanField(default=True)
     ordem = models.PositiveIntegerField(default=1)
@@ -190,6 +192,9 @@ class Banner(models.Model):
     def __str__(self):
         return self.titulo or f"Banner {self.id}"
 
+    def clean(self):
+        if not self.imagem and not self.link:
+            raise ValidationError("Informe uma imagem ou um link para o banner.")
 
 
 
