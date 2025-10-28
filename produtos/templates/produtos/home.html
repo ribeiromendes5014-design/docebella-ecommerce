@@ -204,7 +204,8 @@
               {% with link_desktop=banner.link|default:'#' link_mobile=banner.link_mobile|default:banner.link %}
               <div class="carousel-item {% if forloop.first %}active{% endif %}">
                 <a href="{{ link_desktop }}"
-                    class="banner-link"
+                   class="banner-link"
+                   data-desktop="{{ link_desktop }}
                    data-mobile="{{ link_mobile }}">
                   <picture>
                     {% if banner.imagem_mobile %}
