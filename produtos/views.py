@@ -58,9 +58,31 @@ def home(request):
         'banners': banners,
     })
 
+# --------------------------------------------------------------------------------------
+# 🎯 OTIMIZAÇÃO 1: Listar por Categoria (N+1 Resolvido + Cache)
+# --------------------------------------------------------------------------------------
+@cache_page(600) # Cacheia a página de categoria por 10 minutos
 def listar_por_categoria(request, categoria_slug):
+    # select_related para a categoria é RÁPIDO porque só há uma
     categoria = get_object_or_404(Categoria, slug=categoria_slug)
-    produtos = Produto.objects.filter(categoria=categoria, disponivel=True).order_by('-id')
+    
+    # 🛑 OTIMIZAÇÃO CRÍTICA AQUI: Adicionar prefetch_related para resolver N+1
+    produtos_list = Produto.objects.filter(
+        categoria=categoria, 
+        disponivel=True
+    ).prefetch_related('promocoes', 'variacoes').order_by('-id')
+
+    # Mantendo a paginação para listas grandes
+    paginator = Paginator(produtos_list, 20) # 20 itens por página é um bom padrão
+    page = request.GET.get('page')
+    produtos = paginator.get_page(page)
+
+    # O loop de promoção também é rápido agora
+    agora = timezone.now()
+    for p in produtos:
+        p.tem_promocao = any(
+            promo.esta_vigente() for promo in p.promocoes.all()
+        )
     
     return render(request, 'produtos/listar_categoria.html', {
         'categoria': categoria,
@@ -69,25 +91,33 @@ def listar_por_categoria(request, categoria_slug):
     })
 
 
-# NOVA VIEW: Detalhe do Produto (Com Produtos Relacionados)
+# --------------------------------------------------------------------------------------
+# 🎯 OTIMIZAÇÃO 2: Detalhe do Produto (N+1 Resolvido + Cache)
+# --------------------------------------------------------------------------------------
+@cache_page(300) # Cacheia a página de detalhes por 5 minutos
 def detalhe_produto(request, slug):
-    produto = get_object_or_404(Produto, slug=slug, disponivel=True)
+    # 🛑 OTIMIZAÇÃO PRINCIPAL: select_related para Categoria e prefetch_related para Variações e Promoções
+    produto = get_object_or_404(
+        Produto.objects.select_related('categoria').prefetch_related('variacoes', 'promocoes', 'galeria_imagens'), 
+        slug=slug, 
+        disponivel=True
+    )
 
-    # Calcula o estoque total
+    # O código abaixo é RÁPIDO porque as variações, promoções e galeria já foram carregadas
+    
+    # 1. ESTOQUE TOTAL E VARIAÇÕES
+    variacoes = produto.variacoes.all() # RÁPIDO!
+    
     if produto.usa_variacoes:
-        estoque_total = sum(v.estoque for v in produto.variacoes.all())
+        estoque_total = sum(v.estoque for v in variacoes)
     else:
         estoque_total = produto.estoque
 
-    # Separa variações
-    variacoes = produto.variacoes.all()
     cores = sorted(set(v.cor for v in variacoes if v.cor))
     tamanhos = sorted(set(v.tamanho for v in variacoes if v.tamanho))
-    outros = sorted(set(v.outro for v in variacoes if v.outro))  # opcional
+    outros = sorted(set(v.outro for v in variacoes if v.outro))
 
-    # Monta o JSON das variações
-    from django.core.serializers.json import DjangoJSONEncoder
-    import json
+    # 2. MONTA O JSON DE VARIAÇÕES (RÁPIDO)
     variacoes_json = json.dumps([
         {
             "id": v.id,
@@ -95,32 +125,37 @@ def detalhe_produto(request, slug):
             "tamanho": v.tamanho or "",
             "outro": v.outro or "",
             "estoque": v.estoque,
-            "imagem": v.get_imagem_url(),  # ✅ usa o método da model
+            "imagem": v.get_imagem_url(),
         }
         for v in variacoes
     ], cls=DjangoJSONEncoder)
 
-    # Cálculo de parcelamento
-    from decimal import Decimal
-    preco = produto.get_preco_final() or Decimal('0')
+    # 3. CÁLCULO DE PARCELAMENTO (Lógica Python)
+    # OBS: Recomenda-se usar p.get_preco_final, que deve estar otimizado com @cached_property na Model.
+    preco = produto.get_preco_final or Decimal('0') # Se usar @cached_property, é acessado como atributo
     valor_final = preco / Decimal('0.8872')
     valor_parcela = valor_final / Decimal('3')
 
-    # Promoção ativa
+    # 4. PROMOÇÃO ATIVA (RÁPIDO)
     promo_ativa = None
-    for promo in produto.promocoes.all():
+    for promo in produto.promocoes.all(): # RÁPIDO!
         if promo.esta_vigente():
             promo_ativa = promo
             break
 
-    # Produtos relacionados
+    # 5. PRODUTOS RELACIONADOS (OTIMIZADOS)
+    # Adicionando prefetch_related para carregar promoções e variações dos relacionados também.
     produtos_relacionados = Produto.objects.filter(
         categoria=produto.categoria,
         disponivel=True,
-        estoque__gt=0
+        # Filtro de estoque removido aqui se o filtro de produtos_list (acima) já é suficiente, 
+        # mas mantido para garantir só relacionados disponíveis.
+        Q(estoque__gt=0) | Exists(
+             Variacao.objects.filter(produto=OuterRef('pk'), estoque__gt=0)
+        )
     ).exclude(
         id=produto.id
-    ).order_by('?')[:4]
+    ).order_by('?')[:4].prefetch_related('promocoes', 'variacoes') # <-- OTIMIZAÇÃO
 
     # Contexto
     context = {
@@ -134,6 +169,7 @@ def detalhe_produto(request, slug):
         'promo_ativa': promo_ativa,
         'variacoes_json': variacoes_json,
         'estoque_total': estoque_total,
+        'galeria_imagens': produto.galeria_imagens.all(), # RÁPIDO!
         'titulo': f'{produto.nome} | Doce & Bella',
     }
 
