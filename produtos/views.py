@@ -132,7 +132,7 @@ def detalhe_produto(request, slug):
     ], cls=DjangoJSONEncoder)
 
     # 3. CÁLCULO DE PARCELAMENTO (Lógica Python)
-    preco = produto.get_preco_final or Decimal('0')
+    preco = produto.get_preco_final() or Decimal('0')
     valor_final = preco / Decimal('0.8872')
     valor_parcela = valor_final / Decimal('3')
 
