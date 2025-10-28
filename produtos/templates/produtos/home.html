@@ -196,42 +196,66 @@
 <div class="full-width-banner-wrapper">
   {% if banners %}
     {% if banners|length > 1 %}
-  <!-- Carrossel de múltiplos banners -->
-  <div id="bannerCarousel" class="carousel slide" data-bs-ride="carousel">
-    <div class="carousel-inner">
+      <!-- Carrossel de múltiplos banners -->
+      <div id="bannerCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          {% for banner in banners %}
+            {% if banner.ativo %}
+              {% with link_desktop=banner.link|default:'#' link_mobile=banner.link_mobile|default:banner.link %}
+              <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                <a href="#" class="banner-link"
+                   data-desktop="{{ link_desktop }}"
+                   data-mobile="{{ link_mobile }}">
+                  <picture>
+                    {% if banner.imagem_mobile %}
+                      <source media="(max-width: 768px)" srcset="{{ banner.imagem_mobile.url }}?v={{ banner.atualizado_em|date:'U' }}">
+                    {% endif %}
+                    {% if banner.imagem %}
+                      <source media="(min-width: 769px)" srcset="{{ banner.imagem.url }}?v={{ banner.atualizado_em|date:'U' }}">
+                    {% endif %}
+                    <img src="{{ banner.imagem.url|default:banner.imagem_mobile.url }}"
+                         class="d-block w-100 banner-admin"
+                         alt="{{ banner.titulo }}">
+                  </picture>
+                </a>
+              </div>
+              {% endwith %}
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        <!-- Controles -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon"></span>
+        </button>
+      </div>
+    {% else %}
+      <!-- Banner único -->
       {% for banner in banners %}
         {% if banner.ativo %}
-          <div class="carousel-item {% if forloop.first %}active{% endif %}">
-            <a href="{{ banner.link|default:'#' }}">
-              <picture>
-                {% if banner.imagem_mobile %}
-                  <source media="(max-width: 768px)" srcset="{{ banner.imagem_mobile.url }}">
-                {% endif %}
-                <source media="(min-width: 769px)" srcset="{{ banner.imagem.url }}">
-                <img src="{{ banner.imagem.url }}" class="d-block w-100 banner-admin" alt="{{ banner.titulo }}">
-              </picture>
-            </a>
-          </div>
+          {% with link_desktop=banner.link|default:'#' link_mobile=banner.link_mobile|default:banner.link %}
+          <a href="#" class="banner-link"
+             data-desktop="{{ link_desktop }}"
+             data-mobile="{{ link_mobile }}">
+            <picture>
+              {% if banner.imagem_mobile %}
+                <source media="(max-width: 768px)" srcset="{{ banner.imagem_mobile.url }}?v={{ banner.atualizado_em|date:'U' }}">
+              {% endif %}
+              {% if banner.imagem %}
+                <source media="(min-width: 769px)" srcset="{{ banner.imagem.url }}?v={{ banner.atualizado_em|date:'U' }}">
+              {% endif %}
+              <img src="{{ banner.imagem.url|default:banner.imagem_mobile.url }}"
+                   class="img-fluid w-100 banner-admin"
+                   alt="{{ banner.titulo }}">
+            </picture>
+          </a>
+          {% endwith %}
         {% endif %}
       {% endfor %}
-    </div>
-    ...
-{% else %}
-  <!-- Banner único -->
-  {% for banner in banners %}
-    {% if banner.ativo %}
-      <a href="{{ banner.link|default:'#' }}">
-        <picture>
-          {% if banner.imagem_mobile %}
-            <source media="(max-width: 768px)" srcset="{{ banner.imagem_mobile.url }}">
-          {% endif %}
-          <source media="(min-width: 769px)" srcset="{{ banner.imagem.url }}">
-          <img src="{{ banner.imagem.url }}" class="img-fluid w-100 banner-admin" alt="{{ banner.titulo }}">
-        </picture>
-      </a>
     {% endif %}
-  {% endfor %}
-{% endif %}
   {% else %}
     <!-- Banner padrão -->
     <div class="main-banner-image">
@@ -239,6 +263,17 @@
     </div>
   {% endif %}
 </div>
+
+<!-- Script que define o link correto conforme o tamanho da tela -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  document.querySelectorAll(".banner-link").forEach(link => {
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    const href = isMobile ? link.dataset.mobile : link.dataset.desktop;
+    link.setAttribute("href", href);
+  });
+});
+</script>
 {% endblock %}
 
 
@@ -303,6 +338,7 @@
 {% block extra_js %}
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+    // === TIMER DE PROMOÇÃO ===
     function atualizarTimers() {
         const timers = document.querySelectorAll(".timer");
         timers.forEach(timer => {
@@ -341,6 +377,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
     atualizarTimers();
     setInterval(atualizarTimers, 1000);
+
+
+    // === SELETOR DE LINK DO BANNER (DESKTOP OU MOBILE) ===
+    document.querySelectorAll(".banner-link").forEach(link => {
+        const isMobile = window.matchMedia("(max-width: 768px)").matches;
+        const href = isMobile ? link.dataset.mobile : link.dataset.desktop;
+        link.setAttribute("href", href);
+    });
 });
 </script>
 {% endblock %}
