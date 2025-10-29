@@ -1,0 +1,22 @@
+<div class="mobile-footer"> 
+  <nav class="footer-nav">
+    <a href="{% url 'home' %}" class="nav-item">
+      <i class="fas fa-home"></i>
+      <span>Início</span>
+    </a>
+    <a href="{% url 'carrinho:ver_carrinho' %}" class="nav-item">
+      <i class="fas fa-shopping-bag"></i>
+      <span>Carrinho</span>
+    </a>
+    <a href="{% url 'home' %}?q=" class="nav-item">       <i class="fas fa-search"></i>
+      <span>Buscar</span>
+    </a>
+    <a href="{% url 'usuarios:painel_cliente' %}" class="nav-item">
+      <i class="fas fa-user"></i>
+      <span>Pedidos</span>
+    </a>
+    <a href="javascript:void(0);" class="nav-item" id="menu-rodape-toggle">       <i class="fas fa-bars"></i>
+      <span>Menu</span>
+    </a>
+  </nav>
+</div>
