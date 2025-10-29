@@ -2,6 +2,7 @@
 {% load static %}
 {% load humanize %}
 {% load produto_extras %}
+{% block body_class %}detalhe-produto{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -16,11 +17,31 @@
   padding: 30px;
 }
 
-/* === Galeria com miniaturas abaixo === */
-.produto-galeria {
-  text-align: center;
-}
+/* === SOLUÇÃO: ESCONDER SOMENTE O CABEÇALHO SUPERIOR MOBILE NESSA PÁGINA === */
+@media (max-width: 768px) {
+    /* 1. REMOVE O CABEÇALHO ROSA FIXO (FAIXA SUPERIOR) */
+    body.detalhe-produto .header-mobile {
+        display: none !important;
+    }
 
+    /* 2. AJUSTE DE LAYOUT SUPERIOR: remove o `padding-top` de compensação do header. */
+    body.detalhe-produto {
+        /* Reduz o espaço superior para quase zero, já que o header sumiu. */
+        padding-top: 5px !important; 
+        
+        /* IMPORTANTE: Mantém o espaço inferior para o menu de rodapé fixo (70px é uma margem segura) */
+        padding-bottom: 70px !important;
+    }
+
+    /* Opcional: Garante que o container principal fique no topo da página */
+    .detalhe-produto .container {
+        padding-top: 0 !important;
+    }
+    
+    /* A regra que REMOVEREI é: body.detalhe-produto .mobile-footer { display: none !important; }
+       Isso garante que o menu de rodapé (mobile-footer) continue visível. 
+    */
+}
 
 .main-image-wrapper {
   border: 1px solid #eee;
@@ -28,6 +49,7 @@
   overflow: hidden;
   margin-bottom: 12px;
 }
+
 
 #main-image {
   width: 100%;
@@ -395,12 +417,6 @@ body.modal-open {
 .close:hover {
   color: #f26b7f;
 }
-
-@media (max-width: 768px) {
-  .modal-content {
-    max-width: 95%;
-    max-height: 80vh;
-  }
 
 .main-image-wrapper {
   border: 1px solid #eee;
