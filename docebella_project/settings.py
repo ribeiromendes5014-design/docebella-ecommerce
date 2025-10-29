@@ -178,7 +178,8 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-#3-c$i&#$#wx^n6^#0v4w
 # Hosts Permitidos em Produção
 ALLOWED_HOSTS = [
     '127.0.0.1', 
-    'localhost', 
+    'localhost',
+    'www.docebella.top',
     'docebella-ecommerce-q2py.onrender.com', 
     '.onrender.com'               
 ] 
@@ -187,6 +188,7 @@ ALLOWED_HOSTS = [
 CSRF_TRUSTED_ORIGINS = [
     'https://docebella-ecommerce-q2py.onrender.com',
     'https://*.onrender.com',
+    'www.docebella.top',
 ]
 
 
