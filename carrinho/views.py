@@ -11,6 +11,8 @@ from decimal import Decimal
 from produtos.models import Produto, Variacao
 from pedidos.models import Cupom  
 from .models import ItemCarrinho  
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 
 
 
@@ -244,7 +246,98 @@ def aplicar_cupom(request):
 
     return redirect('carrinho:ver_carrinho')
 
+# ---------------------- ADICIONAR AO CARRINHO (AJAX) ----------------------
+@require_POST
+@csrf_exempt
+def adicionar_ao_carrinho_ajax(request):
+    produto_slug = request.POST.get('produto_slug')
+    produto = get_object_or_404(Produto, slug=produto_slug)
+    session_key = _get_session_key(request)
 
+    variacao_id = request.POST.get('variacao_id')
+    quantidade = int(request.POST.get('quantidade', 1))
+
+    variacao = None
+    estoque_disponivel = produto.estoque
+
+    if produto.usa_variacoes:
+        if not variacao_id:
+            return JsonResponse({'status': 'erro', 'mensagem': 'Selecione uma variação antes de adicionar.'})
+        try:
+            variacao = Variacao.objects.get(id=variacao_id, produto=produto)
+            estoque_disponivel = variacao.estoque
+        except Variacao.DoesNotExist:
+            return JsonResponse({'status': 'erro', 'mensagem': 'Variação inválida.'})
+
+    if estoque_disponivel <= 0:
+        return JsonResponse({'status': 'erro', 'mensagem': 'Produto esgotado.'})
+
+    # Validação de estoque para a adição
+    item_existente = ItemCarrinho.objects.filter(
+        session_key=session_key,
+        produto=produto,
+        variacao=variacao
+    ).first()
+    
+    quantidade_atual_no_carrinho = item_existente.quantidade if item_existente else 0
+    nova_quantidade_total = quantidade_atual_no_carrinho + quantidade
+
+    if nova_quantidade_total > estoque_disponivel:
+        return JsonResponse({
+            'status': 'erro', 
+            'mensagem': f'Estoque insuficiente! Máximo permitido: {estoque_disponivel}.'
+        })
+    
+    # 💰 Define o preço correto (promocional ou normal)
+    preco_unitario = produto.get_preco_final()
+    if variacao:
+        preco_unitario += variacao.preco_adicional or 0
+
+    item, criado = ItemCarrinho.objects.get_or_create(
+        session_key=session_key,
+        produto=produto,
+        variacao=variacao,
+        defaults={'quantidade': quantidade, 'preco': preco_unitario}
+    )
+
+    if not criado:
+        item.quantidade = nova_quantidade_total
+        item.preco = preco_unitario
+        item.save()
+
+    # 🚀 NOVO CÓDIGO: CALCULAR O NOVO TOTAL DE ITENS E RETORNAR 🚀
+    total_itens = ItemCarrinho.objects.filter(session_key=session_key).aggregate(
+        total=Sum('quantidade')
+    )['total'] or 0
+
+    return JsonResponse({
+        'status': 'ok',
+        'mensagem': f'{produto.nome} foi adicionado ao carrinho com sucesso!',
+        'novo_total_itens': total_itens 
+    })
+
+# ---------------------- OBTER TOTAL DO CARRINHO (AJAX GLOBAL) ----------------------
+def get_carrinho_total_ajax(request):
+    """Retorna o número total de itens no carrinho da sessão atual."""
+    
+    session_key = request.session.session_key
+    
+    # Se não houver chave de sessão, garante que ela será criada se o Context Processor falhar
+    if not request.session.session_key:
+        request.session.create()
+        session_key = request.session.session_key
+        
+    if not session_key:
+        total_itens = 0
+    else:
+        # Usamos o F.objects.filter porque é mais eficiente
+        total_itens = ItemCarrinho.objects.filter(session_key=session_key).aggregate(
+            total=Sum('quantidade')
+        )['total'] or 0
+        
+    return JsonResponse({
+        'total_itens': total_itens
+    })
 
 
 
