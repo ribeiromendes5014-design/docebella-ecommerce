@@ -82,6 +82,8 @@ TEMPLATES = [
                 # Context Processor do Carrinho
                 'docebella_project.context_processors.carrinho_contador',
                 'produtos.context_processors.categorias_header',
+                'carrinho.context_processors.carrinho_contador',
+                'docebella_project.context_processors.carrinho_contador',
             ],
         },
     },
