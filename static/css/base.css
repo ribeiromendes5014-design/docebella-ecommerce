@@ -1,4 +1,4 @@
-/* static/css/style.css - Layout de Produção (Clone Visual) */
+/* static/css/base.css - Layout de Produção (Clone Visual) */
 :root {
     --cor-principal: #ff69b4; /* Rosa Choque / Pink da Logo */
     --cor-secundaria: #343a3c; /* Cinza Escuro para texto principal */
@@ -306,6 +306,80 @@ body {
     font-weight: bold;
     color: var(--cor-principal);
     margin-bottom: 10px;
+}
+
+/* --- CORREÇÃO: Tabela do Carrinho para Cards em Mobile --- */
+@media screen and (max-width: 768px) {
+    
+    /* 1. Ocultar o cabeçalho original (Produto, Preço Unitário, etc.) */
+    .table thead {
+        /* Garante que o cabeçalho desapareça completamente */
+        border: none;
+        clip: rect(0 0 0 0);
+        height: 1px;
+        margin: -1px;
+        overflow: hidden;
+        padding: 0;
+        position: absolute;
+        width: 1px;
+    }
+
+    /* 2. Transformar cada Linha (TR) em um Card de Produto */
+    .table tbody tr {
+        display: block; 
+        margin-bottom: 20px; 
+        padding: 10px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    /* 3. Estilizar as Células (TD) para empilhar */
+    .table td {
+        border-bottom: 1px solid #f0f0f0;
+        display: block; 
+        text-align: right !important; /* Alinha o valor à direita */
+        padding: 8px 10px !important;
+        font-size: 0.95em;
+        position: relative;
+        box-sizing: border-box; 
+    }
+    
+    /* 4. Adicionar o Rótulo (o nome da coluna) com base no data-label */
+    .table td:before {
+        content: attr(data-label); 
+        float: left;
+        font-weight: 600;
+        color: #555;
+    }
+
+    /* 5. Ajustes Específicos para a Coluna do Produto (Imagem + Nome) */
+    /* Remove a borda e força o alinhamento à esquerda/centro */
+    .table td:first-child {
+        text-align: left !important;
+        display: flex; 
+        align-items: center; 
+        border-bottom: none;
+        padding-top: 5px !important;
+    }
+    
+    /* 6. Ajustar Inputs e Botões (Qtd e Atualizar) */
+    .table td input[type="number"], 
+    .table td button {
+        max-width: 100%; /* Garante que ocupe o espaço */
+    }
+
+    /* Remove a borda da última célula (Subtotal ou Botão Remover) */
+    .table td:last-child {
+        border-bottom: 0;
+    }
+    
+    /* Ajuste para o formulário de cupom (opcional, se estiver na tabela) */
+    #cupom-form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
 }
 
 /* ---------------- ESTILOS DO CARRINHO ---------------- */
