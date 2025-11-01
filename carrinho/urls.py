@@ -1,23 +1,23 @@
-# G:\projeto\carrinho\urls.py
+# app/urls.py (carrinho)
+
 from . import views
 from django.urls import path
 
-# 👇 ADICIONE ESTA LINHA PARA CORRIGIR O ERRO
-app_name = 'carrinho' 
+app_name = 'carrinho'
 
 urlpatterns = [
-    # Rota para adicionar um produto
+    # 1. Rota AJAX de Adição (Corrigida e Prioritária)
+    path('adicionar/ajax/', views.adicionar_ao_carrinho_ajax, name='adicionar_ao_carrinho_ajax'),
+
+    # 🚀 ROTA NOVA: Para o JavaScript buscar o total do carrinho
+    path('get-total/', views.get_carrinho_total_ajax, name='get_carrinho_total_ajax'), # <-- ADICIONE ESTA LINHA
+
+    # 2. Rota de Adição Normal
     path('adicionar/<slug:produto_slug>/', views.adicionar_ao_carrinho, name='adicionar_ao_carrinho'),
-    
-    # Rota para visualizar o carrinho
+
+    # ... as outras rotas
     path('', views.ver_carrinho, name='ver_carrinho'),
-    
-    # Rota para remover um item
     path('remover/<int:item_id>/', views.remover_item, name='remover_item'),
-    
-    # Rota para atualizar a quantidade
     path('atualizar/', views.atualizar_carrinho, name='atualizar_carrinho'),
-    
-    # Adicione também a rota do cupom que o template vai precisar
     path('aplicar-cupom/', views.aplicar_cupom, name='aplicar_cupom'),
 ]
