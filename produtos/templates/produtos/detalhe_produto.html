@@ -433,6 +433,22 @@ body.modal-open {
   transition: opacity .3s ease;
 }
 
+/* 1. Define um z-index para o fundo escuro (backdrop) que o Bootstrap cria */
+.modal-backdrop {
+    z-index: 1060 !important; /* Valor alto para garantir que apareça */
+}
+
+/* 2. Garante que o conteúdo do seu Modal de Confirmação (a caixa branca com botões) fique acima do backdrop */
+/* O modal do carrinho é #modalCarrinho */
+#modalCarrinho.modal { 
+    z-index: 1061 !important; /* Deve ser maior que o backdrop */
+}
+
+#modalCarrinho .modal-dialog {
+    /* Garante que o conteúdo em si (dialog) esteja na frente */
+    z-index: 1062 !important;
+}
+
 /* Responsivo */
 @media (max-width: 768px) {
   .galeria-grid {
@@ -562,73 +578,82 @@ body.modal-open {
 </p>
 {% endwith %}
 
-<form id="form-adicionar-carrinho" action="{% url 'carrinho:adicionar_ao_carrinho' produto.slug %}" method="POST">
-  {% csrf_token %}
-  
-  {% if produto.usa_variacoes %}
-    <div class="variacao-selector">
-
-      {# ==== Seletor de COR ==== #}
-      {% if cores %}
-        <h4>Cor:</h4>
-        <div class="botoes-cor">
-          {% for cor in cores %}
-            <button type="button"
-                    class="btn-variacao btn-cor"
-                    data-tipo="cor"
-                    data-cor="{{ cor|default:'Única' }}">
-              {{ cor|default:"Única" }}
-            </button>
-          {% endfor %}
-        </div>
-      {% endif %}
-
-      {# ==== Seletor de TAMANHO ==== #}
-      {% if tamanhos %}
-  <h4 style="margin-top: 15px;">Tamanho:</h4>
-  <div class="botoes-tamanho">
-    {% for tamanho in tamanhos %}
-      {% with estoque_tamanho=variacoes|get_estoque_por_tamanho:tamanho %}
-        <button type="button"
-                class="btn-variacao btn-tamanho {% if estoque_tamanho <= 0 %}esgotado{% endif %}"
-                data-tipo="tamanho"
-                data-valor="{{ tamanho }}"
-                data-estoque="{{ estoque_tamanho }}"
-                {% if estoque_tamanho <= 0 %}disabled{% endif %}>
-          {{ tamanho }}
-        </button>
-      {% endwith %}
-    {% endfor %}
-  </div>
-{% endif %}
-
-      
-    </div>
+<form id="form-adicionar-carrinho" action="{% url 'carrinho:adicionar_ao_carrinho_ajax' %}" method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="produto_slug" value="{{ produto.slug }}">
 
     <input type="hidden" name="variacao_id" id="variacao-input" value="">
-  {% endif %}
-  <script id="variacoes-data" type="application/json">
-    {{ variacoes_json|safe }}
-</script>
+    
+    {% if produto.usa_variacoes %}
+        <div class="variacao-selector">
 
-  <script id="variacoes-data" type="application/json">
-  {{ variacoes_json|safe }}
-</script>
+            {# ==== Seletor de COR ==== #}
+            {% if cores %}
+                <h4>Cor:</h4>
+                <div class="botoes-cor">
+                    {% for cor in cores %}
+                        <button type="button"
+                                class="btn-variacao btn-cor"
+                                data-tipo="cor"
+                                data-cor="{{ cor|default:'Única' }}">
+                            {{ cor|default:"Única" }}
+                        </button>
+                    {% endfor %}
+                </div>
+            {% endif %}
 
-<div class="acoes-compra">
-    <input type="number" name="quantidade" id="quantidade" value="1" min="1" max="{{ estoque_total }}">
-    {% if estoque_total > 0 %}
-      <button type="submit" class="btn-principal btn-comprar">Comprar</button>
-    {% else %}
-      <button class="btn-principal btn-comprar" disabled style="opacity: 0.5;">Esgotado</button>
-    {% endif %}
-</div>
+            {# ==== Seletor de TAMANHO ==== #}
+            {% if tamanhos %}
+                <h4 style="margin-top: 15px;">Tamanho:</h4>
+                <div class="botoes-tamanho">
+                    {% for tamanho in tamanhos %}
+                        {% with estoque_tamanho=variacoes|get_estoque_por_tamanho:tamanho %}
+                            <button type="button"
+                                    class="btn-variacao btn-tamanho {% if estoque_tamanho <= 0 %}esgotado{% endif %}"
+                                    data-tipo="tamanho"
+                                    data-valor="{{ tamanho }}"
+                                    data-estoque="{{ estoque_tamanho }}"
+                                    {% if estoque_tamanho <= 0 %}disabled{% endif %}>
+                                {{ tamanho }}
+                            </button>
+                        {% endwith %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div> 
+    {% endif %} 
+    <script id="variacoes-data" type="application/json">
+        {{ variacoes_json|safe }}
+    </script>
+
+    <div class="acoes-compra">
+        <input type="number" name="quantidade" id="quantidade" value="1" min="1" max="{{ estoque_total }}">
+        {% if estoque_total > 0 %}
+            <button type="submit" class="btn-principal btn-comprar">Comprar</button>
+        {% else %}
+            <button class="btn-principal btn-comprar" disabled style="opacity: 0.5;">Esgotado</button>
+        {% endif %}
+    </div>
 </form>
 
 
 <div class="descricao-completa">
   <h3>Descrição do Produto</h3>
   <p>{{ produto.descricao|linebreaksbr }}</p>
+</div>
+<!-- Modal de confirmação -->
+<div class="modal fade" id="modalCarrinho" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content text-center">
+      <div class="modal-body">
+        <h5 id="msgCarrinho"></h5>
+      </div>
+      <div class="modal-footer justify-content-center">
+        <a href="{% url 'carrinho:ver_carrinho' %}" class="btn btn-success">Ir para o carrinho</a>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Continuar comprando</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 
@@ -655,18 +680,35 @@ body.modal-open {
 {{ block.super }}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+    
+    // 1. DECLARAÇÃO DE ELEMENTOS ESSENCIAIS (AQUI ESTAVA O ERRO DE REFERÊNCIA)
+    // O JS precisa que 'const' seja usado na declaração.
     const modal = document.getElementById("modalZoom");
     const modalImg = document.getElementById("imgZoomed");
     const closeBtn = document.querySelector(".close");
     const mainImg = document.getElementById("main-image");
     const thumbs = document.querySelectorAll(".miniatura");
-    const variacaoInput = document.getElementById("variacao-input");
+
+    // Inputs do Formulário
     const formCarrinho = document.getElementById("form-adicionar-carrinho");
+    const variacaoInput = document.getElementById("variacao-input"); 
     const quantidadeInput = document.getElementById("quantidade");
     const btnComprar = document.querySelector(".btn-comprar");
     const statusEstoque = document.querySelector(".status-estoque");
-    const VARIACOES = JSON.parse(document.getElementById("variacoes-data").textContent);
+    
+    // 2. LEITURA DE VARIAÇÕES (CORRIGIDA E À PROVA DE FALHAS)
+    const variacoesDataElement = document.getElementById("variacoes-data");
+    let VARIACOES = []; // Inicia com array vazio
 
+    // Tenta ler o JSON de forma segura
+    if (variacoesDataElement && variacoesDataElement.textContent.trim()) {
+        try {
+            VARIACOES = JSON.parse(variacoesDataElement.textContent.trim());
+        } catch (e) {
+            console.error("⚠️ Erro fatal ao analisar VARIACOES JSON:", e);
+            // Se falhar, VARIACOES permanece como []
+        }
+    }
 
     // #######################################################
     // # FUNÇÃO PRINCIPAL: ATUALIZA ESTADO DOS BOTÕES DE TAMANHO COM BASE NA COR
@@ -771,6 +813,23 @@ document.addEventListener("DOMContentLoaded", function () {
             atualizarAcoesCompra(0);
         }
     }
+    // 💡 NOVAS FUNÇÕES PARA ATUALIZAR O CONTADOR GLOBALMENTE
+function atualizarContadores(novoTotal) {
+    const desktopContador = document.querySelector('.desktop-cart-link span'); // Conta do Desktop (dentro do <a>)
+    const mobileContador = document.querySelector('.header-mobile .cart-count'); // Conta do Mobile (a bolinha)
+
+    // Desktop Contador: Formato (X)
+    if (desktopContador) {
+        desktopContador.innerText = `(${novoTotal})`;
+    }
+
+    // Mobile Contador: Formato X (sem parênteses)
+    if (mobileContador) {
+        mobileContador.innerText = novoTotal; 
+    }
+
+    // Se houver um terceiro contador, adicione-o aqui.
+}
 
 
     function atualizarAcoesCompra(estoque) {
@@ -854,29 +913,54 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // ====== VALIDAÇÃO FLEXÍVEL ======
     if (formCarrinho) {
-        formCarrinho.addEventListener("submit", function (e) {
-            const temCor = document.querySelectorAll(".btn-cor").length > 0;
-            const temTamanho = document.querySelectorAll(".btn-tamanho").length > 0;
-            const temOutro = document.querySelectorAll(".btn-outro").length > 0;
+    formCarrinho.addEventListener("submit", function (e) {
+        e.preventDefault(); // evita o redirecionamento
 
-            const corSel = document.querySelector(".btn-cor.selecionado");
-            const tamSel = document.querySelector(".btn-tamanho.selecionado");
-            const outroSel = document.querySelector(".btn-outro.selecionado");
+        const temCor = document.querySelectorAll(".btn-cor").length > 0;
+        const temTamanho = document.querySelectorAll(".btn-tamanho").length > 0;
+        const temOutro = document.querySelectorAll(".btn-outro").length > 0;
 
-            if ((temCor && !corSel) || (temTamanho && !tamSel) || (temOutro && !outroSel)) {
-                e.preventDefault();
-                alert("Por favor, selecione todas as opções disponíveis antes de adicionar ao carrinho.");
-                return false;
+        const corSel = document.querySelector(".btn-cor.selecionado");
+        const tamSel = document.querySelector(".btn-tamanho.selecionado");
+        const outroSel = document.querySelector(".btn-outro.selecionado");
+
+        if ((temCor && !corSel) || (temTamanho && !tamSel) || (temOutro && !outroSel)) {
+            alert("Por favor, selecione todas as opções antes de adicionar ao carrinho.");
+            return;
+        }
+
+        if (!variacaoInput.value && VARIACOES.length > 0) {
+            alert("Por favor, selecione uma variação válida antes de adicionar ao carrinho.");
+            return;
+        }
+
+        // envia via AJAX
+        const formData = new FormData(formCarrinho);
+        fetch(formCarrinho.action, {
+            method: "POST",
+            body: formData,
+        })
+        .then((res) => res.json())
+        .then((data) => {
+            if (data.status === "ok") {
+                document.getElementById("msgCarrinho").innerText = data.mensagem;
+                new bootstrap.Modal(document.getElementById("modalCarrinho")).show();
+
+                // 🚀 CHAMADA CRÍTICA: ATUALIZA O CONTADOR AQUI!
+                if (data.novo_total_itens !== undefined) { // Certifica que o Python retornou o valor
+                    atualizarContadores(data.novo_total_itens);
+                }
+
+            } else {
+                alert(data.mensagem);
             }
-
-            // Garante que uma variação foi detectada
-            if (!variacaoInput.value && VARIACOES.length > 0) {
-                e.preventDefault();
-                alert("Por favor, selecione uma variação válida antes de adicionar ao carrinho.");
-                return false;
-            }
+        })
+        .catch((err) => {
+            alert("Erro inesperado ao adicionar ao carrinho.");
+            console.error(err);
         });
-    }
+    });
+}
 });
 </script>
 
