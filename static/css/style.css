@@ -164,6 +164,82 @@
     text-align: right;
     line-height: 1.2;
 }
+/* --- CORREÇÃO: Tabela do Carrinho para Cards em Mobile --- */
+/* ATENÇÃO: Mudamos o seletor de .table para .cart-table em todas as linhas */
+@media screen and (max-width: 768px) {
+    
+    /* 1. Ocultar o cabeçalho original (Produto, Preço Unitário, etc.) */
+    .cart-table thead { /* 👈 CORRIGIDO */
+        /* Garante que o cabeçalho desapareça completamente */
+        display: none; 
+    }
+
+    /* 2. Transformar cada Linha (TR) em um Card de Produto */
+    .cart-table tbody tr { /* 👈 CORRIGIDO */
+        display: block; 
+        margin-bottom: 20px; 
+        padding: 10px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    /* 3. Estilizar as Células (TD) para empilhar */
+    .cart-table td { /* 👈 CORRIGIDO */
+        border-bottom: 1px solid #f0f0f0; 
+        display: block; 
+        text-align: right !important; /* Alinha o valor à direita */
+        padding: 8px 10px !important;
+        font-size: 0.95em;
+        position: relative;
+        box-sizing: border-box; 
+    }
+    
+    /* 4. Adicionar o Rótulo da Coluna (via data-label) */
+    .cart-table td:before { 
+          content: attr(data-label); 
+          float: left;
+          font-weight: 600;
+          color: #555;
+          /* Adicione padding para separar o rótulo do valor */
+          padding-right: 10px; 
+    }
+
+    /* 5. Ajustes Específicos para a Coluna do Produto (Imagem + Nome) */
+    .cart-table td:first-child { /* 👈 CORRIGIDO */
+        text-align: left !important;
+        display: flex; 
+        align-items: center; 
+        border-bottom: 1px solid #eee; /* Mantém a borda divisória */
+        padding-top: 5px !important;
+    }
+    .cart-table td:first-child:before { /* 👈 Oculta o rótulo "Produto" */
+        content: none;
+    }
+    
+    /* 6. Ajustar Inputs e Botões (Qtd e Atualizar) */
+    .cart-table td form {
+        width: 100%;
+        display: flex; /* Garante que o input e botão fiquem na mesma linha */
+        align-items: center;
+        justify-content: flex-end; /* 👈 FORÇA TUDO PARA A DIREITA */
+        gap: 5px; /* Espaço entre input e botão */
+    }
+    .cart-table td input[type="number"] {
+        max-width: 60px; /* Tamanho razoável para o input */
+    }
+    
+    /* Remove a borda da última célula */
+    .cart-table td:last-child {
+        border-bottom: 0 !important;
+    }
+    /* Ajuste para o formulário de cupom (opcional, se estiver na tabela) */
+    #cupom-form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+}
 /* =======================================================
    MEDIA QUERIES: AJUSTES PARA TELAS PEQUENAS (CELULAR)
    ======================================================= */
@@ -271,5 +347,63 @@
     /* Ajuste de padding para o conteúdo principal */
     main.container {
         padding-top: 20px !important; 
+    }
+/* --- REGRA DE EMPILHAMENTO CRÍTICA NO MOBILE --- */
+@media screen and (max-width: 768px) {
+    /* Faz a Tabela e o Resumo do Pedido se empilharem */
+    .cart-container {
+        flex-direction: column !important; 
+        gap: 20px;
+    }
+    
+    /* Faz o Resumo do Pedido ocupar a largura total e ficar no topo (visual da imagem) */
+    .cart-summary {
+        min-width: 100% !important;
+        order: -1; /* Coloca o resumo acima da tabela */
+    }
+
+    /* 1. MÁGICA DO CARD: Ocultar o cabeçalho original da tabela */
+    .cart-table thead { 
+        display: none !important; /* Força o THEAD a sumir */
+    }
+
+    /* 2. Transformar cada Linha (TR) em um Card de Produto */
+    .cart-table tbody tr { 
+        display: block !important; 
+        margin-bottom: 20px; 
+    }
+
+    /* 3. Estilizar as Células (TD) para empilhar */
+    .cart-table td { 
+        display: block !important; 
+        text-align: right !important;
+        padding: 8px 10px !important;
+        position: relative;
+    }
+    
+    /* 4. Rótulo da Coluna (para mostrar Preço Unitário, Total, etc.) */
+    .cart-table td:before {
+        content: attr(data-label) !important; /* Garante que o rótulo do data-label apareça */
+        float: left;
+        font-weight: 600;
+        color: #555;
+    }
+
+    /* 5. Alinhamento dos Inputs (Qtd e Atualizar) */
+    .cart-table td form {
+        display: flex !important;
+        justify-content: flex-end !important; /* Move tudo para a direita */
+        align-items: center;
+        width: 100%; /* Ocupa a largura total do card */
+    }
+    
+    /* Coluna do Produto (primeira célula) */
+    .cart-table td:first-child {
+        text-align: left !important;
+        display: flex !important; 
+        align-items: center; 
+    }
+    .cart-table td:first-child:before { /* Oculta o rótulo "Produto" */
+        content: none !important;
     }
 }
