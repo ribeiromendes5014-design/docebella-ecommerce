@@ -19,7 +19,7 @@
         <tbody>
             {% for item in itens_carrinho %}
             <tr>
-                <td>
+                <td data-label="Produto">
                     <div class="product-info-carrinho">
                         <img src="{% if item.produto.imagem %}{{ item.produto.imagem.url }}{% else %}{% static 'img/placeholder.png' %}{% endif %}" alt="{{ item.produto.nome }}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 4px;">
                         
@@ -32,10 +32,10 @@
                     </div>
                 </td>
                 
-                <td>R$ {{ item.get_preco_unitario|floatformat:2 }}</td>
+                <td data-label="Preço Unitário">R$ {{ item.get_preco_unitario|floatformat:2 }}</td>
                 
-                <td>
-                    <form action="{% url 'atualizar_carrinho' %}" method="POST" style="display: flex; align-items: center; gap: 5px;">
+                <td data-label="Quantidade">
+                    <form action="{% url 'carrinho:atualizar_carrinho' %}" method="POST" style="display: flex; align-items: center; gap: 5px; justify-content: flex-end;">
                         {% csrf_token %}
                         <input type="hidden" name="item_id" value="{{ item.id }}">
                         <input type="number" name="quantidade" value="{{ item.quantidade }}" min="1" max="99" style="width: 50px; text-align: center;">
@@ -45,10 +45,10 @@
                     </form>
                 </td>
 
-                <td>R$ {{ item.get_subtotal|floatformat:2 }}</td>
+                <td data-label="Total"><strong>R$ {{ item.get_subtotal|floatformat:2 }}</strong></td>
                 
-                <td>
-                    <form action="{% url 'remover_item' item_id=item.id %}" method="POST" style="display:inline;">
+                <td data-label="Ação">
+                    <form action="{% url 'carrinho:remover_item' item_id=item.id %}" method="POST" style="display: flex; justify-content: flex-end;">
                         {% csrf_token %}
                         <button type="submit" class="btn-sm btn-danger">Remover</button>
                     </form>
@@ -64,19 +64,25 @@
         <div style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
             <p style="font-weight: bold; margin-bottom: 10px;">Cupom de Desconto:</p>
             
-            <form action="{% url 'aplicar_cupom' %}" method="POST" style="display: flex; gap: 5px;">
+            <form action="{% url 'carrinho:aplicar_cupom' %}" method="POST" style="display: flex; gap: 5px;">
                 {% csrf_token %}
-                <input type="text" name="cupom_codigo" placeholder="Digite o código" style="flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <input type="text" name="cupom_codigo" placeholder="Digite o código" value="{{ cupom_codigo|default:'' }}" style="flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                 <button type="submit" class="btn-sm" style="background-color: #28a745;">Aplicar</button>
             </form>
+            {% if desconto > 0 %}
+                <p style="color: green; margin-top: 5px;">Cupom {{ cupom_codigo }} aplicado!</p>
+            {% endif %}
         </div>
 
         <p>Subtotal: <strong>R$ {{ subtotal_carrinho|floatformat:2 }}</strong></p>
         <p>Total de Itens: <strong>{{ total_itens }}</strong></p>
-        <p style="color: #dc3545;">Desconto: <strong>R$ 0,00</strong></p>
+        
+        {% if desconto > 0 %}
+            <p style="color: #dc3545;">Desconto: <strong>R$ {{ desconto|floatformat:2 }}</strong></p>
+        {% endif %}
         
         <div class="total-line" style="border-top: 2px solid var(--cor-principal); padding-top: 10px; margin-top: 15px; font-size: 1.5rem; color: var(--cor-principal);">
-            Total: <strong>R$ {{ subtotal_carrinho|floatformat:2 }}</strong>
+            Total: <strong>R$ {{ total_com_desconto|floatformat:2 }}</strong>
         </div>
 
         <a href="{% url 'pedidos:checkout' %}" class="btn-principal" style="width: 100%; text-align: center; margin-top: 20px; font-size: 1.1rem; padding: 12px;">Finalizar Compra</a>
@@ -156,5 +162,77 @@
         align-items: center;
         gap: 15px;
     }
+
+/* Ajuste o container principal para empilhar no mobile */
+@media screen and (max-width: 768px) {
+    .cart-container {
+        flex-direction: column; /* Faz o resumo ir para baixo */
+        gap: 20px;
+    }
+    
+    /* 1. Ocultar o cabeçalho original da tabela no mobile */
+    .cart-table thead {
+        /* Garante que o cabeçalho desapareça completamente */
+        display: none; 
+    }
+
+    /* 2. Transformar cada Linha (TR) em um Card de Produto */
+    .cart-table tbody tr {
+        display: block; 
+        margin-bottom: 20px; 
+        padding: 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    /* 3. Estilizando as Células (TD) para empilhar */
+    .cart-table td {
+        border-bottom: 1px solid #f0f0f0 !important; /* Borda divisória */
+        display: block; /* Cada célula se torna uma linha */
+        text-align: right !important; /* Alinha o valor à direita */
+        padding: 8px 0 !important;
+        position: relative;
+        /* Garante que a linha total do produto ocupe 100% da largura */
+        width: 100%; 
+    }
+    
+    /* 4. Adicionar o Rótulo da Coluna (via data-label) */
+    .cart-table td:before {
+        content: attr(data-label); 
+        float: left;
+        font-weight: 600;
+        color: var(--cor-secundaria);
+    }
+    
+    /* 5. Ajuste Específico para a Coluna do Produto (Imagem + Nome) */
+    .cart-table td:first-child {
+        /* Coluna do Produto não precisa de rótulo flutuante, mas usa flexbox */
+        text-align: left !important;
+        border-bottom: 1px solid #eee !important;
+        display: flex;
+        align-items: center;
+    }
+
+    /* 6. Ajuste a formatação dos campos de quantidade e botão */
+    .cart-table td form {
+        width: 100%;
+        justify-content: flex-end; /* Move o input e o botão para a direita */
+    }
+    .cart-table td form input[type="number"] {
+        max-width: 60px;
+    }
+    
+    /* Oculta o rótulo quando o conteúdo já é óbvio (ex: a linha da imagem) */
+    .cart-table td:first-child:before {
+        content: none;
+    }
+    
+    /* Otimização Finalizar Compra */
+    .cart-summary {
+        min-width: 100%;
+        order: -1; /* Coloca o resumo acima da lista de produtos no mobile (Opcional) */
+    }
+}
 </style>
 {% endblock %}
